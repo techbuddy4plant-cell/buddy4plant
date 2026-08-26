@@ -1,0 +1,6 @@
+{
+  "name": "buddy4plant",
+  "description": "Buddy4Plant - Premium Indian plant nursery e-commerce platform with dynamic storefront, Razorpay checkout, live order tracking, and admin management dashboard.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

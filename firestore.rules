@@ -1,0 +1,90 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return request.auth != null && (
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+        request.auth.token.admin == true ||
+        request.auth.token.email == "admin@vanabotanica.com"
+      );
+    }
+    
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    // Public readable catalogues
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /collections/{collectionId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /homepage/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /coupons/{couponId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Reviews: Public can read approved, logged in users can write review, admin full control
+    match /reviews/{reviewId} {
+      allow read: if resource.data.approved == true || isAdmin() || (request.auth != null && resource.data.userId == request.auth.uid);
+      allow create: if request.auth != null;
+      allow update, delete: if isAdmin() || (request.auth != null && resource.data.userId == request.auth.uid);
+    }
+
+    // Wishlist: Owner only
+    match /wishlists/{userId} {
+      allow read, write: if isOwner(userId) || isAdmin();
+    }
+
+    // Users: Owner only or Admin
+    match /users/{userId} {
+      allow read, write: if isOwner(userId) || isAdmin();
+    }
+
+    // Admins collection
+    match /admins/{userId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+    // Orders: Owner or query by email/phone or Admin
+    match /orders/{orderId} {
+      allow read: if isAdmin() || (request.auth != null && resource.data.customerId == request.auth.uid) || true; // Public read permitted for guest tracking by unique order ID & phone verification on client/server
+      allow create: if true; // Allow guest/registered checkout
+      allow update: if isAdmin() || (request.auth != null && resource.data.customerId == request.auth.uid);
+      allow delete: if isAdmin();
+    }
+
+    // Inventory & Analytics: Admin only
+    match /inventory/{productId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    match /analytics/{docId} {
+      allow read, write: if isAdmin();
+    }
+  }
+}

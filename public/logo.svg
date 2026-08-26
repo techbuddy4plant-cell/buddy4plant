@@ -1,0 +1,56 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bgGrad" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stopColor="#EBF6F4" />
+      <stop offset="70%" stopColor="#D9ECE8" />
+      <stop offset="100%" stopColor="#CDE4DE" />
+    </radialGradient>
+    <linearGradient id="trunkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#8C5835" />
+      <stop offset="50%" stopColor="#6E3D1E" />
+      <stop offset="100%" stopColor="#532B13" />
+    </linearGradient>
+  </defs>
+
+  <circle cx="100" cy="100" r="98" fill="url(#bgGrad)" stroke="#B8DDD3" stroke-width="2.5" />
+
+  <!-- Foliage Canopy -->
+  <ellipse cx="100" cy="65" rx="72" ry="40" fill="#2D6A4F" opacity="0.9" />
+  <ellipse cx="65" cy="72" rx="42" ry="30" fill="#1B4332" opacity="0.85" />
+  <ellipse cx="135" cy="72" rx="42" ry="30" fill="#1B4332" opacity="0.85" />
+  <ellipse cx="100" cy="48" rx="55" ry="26" fill="#40916C" />
+  <ellipse cx="48" cy="78" rx="30" ry="22" fill="#2D6A4F" />
+  <ellipse cx="152" cy="78" rx="30" ry="22" fill="#2D6A4F" />
+  <ellipse cx="80" cy="55" rx="36" ry="24" fill="#52B788" opacity="0.9" />
+  <ellipse cx="120" cy="55" rx="36" ry="24" fill="#52B788" opacity="0.9" />
+  
+  <!-- Tree Branches -->
+  <g stroke="url(#trunkGrad)" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M100 78 Q90 62 70 58" stroke-width="6" fill="none" />
+    <path d="M100 78 Q110 62 130 58" stroke-width="6" fill="none" />
+    <path d="M85 68 Q72 52 56 55" stroke-width="4.5" fill="none" />
+    <path d="M115 68 Q128 52 144 55" stroke-width="4.5" fill="none" />
+    <path d="M70 58 Q55 45 42 60" stroke-width="3.5" fill="none" />
+    <path d="M130 58 Q145 45 158 60" stroke-width="3.5" fill="none" />
+  </g>
+
+  <!-- Central 4 Integrated as Trunk -->
+  <g fill="url(#trunkGrad)">
+    <path d="M97 78 L97 136 Q97 142 101 144 Q105 142 105 136 L105 78 Z" />
+    <path d="M99 82 L84 116 L107 116 L107 124 L78 124 L78 114 L94 80 Z" />
+    <path d="M76 114 L118 114 Q120 114 120 119 Q120 124 116 124 L76 124 Z" />
+  </g>
+
+  <!-- Sprawling Roots -->
+  <g stroke="url(#trunkGrad)" stroke-linecap="round" fill="none">
+    <path d="M101 142 Q101 155 101 166" stroke-width="4" />
+    <path d="M99 143 Q90 152 76 162" stroke-width="3.5" />
+    <path d="M103 143 Q112 152 126 162" stroke-width="3.5" />
+    <path d="M94 146 Q80 156 65 158" stroke-width="2.5" />
+    <path d="M108 146 Q122 156 137 158" stroke-width="2.5" />
+  </g>
+
+  <!-- Logo Typography -->
+  <text x="14" y="118" fill="#1F2923" font-family="sans-serif" font-weight="800" font-size="27">buddy</text>
+  <text x="122" y="118" fill="#1F2923" font-family="sans-serif" font-weight="800" font-size="27">plant</text>
+</svg>

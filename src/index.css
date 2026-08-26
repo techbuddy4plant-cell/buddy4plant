@@ -1,0 +1,108 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-primary: #FDFCF9;
+    --text-primary: #1A1A1A;
+    --text-muted: #5A5A5A;
+    --accent-green: #2D4A27;
+    --accent-dark-green: #1F341C;
+    --border-subtle: #E5E2D9;
+    --border-light: #E8EAE0;
+    --card-sand: #F5F2EB;
+    --card-beige: #EAE8E4;
+    --card-sage: #E0E5E2;
+    --card-warm: #F2EDE4;
+  }
+
+  body {
+    background-color: #FDFCF9;
+    color: #1A1A1A;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    letter-spacing: -0.01em;
+  }
+
+  h1, h2, h3, .font-serif {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+  }
+}
+
+/* Minimalist scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F5F2EB;
+}
+::-webkit-scrollbar-thumb {
+  background: #D3CEBE;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #2D4A27;
+}
+
+/* Custom animation utils */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes cartoonWiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-5deg) scale(1.05); }
+  75% { transform: rotate(5deg) scale(1.05); }
+}
+
+@keyframes cartoonFloat {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-5px) rotate(3deg); }
+}
+
+@keyframes cartoonPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 75s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+.animate-cartoon-wiggle {
+  animation: cartoonWiggle 2.5s ease-in-out infinite;
+}
+
+.animate-cartoon-float {
+  animation: cartoonFloat 3.5s ease-in-out infinite;
+}
+
+.animate-cartoon-pulse {
+  animation: cartoonPulse 2s ease-in-out infinite;
+}
+
+.cartoon-hover-pop {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+}
+.cartoon-hover-pop:hover {
+  transform: translateY(-3px) scale(1.02);
+}
+.cartoon-hover-pop:active {
+  transform: translateY(1px) scale(0.97);
+}
+
