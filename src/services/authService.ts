@@ -75,3 +75,25 @@ export async function saveUserAddress(uid: string, address: Address): Promise<Ad
 
   return addresses;
 }
+
+export async function deleteUserAddress(uid: string, addressId: string): Promise<Address[]> {
+  const profile = await getUserProfile(uid);
+  const addresses = (profile?.addresses || []).filter((a) => a.id !== addressId);
+  if (profile) {
+    await saveUserProfile({ ...profile, addresses });
+  }
+  return addresses;
+}
+
+export async function setDefaultUserAddress(uid: string, addressId: string): Promise<Address[]> {
+  const profile = await getUserProfile(uid);
+  const addresses = (profile?.addresses || []).map((a) => ({
+    ...a,
+    isDefault: a.id === addressId,
+  }));
+  if (profile) {
+    await saveUserProfile({ ...profile, addresses });
+  }
+  return addresses;
+}
+

@@ -10,7 +10,7 @@ import {
 } from 'firebase/auth';
 import { auth, googleProvider } from '../config/firebase';
 import { UserProfile, Address } from '../types';
-import { getUserProfile, saveUserProfile, checkIsAdmin, saveUserAddress } from '../services/authService';
+import { getUserProfile, saveUserProfile, checkIsAdmin, saveUserAddress, deleteUserAddress, setDefaultUserAddress } from '../services/authService';
 
 interface AuthContextType {
   user: User | null;
@@ -28,6 +28,8 @@ interface AuthContextType {
   resetPassword: (email: string) => Promise<void>;
   loginAsDemoAdmin: () => Promise<void>;
   saveAddress: (address: Address) => Promise<Address[]>;
+  removeAddress: (addressIdOrIndex: string | number) => Promise<Address[]>;
+  setDefaultAddress: (addressId: string) => Promise<Address[]>;
   updateProfileDetails: (name: string, phone?: string) => Promise<void>;
 }
 
@@ -198,6 +200,53 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return updated;
   };
 
+  const removeAddress = async (addressIdOrIndex: string | number): Promise<Address[]> => {
+    if (!user && !profile) {
+      const guestAddresses: Address[] = JSON.parse(localStorage.getItem('vb_guest_addresses') || '[]');
+      let updated: Address[] = [];
+      if (typeof addressIdOrIndex === 'number') {
+        updated = guestAddresses.filter((_, i) => i !== addressIdOrIndex);
+      } else {
+        updated = guestAddresses.filter((a) => a.id !== addressIdOrIndex);
+      }
+      localStorage.setItem('vb_guest_addresses', JSON.stringify(updated));
+      return updated;
+    }
+
+    const uid = user?.uid || profile?.uid || 'guest';
+    let addrId = '';
+    if (typeof addressIdOrIndex === 'number') {
+      addrId = profile?.addresses?.[addressIdOrIndex]?.id || '';
+    } else {
+      addrId = addressIdOrIndex;
+    }
+
+    const updated = await deleteUserAddress(uid, addrId);
+    if (profile) {
+      setProfile({ ...profile, addresses: updated });
+    }
+    return updated;
+  };
+
+  const setDefaultAddress = async (addressId: string): Promise<Address[]> => {
+    if (!user && !profile) {
+      const guestAddresses: Address[] = JSON.parse(localStorage.getItem('vb_guest_addresses') || '[]');
+      const updated = guestAddresses.map((a) => ({
+        ...a,
+        isDefault: a.id === addressId,
+      }));
+      localStorage.setItem('vb_guest_addresses', JSON.stringify(updated));
+      return updated;
+    }
+
+    const uid = user?.uid || profile?.uid || 'guest';
+    const updated = await setDefaultUserAddress(uid, addressId);
+    if (profile) {
+      setProfile({ ...profile, addresses: updated });
+    }
+    return updated;
+  };
+
   const updateProfileDetails = async (name: string, phone?: string) => {
     if (profile) {
       const updated: UserProfile = {
@@ -228,6 +277,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         resetPassword,
         loginAsDemoAdmin,
         saveAddress,
+        removeAddress,
+        setDefaultAddress,
         updateProfileDetails,
       }}
     >
