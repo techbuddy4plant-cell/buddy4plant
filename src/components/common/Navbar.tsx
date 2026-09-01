@@ -493,7 +493,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
                     <button
                       onClick={() => {
                         setIsAccountMenuOpen(false);
-                        navigate('/account/orders');
+                        navigate('/orders');
                       }}
                       className="w-full text-left px-4 py-2 text-xs text-[#4A4A4A] hover:bg-[#F5F2EB] flex items-center gap-2"
                     >

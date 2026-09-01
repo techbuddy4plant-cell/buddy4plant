@@ -18,6 +18,7 @@ import { CheckoutPage } from './components/checkout/CheckoutPage';
 import { OrderSuccess } from './components/order/OrderSuccess';
 import { OrderTrackingPage } from './components/order/OrderTrackingPage';
 import { UserProfilePage } from './components/account/UserProfilePage';
+import { UserOrdersPage } from './components/account/UserOrdersPage';
 import { AboutUsPage, PlantDoctorPage, ContactUsPage } from './components/pages/StaticPages';
 import { WishlistPage } from './components/pages/WishlistPage';
 import { AdminDashboard } from './components/admin/AdminDashboard';
@@ -124,7 +125,11 @@ export default function App() {
       return <OrderTrackingPage />;
     }
 
-    if (path === '/profile' || path.startsWith('/profile') || path === '/account' || path.startsWith('/account')) {
+    if (path === '/orders' || path.startsWith('/orders') || path.startsWith('/account/orders') || path === '/my-orders') {
+      return <UserOrdersPage navigate={navigate} />;
+    }
+
+    if (path === '/profile' || path.startsWith('/profile') || path === '/account' || path.startsWith('/account') || path === '/my-profile') {
       return <UserProfilePage navigate={navigate} onQuickView={setQuickViewProduct} />;
     }
 
