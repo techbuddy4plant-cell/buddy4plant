@@ -124,7 +124,7 @@ export default function App() {
       return <OrderTrackingPage />;
     }
 
-    if (path === '/profile' || path.startsWith('/profile')) {
+    if (path === '/profile' || path.startsWith('/profile') || path === '/account' || path.startsWith('/account')) {
       return <UserProfilePage navigate={navigate} onQuickView={setQuickViewProduct} />;
     }
 

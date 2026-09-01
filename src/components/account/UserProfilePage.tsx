@@ -29,7 +29,15 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
   const { user, profile, logout, saveAddress, removeAddress, openAuthModal } = useAuth();
   const { wishlistIds } = useWishlist();
 
-  const [activeTab, setActiveTab] = useState<'orders' | 'addresses' | 'wishlist' | 'settings'>('orders');
+  const [activeTab, setActiveTab] = useState<'orders' | 'addresses' | 'wishlist' | 'settings'>(() => {
+    if (typeof window !== 'undefined') {
+      const path = window.location.pathname.toLowerCase();
+      if (path.includes('address')) return 'addresses';
+      if (path.includes('order')) return 'orders';
+      if (path.includes('wishlist')) return 'wishlist';
+    }
+    return 'orders';
+  });
   const [orders, setOrders] = useState<Order[]>([]);
   const [wishlistProducts, setWishlistProducts] = useState<Product[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
