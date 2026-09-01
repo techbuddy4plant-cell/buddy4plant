@@ -441,6 +441,70 @@ export async function updateOrderTracking(
   );
 }
 
+export async function cancelOrder(orderId: string, reason: string): Promise<void> {
+  const timestamp = Date.now();
+  let updatedOrder: Order | null = null;
+
+  try {
+    const docRef = doc(db, ORDERS_COLLECTION, orderId);
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+      const ord = snap.data() as Order;
+      const history = ord.statusHistory || [];
+      history.push({
+        status: 'Cancelled',
+        timestamp,
+        location: 'Customer Cancellation Request',
+        note: `Order cancelled by customer. Reason: ${reason}`
+      });
+
+      const updateData: Partial<Order> = {
+        orderStatus: 'Cancelled',
+        updatedAt: timestamp,
+        statusHistory: history,
+      };
+
+      await updateDoc(docRef, updateData);
+      updatedOrder = { ...ord, ...updateData };
+    }
+  } catch (err) {
+    console.error('Error cancelling order in Firestore:', err);
+  }
+
+  // Local fallback update
+  try {
+    const localOrders: Order[] = JSON.parse(localStorage.getItem('vb_local_orders') || '[]');
+    const idx = localOrders.findIndex((o) => o.id === orderId || o.orderNumber === orderId);
+    if (idx !== -1) {
+      const ord = localOrders[idx];
+      const history = ord.statusHistory || [];
+      history.push({
+        status: 'Cancelled',
+        timestamp,
+        location: 'Customer Cancellation Request',
+        note: `Order cancelled by customer. Reason: ${reason}`
+      });
+      ord.orderStatus = 'Cancelled';
+      ord.updatedAt = timestamp;
+      ord.statusHistory = history;
+      localStorage.setItem('vb_local_orders', JSON.stringify(localOrders));
+      updatedOrder = ord;
+    }
+  } catch (e) {
+    // ignore
+  }
+
+  if (updatedOrder) {
+    notifyLocalOrderUpdate(updatedOrder);
+  }
+}
+
+export async function requestOrderReturn(orderId: string, reason: string, comments?: string): Promise<void> {
+  const timestamp = Date.now();
+  const noteText = `Return/Replacement Requested. Reason: ${reason}${comments ? ` | Note: ${comments}` : ''}`;
+  await updateOrderStatus(orderId, 'Processing', noteText);
+}
+
 export async function updatePaymentStatus(
   orderId: string,
   paymentStatus: PaymentStatus,
@@ -463,3 +527,5 @@ export async function updatePaymentStatus(
     console.error('Error updating payment status:', err);
   }
 }
+
+
