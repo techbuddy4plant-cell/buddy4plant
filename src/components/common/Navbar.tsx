@@ -376,18 +376,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
                 Combos & Gifts
               </button>
 
-              {/* Track Order */}
-              <button
-                id="nav-track"
-                onClick={() => navigate('/track-order')}
-                className={`hover:text-[#2D4A27] transition-colors py-2 flex items-center gap-1 ${
-                  currentPath.includes('track-order') ? 'text-[#2D4A27] font-extrabold border-b-2 border-[#2D4A27]' : ''
-                }`}
-              >
-                <Truck className="w-3.5 h-3.5 text-[#5A6E55]" />
-                Track Order
-              </button>
-            </nav>
+              </nav>
 
             {/* Right Action Icons (Search, Wishlist, Cart, Account) */}
             <div className="flex items-center space-x-1 sm:space-x-2">
@@ -499,17 +488,6 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
                     >
                       <ShoppingBag className="w-4 h-4" />
                       My Orders
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        setIsAccountMenuOpen(false);
-                        navigate('/track-order');
-                      }}
-                      className="w-full text-left px-4 py-2 text-xs text-[#4A4A4A] hover:bg-[#F5F2EB] flex items-center gap-2"
-                    >
-                      <Truck className="w-4 h-4" />
-                      Track Shipment
                     </button>
 
                     <div className="border-t border-[#E5E2D9] my-1"></div>
