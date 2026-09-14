@@ -13,25 +13,37 @@ import { Category } from '../types';
 import { INITIAL_CATEGORIES } from '../data/initialCategories';
 
 const CATEGORIES_COLLECTION = 'categories';
+const LOCAL_STORAGE_KEY = 'b4p_categories_db';
 
-export async function seedCategoriesIfEmpty(): Promise<void> {
-  try {
-    const colRef = collection(db, CATEGORIES_COLLECTION);
-    const snap = await getDocs(query(colRef, limit(1)));
-    if (snap.empty) {
-      console.log('Seeding initial categories to Firestore...');
-      const batch = writeBatch(db);
-      for (const cat of INITIAL_CATEGORIES) {
-        const docRef = doc(db, CATEGORIES_COLLECTION, cat.id);
-        batch.set(docRef, cat);
-      }
-      await batch.commit();
-      console.log('Categories seeded successfully!');
-    }
-  } catch (error) {
-    console.warn('Category seeding error/fallback:', error);
+const emitStoreDataChanged = () => {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('b4p_store_data_changed', { detail: { type: 'categories' } }));
   }
-}
+};
+
+const getLocalCategories = (): Category[] => {
+  try {
+    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch (err) {
+    console.warn('Error reading categories from localStorage:', err);
+  }
+  return INITIAL_CATEGORIES;
+};
+
+const setLocalCategories = (categories: Category[]) => {
+  try {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(categories));
+    emitStoreDataChanged();
+  } catch (err) {
+    console.warn('Error saving categories to localStorage:', err);
+  }
+};
 
 const sanitizeCategory = (cat: Category): Category => {
   let img = cat.image || '';
@@ -44,19 +56,37 @@ const sanitizeCategory = (cat: Category): Category => {
   };
 };
 
+export async function seedCategoriesIfEmpty(): Promise<void> {
+  try {
+    const colRef = collection(db, CATEGORIES_COLLECTION);
+    const snap = await getDocs(query(colRef, limit(1)));
+    if (snap.empty) {
+      const batch = writeBatch(db);
+      for (const cat of INITIAL_CATEGORIES) {
+        const docRef = doc(db, CATEGORIES_COLLECTION, cat.id);
+        batch.set(docRef, cat);
+      }
+      await batch.commit();
+    }
+  } catch (error) {
+    console.warn('Category seeding error/fallback:', error);
+  }
+}
+
 export async function getAllCategories(): Promise<Category[]> {
   try {
     await seedCategoriesIfEmpty();
     const snap = await getDocs(collection(db, CATEGORIES_COLLECTION));
     if (!snap.empty) {
       const cats = snap.docs.map((d) => sanitizeCategory({ id: d.id, ...d.data() } as Category));
-      return cats.sort((a, b) => (a.order || 0) - (b.order || 0));
+      const sorted = cats.sort((a, b) => (a.order || 0) - (b.order || 0));
+      setLocalCategories(sorted);
+      return sorted;
     }
-    return INITIAL_CATEGORIES.map(sanitizeCategory);
   } catch (error) {
     console.warn('Falling back to local categories:', error);
-    return INITIAL_CATEGORIES.map(sanitizeCategory);
   }
+  return getLocalCategories().map(sanitizeCategory);
 }
 
 export const getCategories = getAllCategories;
@@ -77,22 +107,40 @@ export async function saveCategory(category: Partial<Category> & { name: string 
     active: category.active !== undefined ? category.active : true,
   };
 
+  // 1. Update localStorage instantly
+  const current = getLocalCategories();
+  const existingIdx = current.findIndex((c) => c.id === id);
+  let updatedList: Category[];
+  if (existingIdx >= 0) {
+    updatedList = [...current];
+    updatedList[existingIdx] = catData;
+  } else {
+    updatedList = [...current, catData];
+  }
+  setLocalCategories(updatedList);
+
+  // 2. Sync to Firestore in background
   try {
     const docRef = doc(db, CATEGORIES_COLLECTION, id);
     await setDoc(docRef, catData, { merge: true });
-    return id;
   } catch (err) {
-    console.error('Error saving category to Firestore:', err);
-    throw err;
+    console.warn('Firestore category save failed, saved locally:', err);
   }
+
+  return id;
 }
 
 export async function deleteCategory(id: string): Promise<void> {
+  // 1. Update localStorage instantly
+  const current = getLocalCategories();
+  const updatedList = current.filter((c) => c.id !== id);
+  setLocalCategories(updatedList);
+
+  // 2. Sync to Firestore
   try {
     const docRef = doc(db, CATEGORIES_COLLECTION, id);
     await deleteDoc(docRef);
   } catch (err) {
-    console.error('Error deleting category from Firestore:', err);
-    throw err;
+    console.warn('Firestore category delete failed, removed locally:', err);
   }
 }

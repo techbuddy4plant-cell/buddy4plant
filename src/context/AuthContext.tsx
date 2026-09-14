@@ -11,6 +11,7 @@ import {
 import { auth, googleProvider } from '../config/firebase';
 import { UserProfile, Address } from '../types';
 import { getUserProfile, saveUserProfile, checkIsAdmin, saveUserAddress, deleteUserAddress, setDefaultUserAddress } from '../services/authService';
+import { SignOutConfirmModal } from '../components/common/SignOutConfirmModal';
 
 interface AuthContextType {
   user: User | null;
@@ -25,6 +26,10 @@ interface AuthContextType {
   register: (email: string, pass: string, name: string, phone?: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
+  isSignOutModalOpen: boolean;
+  promptSignOut: () => void;
+  confirmSignOut: () => Promise<void>;
+  cancelSignOut: () => void;
   resetPassword: (email: string) => Promise<void>;
   loginAsDemoAdmin: () => Promise<void>;
   saveAddress: (address: Address) => Promise<Address[]>;
@@ -42,6 +47,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState<boolean>(true);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [authModalTab, setAuthModalTab] = useState<'login' | 'register' | 'forgot' | 'admin'>('login');
+  const [isSignOutModalOpen, setIsSignOutModalOpen] = useState<boolean>(false);
+  const [isSigningOut, setIsSigningOut] = useState<boolean>(false);
 
   useEffect(() => {
     // Check demo admin session from localStorage first
@@ -151,6 +158,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await fbSignOut(auth);
     setUser(null);
     setProfile(null);
+  };
+
+  const promptSignOut = () => {
+    setIsSignOutModalOpen(true);
+  };
+
+  const cancelSignOut = () => {
+    setIsSignOutModalOpen(false);
+  };
+
+  const confirmSignOut = async () => {
+    setIsSigningOut(true);
+    try {
+      await logout();
+    } finally {
+      setIsSigningOut(false);
+      setIsSignOutModalOpen(false);
+    }
   };
 
   const resetPassword = async (email: string) => {
@@ -274,6 +299,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         register,
         loginWithGoogle,
         logout,
+        isSignOutModalOpen,
+        promptSignOut,
+        confirmSignOut,
+        cancelSignOut,
         resetPassword,
         loginAsDemoAdmin,
         saveAddress,
@@ -283,6 +312,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }}
     >
       {children}
+      <SignOutConfirmModal
+        isOpen={isSignOutModalOpen}
+        onClose={cancelSignOut}
+        onConfirm={confirmSignOut}
+        userEmail={user?.email || profile?.email}
+        userName={profile?.displayName || user?.displayName}
+        isSigningOut={isSigningOut}
+      />
     </AuthContext.Provider>
   );
 };

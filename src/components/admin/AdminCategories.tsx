@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { Plus, Edit2, Trash2, Check, X, Image as ImageIcon } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Plus, Edit2, Trash2, Check, X, Image as ImageIcon, Upload, Sparkles } from 'lucide-react';
 import { Category } from '../../types';
 import { saveCategory, deleteCategory } from '../../services/categoryService';
-import { PlantImage } from '../../utils/imageFallback';
+import { PlantImage, PLANT_FALLBACK_IMAGES } from '../../utils/imageFallback';
 
 interface AdminCategoriesProps {
   categories: Category[];
@@ -193,13 +193,64 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({ categories, on
               </div>
 
               <div>
-                <label className="block font-semibold text-[#1A1A1A] mb-1">Cover Image URL</label>
-                <input
-                  type="text"
-                  value={image}
-                  onChange={(e) => setImage(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-[#1A1A1A] font-mono text-[11px] focus:outline-none focus:border-[#2D4A27]"
-                />
+                <label className="block font-semibold text-[#1A1A1A] mb-1">Collection Cover Photo</label>
+
+                {/* Preview Thumbnail */}
+                {image && (
+                  <div className="relative aspect-video w-full bg-[#F5F2EB] border border-[#E5E2D9] mb-2 overflow-hidden">
+                    <PlantImage src={image} alt="Cover preview" className="w-full h-full object-cover" />
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="https://images.unsplash.com/..."
+                      value={image}
+                      onChange={(e) => setImage(e.target.value)}
+                      className="flex-1 px-3 py-1.5 bg-white border border-[#E5E2D9] text-[#1A1A1A] font-mono text-[11px] focus:outline-none focus:border-[#2D4A27]"
+                    />
+                    <label className="px-3 py-1.5 bg-[#2D4A27]/10 hover:bg-[#2D4A27]/20 text-[#2D4A27] text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors shrink-0">
+                      <Upload className="w-3.5 h-3.5" />
+                      Upload File
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onload = (ev) => {
+                              if (ev.target?.result) setImage(ev.target.result as string);
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                      />
+                    </label>
+                  </div>
+
+                  {/* Preset quick picks */}
+                  <div>
+                    <span className="text-[10px] text-[#7A7A7A] block mb-1 font-semibold">OR Choose Sample Cover:</span>
+                    <div className="grid grid-cols-5 gap-1.5">
+                      {PLANT_FALLBACK_IMAGES.slice(0, 5).map((imgUrl, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => setImage(imgUrl)}
+                          className={`aspect-square border overflow-hidden transition-all ${
+                            image === imgUrl ? 'border-[#2D4A27] ring-2 ring-[#2D4A27]' : 'border-[#E5E2D9]'
+                          }`}
+                        >
+                          <PlantImage src={imgUrl} alt={`Preset ${idx + 1}`} className="w-full h-full object-cover" />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div>

@@ -30,7 +30,7 @@ interface UserProfilePageProps {
 }
 
 export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQuickView }) => {
-  const { user, profile, logout, saveAddress, removeAddress, setDefaultAddress, updateProfileDetails, resetPassword, openAuthModal } = useAuth();
+  const { user, profile, promptSignOut, saveAddress, removeAddress, setDefaultAddress, updateProfileDetails, resetPassword, openAuthModal } = useAuth();
   const { wishlistIds } = useWishlist();
 
   const [activeTab, setActiveTab] = useState<'profile' | 'addresses' | 'wishlist' | 'settings'>('profile');
@@ -257,7 +257,7 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
               </button>
 
               <button
-                onClick={logout}
+                onClick={promptSignOut}
                 className="px-4 py-2.5 border border-stone-300 hover:border-rose-300 text-stone-700 hover:text-rose-700 hover:bg-rose-50 text-xs font-bold rounded-xl transition-all flex items-center gap-2 cursor-pointer"
               >
                 <LogOut className="w-4 h-4" />

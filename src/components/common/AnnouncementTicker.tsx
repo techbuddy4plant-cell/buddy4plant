@@ -2,14 +2,19 @@ import React from 'react';
 import { useStoreSettings } from '../../context/StoreSettingsContext';
 
 export const AnnouncementTicker: React.FC = () => {
-  const { settings } = useStoreSettings();
+  const { settings, homepageCMS } = useStoreSettings();
 
-  if (!settings.announcementBarActive) return null;
+  if (settings.announcementBarActive === false) return null;
+
+  const activeAnnouncementText =
+    homepageCMS.announcementText ||
+    settings.announcementBarText ||
+    'Welcome to buddy4plant: Free Express Delivery over ₹999 | Free Ceramic Pot above ₹1,499';
 
   const defaultAnnouncements = [
     {
       icon: 'fa-solid fa-leaf text-emerald-400 animate-cartoon-wiggle',
-      text: settings.announcementBarText || 'Welcome to buddy4plant: Free Express Delivery over ₹999 | Free Ceramic Pot above ₹1,499',
+      text: activeAnnouncementText,
     },
     {
       icon: 'fa-solid fa-truck-fast text-[#95D5B2]',

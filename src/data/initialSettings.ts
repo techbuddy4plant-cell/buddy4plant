@@ -46,7 +46,12 @@ export const INITIAL_HOMEPAGE_CMS: HomepageCMS = {
   bannerPromoText: 'Transform your balcony into a tranquil personal sanctuary. Discover our weather-resilient greens.',
   bannerPromoImage: 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=1200&q=80',
   featuredCollectionTitle: 'Curated for Conscious Spaces',
-  featuredCategoryIds: ['indoor-plants', 'air-purifying', 'low-maintenance', 'combos']
+  featuredCategoryIds: ['indoor-plants', 'air-purifying', 'low-maintenance', 'combos'],
+  siteBackground: '#FDFCF9',
+  siteThemeMode: 'cream',
+  amazonBadgesEnabled: true,
+  announcementText: 'Welcome to buddy4plant: Free Ceramic Pot with Orders above ₹1,499 | Free Express Delivery over ₹999',
+  announcementLink: '/plants',
 };
 
 export const INITIAL_COUPONS: Coupon[] = [

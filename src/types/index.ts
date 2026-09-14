@@ -109,6 +109,8 @@ export interface Order {
   paymentMethod: PaymentMethod;
   paymentStatus: PaymentStatus;
   orderStatus: OrderStatus;
+  cancelledBy?: 'user' | 'admin' | 'system';
+  cancelReason?: string;
   razorpayOrderId?: string;
   razorpayPaymentId?: string;
   trackingNumber?: string;
@@ -204,6 +206,13 @@ export interface HomepageCMS {
   bannerPromoImage: string;
   featuredCollectionTitle: string;
   featuredCategoryIds: string[];
+  siteBackground?: string;
+  siteThemeMode?: 'cream' | 'forest' | 'white' | 'terracotta' | 'dark' | 'custom';
+  primaryColor?: string;
+  fontStyle?: 'serif' | 'sans' | 'clean';
+  amazonBadgesEnabled?: boolean;
+  announcementText?: string;
+  announcementLink?: string;
 }
 
 export interface UserProfile {

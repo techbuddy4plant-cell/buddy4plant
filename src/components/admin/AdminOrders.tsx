@@ -18,10 +18,13 @@ import {
   MessageCircle,
   Sparkles,
   ExternalLink,
-  ChevronRight
+  ChevronRight,
+  XCircle,
+  Lock,
+  AlertOctagon
 } from 'lucide-react';
 import { Order, OrderStatus, PaymentStatus } from '../../types';
-import { updateOrderStatus, updateOrderTracking } from '../../services/orderService';
+import { updateOrderStatus, updateOrderTracking, isCancelledByUser, getAllowedNextStatuses } from '../../services/orderService';
 import { PlantImage } from '../../utils/imageFallback';
 
 interface AdminOrdersProps {
@@ -34,6 +37,7 @@ export const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, onRefresh }) =
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [rowSelectedStatuses, setRowSelectedStatuses] = useState<Record<string, OrderStatus>>({});
 
   // Comprehensive Live Tracking Edit Modal State
   const [trackingModalOrder, setTrackingModalOrder] = useState<Order | null>(null);
@@ -77,6 +81,16 @@ export const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, onRefresh }) =
     } finally {
       setIsUpdating(false);
     }
+  };
+
+  const handleSelectRowStatus = (orderId: string, status: OrderStatus) => {
+    setRowSelectedStatuses((prev) => ({ ...prev, [orderId]: status }));
+  };
+
+  const handleApplyRowStatus = async (orderId: string) => {
+    const targetStatus = rowSelectedStatuses[orderId];
+    if (!targetStatus) return;
+    await handleStatusChange(orderId, targetStatus);
   };
 
   const openTrackingModal = (ord: Order) => {
@@ -280,17 +294,66 @@ export const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, onRefresh }) =
                     </td>
 
                     <td className="py-3 px-4">
-                      <select
-                        value={ord.orderStatus}
-                        onChange={(e) => handleStatusChange(ord.id, e.target.value as OrderStatus)}
-                        className="bg-white border border-[#E5E2D9] px-2 py-1 text-xs font-semibold text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
-                      >
-                        {statusOptions.map((st) => (
-                          <option key={st} value={st}>
-                            {st}
-                          </option>
-                        ))}
-                      </select>
+                      {(() => {
+                        const cancelledByUser = isCancelledByUser(ord);
+                        const isCancelled = ord.orderStatus === 'Cancelled' || ord.orderStatus === 'Refunded';
+                        const currentSel = rowSelectedStatuses[ord.id] || ord.orderStatus;
+                        const allowedStatuses = getAllowedNextStatuses(ord.orderStatus, cancelledByUser);
+                        const isChanged = currentSel !== ord.orderStatus;
+
+                        if (cancelledByUser) {
+                          return (
+                            <div className="flex flex-col gap-1">
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-red-100 border border-red-300 text-red-800 font-extrabold text-[11px] rounded shadow-2xs">
+                                <XCircle className="w-4 h-4 text-red-600 shrink-0" />
+                                Cancelled by Customer
+                              </span>
+                              <span className="text-[10px] text-red-600 font-medium flex items-center gap-1">
+                                <Lock className="w-3 h-3 inline" /> Locked: Cannot be modified
+                              </span>
+                            </div>
+                          );
+                        }
+
+                        if (isCancelled) {
+                          return (
+                            <div className="flex items-center gap-1.5">
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-rose-50 border border-rose-200 text-rose-700 font-bold text-[11px] rounded">
+                                <XCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                                {ord.orderStatus}
+                              </span>
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <div className="flex items-center gap-1.5">
+                            <select
+                              value={currentSel}
+                              onChange={(e) => handleSelectRowStatus(ord.id, e.target.value as OrderStatus)}
+                              className="bg-white border border-[#E5E2D9] px-2 py-1 text-xs font-semibold text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
+                            >
+                              {allowedStatuses.map((st) => (
+                                <option key={st} value={st}>
+                                  {st}
+                                </option>
+                              ))}
+                            </select>
+                            <button
+                              onClick={() => handleApplyRowStatus(ord.id)}
+                              disabled={!isChanged || isUpdating}
+                              className={`px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${
+                                isChanged && !isUpdating
+                                  ? 'bg-[#2D4A27] text-white hover:bg-[#1F341C] shadow-2xs'
+                                  : 'bg-stone-100 text-stone-400 border border-stone-200 cursor-not-allowed'
+                              }`}
+                              title={isChanged ? 'Save updated status' : 'Select a new forward status to enable update'}
+                            >
+                              Update
+                            </button>
+                          </div>
+                        );
+                      })()}
                     </td>
 
                     <td className="py-3 px-4">
@@ -356,16 +419,36 @@ export const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, onRefresh }) =
             </div>
 
             <form onSubmit={handleSaveTracking} className="space-y-4 text-xs">
+              {isCancelledByUser(trackingModalOrder) && (
+                <div className="p-3.5 bg-red-50 border border-red-200 rounded-lg text-red-800 text-xs flex items-start gap-2.5">
+                  <XCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+                  <div className="space-y-0.5">
+                    <strong className="font-bold text-red-900 block">
+                      Order Cancelled by Customer (Locked)
+                    </strong>
+                    <p className="text-[11px] text-red-700">
+                      This order was cancelled by the customer. Status changes are disabled in the Admin panel.
+                    </p>
+                    {trackingModalOrder.cancelReason && (
+                      <p className="text-[11px] font-mono text-red-800 pt-1">
+                        Reason: "{trackingModalOrder.cancelReason}"
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div>
                 <label className="block font-bold text-[#1A1A1A] mb-1 uppercase tracking-wider text-[10px]">
                   Fulfillment Status
                 </label>
                 <select
                   value={editStatus}
+                  disabled={isCancelledByUser(trackingModalOrder)}
                   onChange={(e) => setEditStatus(e.target.value as OrderStatus)}
-                  className="w-full p-2.5 bg-white border border-[#E5E2D9] text-[#1A1A1A] font-medium focus:outline-none focus:border-[#2D4A27]"
+                  className="w-full p-2.5 bg-white border border-[#E5E2D9] text-[#1A1A1A] font-medium focus:outline-none focus:border-[#2D4A27] disabled:bg-stone-100 disabled:text-stone-500"
                 >
-                  {statusOptions.map((st) => (
+                  {getAllowedNextStatuses(trackingModalOrder.orderStatus, isCancelledByUser(trackingModalOrder)).map((st) => (
                     <option key={st} value={st}>
                       {st}
                     </option>
@@ -469,19 +552,30 @@ export const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, onRefresh }) =
                 <span className="text-[10px] uppercase tracking-widest text-[#7A7A7A]">Order Reference</span>
                 <div className="flex items-center gap-2">
                   <h3 className="font-serif font-bold text-2xl text-[#1A1A1A]">{selectedOrder.orderNumber}</h3>
-                  <span className="px-2 py-0.5 bg-[#2D4A27] text-white text-[10px] font-bold uppercase">
+                  <span
+                    className={`px-2.5 py-0.5 text-[10px] font-extrabold uppercase rounded ${
+                      ['Cancelled', 'Refunded'].includes(selectedOrder.orderStatus)
+                        ? 'bg-red-700 text-white flex items-center gap-1'
+                        : 'bg-[#2D4A27] text-white'
+                    }`}
+                  >
+                    {['Cancelled', 'Refunded'].includes(selectedOrder.orderStatus) && (
+                      <XCircle className="w-3.5 h-3.5 text-white inline" />
+                    )}
                     {selectedOrder.orderStatus}
                   </span>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <button
-                  onClick={() => openTrackingModal(selectedOrder)}
-                  className="px-3 py-1.5 bg-[#2D4A27] text-white text-xs font-semibold flex items-center gap-1"
-                >
-                  <Truck className="w-3.5 h-3.5" />
-                  Edit Tracking
-                </button>
+                {!isCancelledByUser(selectedOrder) && (
+                  <button
+                    onClick={() => openTrackingModal(selectedOrder)}
+                    className="px-3 py-1.5 bg-[#2D4A27] text-white text-xs font-semibold flex items-center gap-1"
+                  >
+                    <Truck className="w-3.5 h-3.5" />
+                    Edit Tracking
+                  </button>
+                )}
                 <button
                   onClick={() => window.print()}
                   className="px-3 py-1.5 bg-[#F5F2EB] hover:bg-[#E5E2D9] text-[#1A1A1A] text-xs font-semibold flex items-center gap-1"
@@ -497,6 +591,33 @@ export const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, onRefresh }) =
                 </button>
               </div>
             </div>
+
+            {/* Red Cancellation Sign Alert Banner */}
+            {['Cancelled', 'Refunded'].includes(selectedOrder.orderStatus) && (
+              <div className="p-4 bg-red-50 border-2 border-red-200 rounded-xl flex items-start gap-3 text-xs shadow-2xs">
+                <XCircle className="w-6 h-6 text-red-600 shrink-0 mt-0.5" />
+                <div className="space-y-1 min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-bold text-red-900 text-sm uppercase">
+                      ORDER CANCELLED {isCancelledByUser(selectedOrder) ? 'BY CUSTOMER' : ''}
+                    </h4>
+                    <span className="px-2 py-0.5 bg-red-200 text-red-800 font-extrabold text-[10px] uppercase rounded">
+                      {selectedOrder.orderStatus}
+                    </span>
+                  </div>
+                  <p className="text-red-700 leading-relaxed">
+                    {isCancelledByUser(selectedOrder)
+                      ? 'This order was cancelled by the customer directly. Status modifications are locked in the admin panel.'
+                      : 'This order has been marked as cancelled.'}
+                  </p>
+                  {selectedOrder.cancelReason && (
+                    <p className="text-xs font-mono text-red-900 bg-white/80 p-2 rounded border border-red-200 mt-1">
+                      Cancellation Reason: "{selectedOrder.cancelReason}"
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Customer & Shipping Details */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs bg-[#F5F2EB] p-4 border border-[#E5E2D9]">

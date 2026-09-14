@@ -12,18 +12,21 @@ import { WhyChooseUs } from './WhyChooseUs';
 import { CustomerReviewsSection } from './CustomerReviewsSection';
 import { MessageCircle, ArrowRight, Sparkles, ShieldCheck } from 'lucide-react';
 
+import { useStoreSettings } from '../../context/StoreSettingsContext';
+
 interface HomePageProps {
   navigate: (path: string) => void;
   onQuickView: (product: Product) => void;
 }
 
 export const HomePage: React.FC<HomePageProps> = ({ navigate, onQuickView }) => {
+  const { homepageCMS } = useStoreSettings();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const loadData = () => {
     Promise.all([getProducts(), getCategories(), getRecentReviews()]).then(
       ([pList, cList, rList]) => {
         setProducts(pList);
@@ -32,10 +35,32 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate, onQuickView }) => 
         setLoading(false);
       }
     );
+  };
+
+  useEffect(() => {
+    loadData();
+
+    const handleDataChanged = () => {
+      loadData();
+    };
+    window.addEventListener('b4p_store_data_changed', handleDataChanged);
+    return () => {
+      window.removeEventListener('b4p_store_data_changed', handleDataChanged);
+    };
   }, []);
 
+  const bgStyle = homepageCMS.siteBackground || '#FDFCF9';
+
   return (
-    <div className="bg-[#FDFCF9] min-h-screen text-[#1A1A1A]">
+    <div
+      className="min-h-screen text-[#1A1A1A] transition-colors duration-300"
+      style={{
+        backgroundColor: bgStyle.startsWith('http') || bgStyle.startsWith('data:') ? undefined : bgStyle,
+        backgroundImage: bgStyle.startsWith('http') || bgStyle.startsWith('data:') ? `url(${bgStyle})` : undefined,
+        backgroundSize: 'cover',
+        backgroundAttachment: 'fixed',
+      }}
+    >
       {/* Hero Banner */}
       <HeroBanner navigate={navigate} />
 

@@ -460,6 +460,8 @@ export async function cancelOrder(orderId: string, reason: string): Promise<void
 
       const updateData: Partial<Order> = {
         orderStatus: 'Cancelled',
+        cancelledBy: 'user',
+        cancelReason: reason,
         updatedAt: timestamp,
         statusHistory: history,
       };
@@ -485,6 +487,8 @@ export async function cancelOrder(orderId: string, reason: string): Promise<void
         note: `Order cancelled by customer. Reason: ${reason}`
       });
       ord.orderStatus = 'Cancelled';
+      ord.cancelledBy = 'user';
+      ord.cancelReason = reason;
       ord.updatedAt = timestamp;
       ord.statusHistory = history;
       localStorage.setItem('vb_local_orders', JSON.stringify(localOrders));
@@ -497,6 +501,48 @@ export async function cancelOrder(orderId: string, reason: string): Promise<void
   if (updatedOrder) {
     notifyLocalOrderUpdate(updatedOrder);
   }
+}
+
+export const ORDER_STATUS_SEQUENCE: OrderStatus[] = [
+  'Pending',
+  'Confirmed',
+  'Packed',
+  'Shipped',
+  'Out for Delivery',
+  'Delivered',
+];
+
+export function isCancelledByUser(order: Order): boolean {
+  if (!order) return false;
+  if (order.cancelledBy === 'user') return true;
+  if (order.orderStatus === 'Cancelled') {
+    const history = order.statusHistory || [];
+    return history.some(
+      (h) =>
+        (h.note && h.note.toLowerCase().includes('cancelled by customer')) ||
+        h.location === 'Customer Cancellation Request'
+    );
+  }
+  return false;
+}
+
+export function getAllowedNextStatuses(currentStatus: OrderStatus, cancelledByUser: boolean): OrderStatus[] {
+  if (cancelledByUser) {
+    return ['Cancelled'];
+  }
+  if (currentStatus === 'Cancelled' || currentStatus === 'Refunded') {
+    return [currentStatus];
+  }
+  const currentIndex = ORDER_STATUS_SEQUENCE.indexOf(currentStatus);
+  if (currentIndex === -1) {
+    return [currentStatus, ...ORDER_STATUS_SEQUENCE, 'Cancelled'];
+  }
+  // Forward-only (serial-wise) allowed statuses plus Cancelled
+  const forwardStatuses = ORDER_STATUS_SEQUENCE.slice(currentIndex);
+  if (!forwardStatuses.includes('Cancelled')) {
+    return [...forwardStatuses, 'Cancelled'];
+  }
+  return forwardStatuses;
 }
 
 export async function requestOrderReturn(orderId: string, reason: string, comments?: string): Promise<void> {

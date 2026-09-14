@@ -35,7 +35,7 @@ interface AdminDashboardProps {
 type AdminTab = 'overview' | 'products' | 'orders' | 'categories' | 'coupons' | 'cms' | 'settings';
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
-  const { profile, user, logout } = useAuth();
+  const { profile, user, promptSignOut } = useAuth();
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
 
   const [orders, setOrders] = useState<Order[]>([]);
@@ -72,8 +72,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
       setOrders(liveOrders);
     });
 
+    const handleDataChanged = () => {
+      loadAllData();
+    };
+    window.addEventListener('b4p_store_data_changed', handleDataChanged);
+
     return () => {
       unsubscribeOrders();
+      window.removeEventListener('b4p_store_data_changed', handleDataChanged);
     };
   }, []);
 
@@ -143,9 +149,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
           <button
             onClick={() => {
               sessionStorage.removeItem('b4p_admin_secured_session');
-              localStorage.removeItem('vb_demo_admin');
-              logout();
-              navigate('/');
+              promptSignOut();
             }}
             className="w-full px-3.5 py-2 bg-rose-950/60 hover:bg-rose-900 text-rose-200 flex items-center justify-center gap-2 font-medium text-[11px] uppercase tracking-wider transition-colors rounded-lg border border-rose-800/40"
           >
@@ -183,9 +187,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
               <button
                 onClick={() => {
                   sessionStorage.removeItem('b4p_admin_secured_session');
-                  localStorage.removeItem('vb_demo_admin');
-                  logout();
-                  navigate('/');
+                  promptSignOut();
                 }}
                 className="ml-2 px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-semibold text-[11px] rounded transition-colors flex items-center gap-1 border border-rose-200"
                 title="Sign out of Admin console"

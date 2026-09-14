@@ -6,7 +6,6 @@ import {
   setDoc,
   deleteDoc,
   query,
-  where,
   limit,
   writeBatch
 } from 'firebase/firestore';
@@ -15,6 +14,37 @@ import { Coupon } from '../types';
 import { INITIAL_COUPONS } from '../data/initialSettings';
 
 const COUPONS_COLLECTION = 'coupons';
+const LOCAL_STORAGE_KEY = 'b4p_coupons_db';
+
+const emitStoreDataChanged = () => {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('b4p_store_data_changed', { detail: { type: 'coupons' } }));
+  }
+};
+
+const getLocalCoupons = (): Coupon[] => {
+  try {
+    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch (err) {
+    console.warn('Error reading coupons from localStorage:', err);
+  }
+  return INITIAL_COUPONS;
+};
+
+const setLocalCoupons = (coupons: Coupon[]) => {
+  try {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(coupons));
+    emitStoreDataChanged();
+  } catch (err) {
+    console.warn('Error saving coupons to localStorage:', err);
+  }
+};
 
 export async function seedCouponsIfEmpty(): Promise<void> {
   try {
@@ -38,13 +68,14 @@ export async function getAllCoupons(): Promise<Coupon[]> {
     await seedCouponsIfEmpty();
     const snap = await getDocs(collection(db, COUPONS_COLLECTION));
     if (!snap.empty) {
-      return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Coupon));
+      const remoteCoupons = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Coupon));
+      setLocalCoupons(remoteCoupons);
+      return remoteCoupons;
     }
-    return INITIAL_COUPONS;
   } catch (error) {
     console.warn('Fallback local coupons:', error);
-    return INITIAL_COUPONS;
   }
+  return getLocalCoupons();
 }
 
 export const getCoupons = getAllCoupons;
@@ -118,22 +149,40 @@ export async function saveCoupon(coupon: Partial<Coupon> & { code: string; disco
     description: coupon.description || '',
   };
 
+  // 1. Save to localStorage instantly
+  const current = getLocalCoupons();
+  const existingIdx = current.findIndex((c) => c.id === id);
+  let updatedList: Coupon[];
+  if (existingIdx >= 0) {
+    updatedList = [...current];
+    updatedList[existingIdx] = couponData;
+  } else {
+    updatedList = [couponData, ...current];
+  }
+  setLocalCoupons(updatedList);
+
+  // 2. Sync to Firestore
   try {
     const docRef = doc(db, COUPONS_COLLECTION, id);
     await setDoc(docRef, couponData, { merge: true });
-    return id;
   } catch (err) {
-    console.error('Error saving coupon:', err);
-    throw err;
+    console.warn('Firestore coupon save failed, saved locally:', err);
   }
+
+  return id;
 }
 
 export async function deleteCoupon(id: string): Promise<void> {
+  // 1. Delete from localStorage
+  const current = getLocalCoupons();
+  const updatedList = current.filter((c) => c.id !== id);
+  setLocalCoupons(updatedList);
+
+  // 2. Sync to Firestore
   try {
     const docRef = doc(db, COUPONS_COLLECTION, id);
     await deleteDoc(docRef);
   } catch (err) {
-    console.error('Error deleting coupon:', err);
-    throw err;
+    console.warn('Firestore coupon delete failed, removed locally:', err);
   }
 }

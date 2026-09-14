@@ -52,6 +52,15 @@ export const StoreSettingsProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     loadAllSettings();
+
+    const handleDataChanged = () => {
+      loadAllSettings();
+    };
+
+    window.addEventListener('b4p_store_data_changed', handleDataChanged);
+    return () => {
+      window.removeEventListener('b4p_store_data_changed', handleDataChanged);
+    };
   }, []);
 
   const updateStoreSettings = async (newSettings: StoreSettings) => {

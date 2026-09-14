@@ -15,6 +15,8 @@ import {
 import { Product, Category } from '../../types';
 import { saveProduct, deleteProduct } from '../../services/productService';
 import { PlantImage } from '../../utils/imageFallback';
+import { PlantImageUploader } from './PlantImageUploader';
+import { AdminToastNotification } from './AdminToastNotification';
 
 interface AdminProductsProps {
   products: Product[];
@@ -33,6 +35,8 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMsg, setToastMsg] = useState('');
 
   // Form State
   const initialFormState: Partial<Product> = {
@@ -69,19 +73,19 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
   };
 
   const [formData, setFormData] = useState<Partial<Product>>(initialFormState);
-  const [imageUrlInput, setImageUrlInput] = useState('');
+  const [productImages, setProductImages] = useState<string[]>([]);
 
   const openAddModal = () => {
     setEditingProduct(null);
     setFormData(initialFormState);
-    setImageUrlInput('');
+    setProductImages(initialFormState.images || ['https://images.unsplash.com/photo-1545241047-6083a3684587?auto=format&fit=crop&w=800&q=80']);
     setIsModalOpen(true);
   };
 
   const openEditModal = (p: Product) => {
     setEditingProduct(p);
     setFormData({ ...p });
-    setImageUrlInput(p.images.join(', '));
+    setProductImages(p.images && p.images.length > 0 ? p.images : ['https://images.unsplash.com/photo-1545241047-6083a3684587?auto=format&fit=crop&w=800&q=80']);
     setIsModalOpen(true);
   };
 
@@ -96,9 +100,9 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
     setIsSaving(true);
     try {
       const slug = formData.slug || formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-      const images = imageUrlInput.trim()
-        ? imageUrlInput.split(',').map((url) => url.trim()).filter(Boolean)
-        : formData.images || [];
+      const images = productImages.length > 0
+        ? productImages
+        : ['https://images.unsplash.com/photo-1545241047-6083a3684587?auto=format&fit=crop&w=800&q=80'];
 
       const productToSave: Product = {
         id: editingProduct ? editingProduct.id : `prod_${Date.now()}`,
@@ -120,7 +124,7 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
         petFriendly: Boolean(formData.petFriendly),
         featured: Boolean(formData.featured),
         stock: Number(formData.stock) || 0,
-        images: images.length > 0 ? images : ['https://images.unsplash.com/photo-1545241047-6083a3684587?auto=format&fit=crop&w=800&q=80'],
+        images: images,
         tags: formData.tags || ['plant'],
         rating: editingProduct ? editingProduct.rating : 5.0,
         reviewCount: editingProduct ? editingProduct.reviewCount : 1,
@@ -141,6 +145,8 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
       await saveProduct(productToSave);
       setIsModalOpen(false);
       onRefresh();
+      setToastMsg(`Plant "${productToSave.name}" published live to storefront!`);
+      setShowToast(true);
     } catch (err: any) {
       setError(err.message || 'Failed to save product');
     } finally {
@@ -152,6 +158,8 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
     if (window.confirm(`Are you sure you want to remove "${name}" from the product catalogue?`)) {
       await deleteProduct(id);
       onRefresh();
+      setToastMsg(`Removed "${name}" from store catalogue.`);
+      setShowToast(true);
     }
   };
 
@@ -176,6 +184,13 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
 
   return (
     <div className="space-y-6">
+      <AdminToastNotification
+        show={showToast}
+        message={toastMsg}
+        onClose={() => setShowToast(false)}
+        onViewStorefront={() => window.open('/plants', '_blank')}
+      />
+
       {/* Top Header & Search Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -343,7 +358,7 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
             onClick={() => setIsModalOpen(false)}
           />
 
-          <div className="relative bg-white border border-[#E5E2D9] max-w-2xl w-full p-6 sm:p-8 z-10 max-h-[90vh] overflow-y-auto">
+          <div className="relative bg-white border border-[#E5E2D9] max-w-3xl w-full p-6 sm:p-8 z-10 max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setIsModalOpen(false)}
               className="absolute top-4 right-4 p-1.5 text-[#7A7A7A] hover:text-[#1A1A1A]"
@@ -351,9 +366,12 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
               <X className="w-5 h-5" />
             </button>
 
-            <h3 className="font-serif font-bold text-xl text-[#1A1A1A] mb-4">
+            <h3 className="font-serif font-bold text-xl text-[#1A1A1A] mb-1">
               {editingProduct ? 'Edit Botanical Specimen' : 'Add New Plant to Catalogue'}
             </h3>
+            <p className="text-xs text-[#5A5A5A] mb-5">
+              Easily manage photos, prices, inventory stock, and plant care instructions.
+            </p>
 
             {error && (
               <div className="p-3 mb-4 bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
@@ -362,106 +380,118 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
               </div>
             )}
 
-            <form onSubmit={handleSave} className="space-y-4 text-xs">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <form onSubmit={handleSave} className="space-y-6 text-xs">
+              {/* SECTION 1: Basic Info & Pricing */}
+              <div className="space-y-3 pb-4 border-b border-[#E5E2D9]">
+                <h4 className="font-bold text-xs uppercase tracking-wider text-[#2D4A27] flex items-center gap-1.5">
+                  <span className="w-5 h-5 rounded-full bg-[#2D4A27] text-white flex items-center justify-center text-[10px]">1</span>
+                  Basic Information & Pricing
+                </h4>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block font-semibold text-[#1A1A1A] mb-1">Plant Name *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Fiddle Leaf Fig"
+                      value={formData.name || ''}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-[#1A1A1A] mb-1">SKU / Item Code</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. VB-FLF-01"
+                      value={formData.sku || ''}
+                      onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                      className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-[#1A1A1A] mb-1">Selling Price (₹) *</label>
+                    <input
+                      type="number"
+                      required
+                      placeholder="499"
+                      value={formData.price || ''}
+                      onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
+                      className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-[#1A1A1A] mb-1">Original / Compare Price (₹)</label>
+                    <input
+                      type="number"
+                      placeholder="699"
+                      value={formData.compareAtPrice || ''}
+                      onChange={(e) => setFormData({ ...formData, compareAtPrice: Number(e.target.value) })}
+                      className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-[#1A1A1A] mb-1">Category</label>
+                    <select
+                      value={formData.category || 'indoor-plants'}
+                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                      className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-[#1A1A1A] font-medium focus:outline-none focus:border-[#2D4A27]"
+                    >
+                      {categories.map((c) => (
+                        <option key={c.id} value={c.slug}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-[#1A1A1A] mb-1">Available Stock Units</label>
+                    <input
+                      type="number"
+                      value={formData.stock !== undefined ? formData.stock : 25}
+                      onChange={(e) => setFormData({ ...formData, stock: Number(e.target.value) })}
+                      className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
+                    />
+                  </div>
+                </div>
+
                 <div>
-                  <label className="block font-semibold text-[#1A1A1A] mb-1">Plant Common Name *</label>
+                  <label className="block font-semibold text-[#1A1A1A] mb-1">Short Description</label>
                   <input
                     type="text"
-                    required
-                    placeholder="e.g. Fiddle Leaf Fig"
-                    value={formData.name || ''}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-[#1A1A1A] mb-1">SKU / Code</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. VB-FLF-01"
-                    value={formData.sku || ''}
-                    onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                    className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-[#1A1A1A] mb-1">Selling Price (₹) *</label>
-                  <input
-                    type="number"
-                    required
-                    value={formData.price || ''}
-                    onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
-                    className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-[#1A1A1A] mb-1">Compare at Price (₹)</label>
-                  <input
-                    type="number"
-                    value={formData.compareAtPrice || ''}
-                    onChange={(e) => setFormData({ ...formData, compareAtPrice: Number(e.target.value) })}
-                    className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-[#1A1A1A] mb-1">Category</label>
-                  <select
-                    value={formData.category || 'indoor-plants'}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-[#1A1A1A] font-medium focus:outline-none focus:border-[#2D4A27]"
-                  >
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.slug}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-[#1A1A1A] mb-1">Live Stock Units</label>
-                  <input
-                    type="number"
-                    value={formData.stock !== undefined ? formData.stock : 20}
-                    onChange={(e) => setFormData({ ...formData, stock: Number(e.target.value) })}
+                    placeholder="Architectural statement foliage with lush violin-shaped leaves."
+                    value={formData.shortDescription || ''}
+                    onChange={(e) => setFormData({ ...formData, shortDescription: e.target.value })}
                     className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block font-semibold text-[#1A1A1A] mb-1">Short Description</label>
-                <input
-                  type="text"
-                  placeholder="Architectural statement foliage with lush violin-shaped leaves."
-                  value={formData.shortDescription || ''}
-                  onChange={(e) => setFormData({ ...formData, shortDescription: e.target.value })}
-                  className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
-                />
+              {/* SECTION 2: Plant Photos */}
+              <div className="space-y-3 pb-4 border-b border-[#E5E2D9]">
+                <h4 className="font-bold text-xs uppercase tracking-wider text-[#2D4A27] flex items-center gap-1.5">
+                  <span className="w-5 h-5 rounded-full bg-[#2D4A27] text-white flex items-center justify-center text-[10px]">2</span>
+                  Plant Photos & Gallery
+                </h4>
+                <PlantImageUploader images={productImages} onChange={setProductImages} />
               </div>
 
-              <div>
-                <label className="block font-semibold text-[#1A1A1A] mb-1">Image URLs (comma separated)</label>
-                <textarea
-                  rows={2}
-                  placeholder="https://images.unsplash.com/... , https://images.unsplash.com/..."
-                  value={imageUrlInput}
-                  onChange={(e) => setImageUrlInput(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-[#1A1A1A] font-mono text-[11px] focus:outline-none focus:border-[#2D4A27]"
-                />
-              </div>
-
-              {/* Botanical Care Specs */}
+              {/* SECTION 3: Plant Care & Badges */}
               <div className="p-4 bg-[#F5F2EB] border border-[#E5E2D9] space-y-3">
-                <span className="font-bold text-[#1A1A1A] block">Botanical Specs & Care</span>
+                <h4 className="font-bold text-xs uppercase tracking-wider text-[#1A1A1A] flex items-center gap-1.5">
+                  <span className="w-5 h-5 rounded-full bg-[#8B5E3C] text-white flex items-center justify-center text-[10px]">3</span>
+                  Plant Care & Store Highlights
+                </h4>
+
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className="block font-semibold text-[#5A5A5A] mb-1">Light</label>
+                    <label className="block font-semibold text-[#5A5A5A] mb-1">Light Requirement</label>
                     <input
                       type="text"
                       value={formData.lightRequirement || 'Bright Indirect Light'}
@@ -470,7 +500,7 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="block font-semibold text-[#5A5A5A] mb-1">Water</label>
+                    <label className="block font-semibold text-[#5A5A5A] mb-1">Watering</label>
                     <input
                       type="text"
                       value={formData.wateringFrequency || 'Once a week'}
@@ -479,7 +509,7 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="block font-semibold text-[#5A5A5A] mb-1">Location</label>
+                    <label className="block font-semibold text-[#5A5A5A] mb-1">Best Location</label>
                     <input
                       type="text"
                       value={formData.location || 'Living Room'}
@@ -489,7 +519,7 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
                   </div>
                 </div>
 
-                <div className="flex gap-4 pt-2">
+                <div className="flex flex-wrap gap-4 pt-2 border-t border-[#E5E2D9]">
                   <label className="flex items-center gap-1.5 cursor-pointer">
                     <input
                       type="checkbox"
@@ -509,23 +539,41 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
                     />
                     <span className="font-medium text-[#1A1A1A]">Mark as Bestseller</span>
                   </label>
+
+                  <label className="flex items-center gap-1.5 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.newArrival !== false}
+                      onChange={(e) => setFormData({ ...formData, newArrival: e.target.checked })}
+                      className="w-4 h-4 rounded text-[#2D4A27]"
+                    />
+                    <span className="font-medium text-[#1A1A1A]">New Arrival</span>
+                  </label>
                 </div>
               </div>
 
-              <div className="pt-4 flex justify-end gap-2">
+              {/* Action Buttons */}
+              <div className="pt-4 flex justify-end gap-3 border-t border-[#E5E2D9]">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-[#5A5A5A] hover:bg-[#F5F2EB]"
+                  className="px-5 py-2.5 text-[#5A5A5A] hover:bg-[#F5F2EB] font-medium"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="px-6 py-2 bg-[#2D4A27] hover:bg-[#1F341C] text-white text-[11px] font-bold uppercase tracking-wider"
+                  className="px-6 py-2.5 bg-[#2D4A27] hover:bg-[#1F341C] text-white text-[11px] font-bold uppercase tracking-wider flex items-center gap-2 transition-all shadow-xs"
                 >
-                  {isSaving ? 'Saving...' : 'Save Botanical Plant'}
+                  {isSaving ? (
+                    'Saving Plant...'
+                  ) : (
+                    <>
+                      <Check className="w-4 h-4" />
+                      Save Plant to Catalogue
+                    </>
+                  )}
                 </button>
               </div>
             </form>

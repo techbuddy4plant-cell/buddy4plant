@@ -50,8 +50,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, navigate, onQ
         {/* Badges Top Left */}
         <div className="absolute top-2.5 left-2.5 flex flex-col gap-1.5 z-10">
           {product.bestseller && (
-            <span className="bg-[#2D4A27] text-white text-[9px] font-bold px-2 py-0.5 uppercase tracking-[0.2em]">
-              Bestseller
+            <span className="bg-[#2D4A27] text-white text-[9px] font-bold px-2 py-0.5 uppercase tracking-[0.2em] flex items-center gap-1 shadow-xs">
+              <span className="text-amber-300">★</span> Choice
             </span>
           )}
           {product.newArrival && (

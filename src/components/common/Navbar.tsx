@@ -40,7 +40,7 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) => {
   const { itemCount, setIsCartDrawerOpen } = useCart();
   const { wishlistCount } = useWishlist();
-  const { user, profile, isAdmin, openAuthModal, logout } = useAuth();
+  const { user, profile, isAdmin, openAuthModal, promptSignOut } = useAuth();
   const { settings } = useStoreSettings();
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -495,7 +495,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
                     <button
                       onClick={() => {
                         setIsAccountMenuOpen(false);
-                        logout();
+                        promptSignOut();
                       }}
                       className="w-full text-left px-4 py-2 text-xs text-rose-700 hover:bg-rose-50 flex items-center gap-2 font-medium"
                     >
@@ -829,7 +829,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
                   <button
                     onClick={() => {
                       setIsMobileMenuOpen(false);
-                      logout();
+                      promptSignOut();
                     }}
                     className="text-rose-700 font-bold hover:underline"
                   >

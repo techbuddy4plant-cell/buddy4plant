@@ -16,30 +16,37 @@ import { Product } from '../types';
 import { INITIAL_PRODUCTS } from '../data/initialProducts';
 
 const PRODUCTS_COLLECTION = 'products';
+const LOCAL_STORAGE_KEY = 'b4p_products_db';
 
-// Check and seed initial products if collection is empty
-export async function seedProductsIfEmpty(): Promise<void> {
-  try {
-    const colRef = collection(db, PRODUCTS_COLLECTION);
-    const snap = await getDocs(query(colRef, limit(1)));
-    if (snap.empty) {
-      console.log('Seeding initial plant catalogue to Firestore...');
-      const batch = writeBatch(db);
-      for (const prod of INITIAL_PRODUCTS) {
-        const docRef = doc(db, PRODUCTS_COLLECTION, prod.id);
-        batch.set(docRef, {
-          ...prod,
-          createdAt: Date.now(),
-          updatedAt: Date.now(),
-        });
-      }
-      await batch.commit();
-      console.log('Catalogue seeded successfully!');
-    }
-  } catch (error) {
-    console.warn('Firestore seeding check fallback (offline/permission fallback):', error);
+const emitStoreDataChanged = () => {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('b4p_store_data_changed', { detail: { type: 'products' } }));
   }
-}
+};
+
+const getLocalProducts = (): Product[] => {
+  try {
+    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch (err) {
+    console.warn('Error reading products from localStorage:', err);
+  }
+  return INITIAL_PRODUCTS;
+};
+
+const setLocalProducts = (products: Product[]) => {
+  try {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(products));
+    emitStoreDataChanged();
+  } catch (err) {
+    console.warn('Error saving products to localStorage:', err);
+  }
+};
 
 const sanitizeProduct = (p: Product): Product => {
   const sanitizedImages = (p.images || []).map((img) =>
@@ -53,18 +60,40 @@ const sanitizeProduct = (p: Product): Product => {
   };
 };
 
+export async function seedProductsIfEmpty(): Promise<void> {
+  try {
+    const colRef = collection(db, PRODUCTS_COLLECTION);
+    const snap = await getDocs(query(colRef, limit(1)));
+    if (snap.empty) {
+      const batch = writeBatch(db);
+      for (const prod of INITIAL_PRODUCTS) {
+        const docRef = doc(db, PRODUCTS_COLLECTION, prod.id);
+        batch.set(docRef, {
+          ...prod,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        });
+      }
+      await batch.commit();
+    }
+  } catch (error) {
+    console.warn('Firestore seeding check fallback (offline/permission fallback):', error);
+  }
+}
+
 export async function getAllProducts(): Promise<Product[]> {
   try {
     await seedProductsIfEmpty();
     const snap = await getDocs(collection(db, PRODUCTS_COLLECTION));
     if (!snap.empty) {
-      return snap.docs.map((d) => sanitizeProduct({ id: d.id, ...d.data() } as Product));
+      const remoteProducts = snap.docs.map((d) => sanitizeProduct({ id: d.id, ...d.data() } as Product));
+      setLocalProducts(remoteProducts);
+      return remoteProducts;
     }
-    return INITIAL_PRODUCTS.map(sanitizeProduct);
   } catch (error) {
-    console.warn('Falling back to local catalog:', error);
-    return INITIAL_PRODUCTS.map(sanitizeProduct);
+    console.warn('Using local cache for products:', error);
   }
+  return getLocalProducts().map(sanitizeProduct);
 }
 
 export async function getProducts(category?: string): Promise<Product[]> {
@@ -76,37 +105,15 @@ export async function getProducts(category?: string): Promise<Product[]> {
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
-  try {
-    const colRef = collection(db, PRODUCTS_COLLECTION);
-    const q = query(colRef, where('slug', '==', slug), limit(1));
-    const snap = await getDocs(q);
-    if (!snap.empty) {
-      const d = snap.docs[0];
-      return sanitizeProduct({ id: d.id, ...d.data() } as Product);
-    }
-    const found = INITIAL_PRODUCTS.find((p) => p.slug === slug || p.id === slug);
-    return found ? sanitizeProduct(found) : null;
-  } catch (error) {
-    console.warn('Error fetching product by slug:', error);
-    const found = INITIAL_PRODUCTS.find((p) => p.slug === slug || p.id === slug);
-    return found ? sanitizeProduct(found) : null;
-  }
+  const all = await getAllProducts();
+  const found = all.find((p) => p.slug === slug || p.id === slug);
+  return found ? sanitizeProduct(found) : null;
 }
 
 export async function getProductById(id: string): Promise<Product | null> {
-  try {
-    const docRef = doc(db, PRODUCTS_COLLECTION, id);
-    const snap = await getDoc(docRef);
-    if (snap.exists()) {
-      return sanitizeProduct({ id: snap.id, ...snap.data() } as Product);
-    }
-    const found = INITIAL_PRODUCTS.find((p) => p.id === id);
-    return found ? sanitizeProduct(found) : null;
-  } catch (error) {
-    console.warn('Error fetching product by id:', error);
-    const found = INITIAL_PRODUCTS.find((p) => p.id === id);
-    return found ? sanitizeProduct(found) : null;
-  }
+  const all = await getAllProducts();
+  const found = all.find((p) => p.id === id);
+  return found ? sanitizeProduct(found) : null;
 }
 
 export async function saveProduct(product: Partial<Product> & { name: string; price: number }): Promise<string> {
@@ -154,27 +161,53 @@ export async function saveProduct(product: Partial<Product> & { name: string; pr
     createdAt: product.createdAt || Date.now(),
   };
 
+  // 1. Update localStorage instantly
+  const current = getLocalProducts();
+  const existingIdx = current.findIndex((p) => p.id === id);
+  let updatedList: Product[];
+  if (existingIdx >= 0) {
+    updatedList = [...current];
+    updatedList[existingIdx] = productData;
+  } else {
+    updatedList = [productData, ...current];
+  }
+  setLocalProducts(updatedList);
+
+  // 2. Sync to Firestore in background
   try {
     const docRef = doc(db, PRODUCTS_COLLECTION, id);
     await setDoc(docRef, productData, { merge: true });
-    return id;
   } catch (err) {
-    console.error('Error saving product to Firestore:', err);
-    throw err;
+    console.warn('Firestore sync failed, saved locally:', err);
   }
+
+  return id;
 }
 
 export async function deleteProduct(id: string): Promise<void> {
+  // 1. Update localStorage instantly
+  const current = getLocalProducts();
+  const updatedList = current.filter((p) => p.id !== id);
+  setLocalProducts(updatedList);
+
+  // 2. Sync to Firestore
   try {
     const docRef = doc(db, PRODUCTS_COLLECTION, id);
     await deleteDoc(docRef);
   } catch (err) {
-    console.error('Error deleting product from Firestore:', err);
-    throw err;
+    console.warn('Firestore delete failed, removed locally:', err);
   }
 }
 
 export async function updateProductStock(id: string, newStock: number): Promise<void> {
+  const current = getLocalProducts();
+  const prod = current.find((p) => p.id === id);
+  if (prod) {
+    prod.stock = Math.max(0, newStock);
+    prod.updatedAt = Date.now();
+    setLocalProducts(current);
+  }
+
   try {
     const docRef = doc(db, PRODUCTS_COLLECTION, id);
     await updateDoc(docRef, {
@@ -182,18 +215,30 @@ export async function updateProductStock(id: string, newStock: number): Promise<
       updatedAt: Date.now(),
     });
   } catch (err) {
-    console.error('Error updating product stock:', err);
+    console.warn('Error updating product stock in Firestore:', err);
   }
 }
 
 export async function deductProductStock(productId: string, quantity: number): Promise<void> {
+  const current = getLocalProducts();
+  const prod = current.find((p) => p.id === productId);
+  if (prod) {
+    prod.stock = Math.max(0, prod.stock - quantity);
+    prod.updatedAt = Date.now();
+    setLocalProducts(current);
+  }
+
   try {
-    const prod = await getProductById(productId);
-    if (prod) {
-      const remaining = Math.max(0, prod.stock - quantity);
-      await updateProductStock(productId, remaining);
+    const prodRef = doc(db, PRODUCTS_COLLECTION, productId);
+    const snap = await getDoc(prodRef);
+    if (snap.exists()) {
+      const data = snap.data() as Product;
+      await updateDoc(prodRef, {
+        stock: Math.max(0, (data.stock || 0) - quantity),
+        updatedAt: Date.now(),
+      });
     }
   } catch (err) {
-    console.error('Error deducting product stock:', err);
+    console.warn('Error deducting stock in Firestore:', err);
   }
 }
