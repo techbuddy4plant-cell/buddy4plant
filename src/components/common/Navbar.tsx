@@ -747,6 +747,27 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
                 </button>
 
                 <button
+                  id="mobile-nav-projects"
+                  onClick={() => {
+                    navigate('/projects');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors ${
+                    currentPath === '/projects'
+                      ? 'bg-[#EBF3EC] text-[#1F3B22] font-extrabold border-l-2 border-[#1F3B22]'
+                      : 'text-[#1F341C] hover:bg-[#EBF3EC]'
+                  }`}
+                >
+                  <span className="flex items-center gap-2.5">
+                    <span className="text-base">🌿</span>
+                    Projects &amp; Transformations
+                  </span>
+                  <span className="text-[9px] bg-[#1F3B22] text-white px-2 py-0.5 rounded-full font-bold">
+                    Portfolio
+                  </span>
+                </button>
+
+                <button
                   onClick={() => {
                     navigate('/track-order');
                     setIsMobileMenuOpen(false);
