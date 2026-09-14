@@ -1,7 +1,7 @@
 import React from 'react';
 import { Product } from '../../types';
 import { ProductCard } from '../common/ProductCard';
-import { ArrowRight, Flame } from 'lucide-react';
+import { ArrowRight, Sparkles } from 'lucide-react';
 
 interface BestSellersSectionProps {
   products: Product[];
@@ -19,27 +19,28 @@ export const BestSellersSection: React.FC<BestSellersSectionProps> = ({
   if (bestsellers.length === 0) return null;
 
   return (
-    <section className="py-16 bg-[#F5F2EB]/60 border-b border-[#E5E2D9]">
+    <section className="py-20 sm:py-28 bg-[#F8F7F3] border-b border-[#E8E5DC]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 gap-4">
           <div>
-            <div className="flex items-center gap-1.5 text-[10px] font-bold text-[#8B5E3C] uppercase tracking-[0.25em]">
-              <Flame className="w-3.5 h-3.5 text-[#8B5E3C] fill-[#8B5E3C]" />
-              Most Loved By Indian Plant Parents
+            <div className="flex items-center gap-1.5 text-[10px] font-bold text-[#5B6E58] uppercase tracking-[0.24em]">
+              <Sparkles className="w-3.5 h-3.5 text-[#1F3B22]" />
+              Signature Botanical Cultivars
             </div>
-            <h2 className="font-serif text-3xl sm:text-4xl font-normal text-[#1A1A1A] mt-1">
-              Our Bestselling Greens
+            <h2 className="font-editorial text-3xl sm:text-4xl lg:text-5xl font-bold text-[#141414] mt-2 tracking-tight">
+              Our Bestselling Living Greens
             </h2>
           </div>
           <button
             onClick={() => navigate('/plants?sortBy=bestseller')}
-            className="mt-3 sm:mt-0 text-[11px] font-bold uppercase tracking-wider text-[#2D4A27] hover:text-[#1F341C] flex items-center gap-1.5 group"
+            className="pill-btn-light self-start sm:self-auto text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 group"
           >
-            Explore All Best Sellers &rarr;
+            Explore All Best Sellers
+            <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
           </button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
           {bestsellers.map((product) => (
             <ProductCard
               key={product.id}

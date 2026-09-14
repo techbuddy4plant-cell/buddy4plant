@@ -21,6 +21,7 @@ import { UserProfilePage } from './components/account/UserProfilePage';
 import { UserOrdersPage } from './components/account/UserOrdersPage';
 import { AboutUsPage, PlantDoctorPage, ContactUsPage } from './components/pages/StaticPages';
 import { WishlistPage } from './components/pages/WishlistPage';
+import { ProjectsPage } from './components/pages/ProjectsPage';
 import { AdminDashboard } from './components/admin/AdminDashboard';
 import { AdminLoginPage } from './components/admin/AdminLoginPage';
 import { Product } from './types';
@@ -135,6 +136,10 @@ export default function App() {
 
     if (path === '/wishlist' || path.startsWith('/wishlist')) {
       return <WishlistPage navigate={navigate} onQuickView={setQuickViewProduct} />;
+    }
+
+    if (path === '/projects' || path.startsWith('/projects')) {
+      return <ProjectsPage navigate={navigate} />;
     }
 
     if (path === '/about') {

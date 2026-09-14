@@ -1,19 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   ShieldCheck,
   Truck,
-  RotateCcw,
+  Leaf,
   Sparkles,
-  Phone,
-  Mail,
-  MapPin,
+  ArrowRight,
   Instagram,
   Facebook,
   Youtube,
   MessageCircle,
+  Mail,
+  Check
 } from 'lucide-react';
 import { useStoreSettings } from '../../context/StoreSettingsContext';
-import { Buddy4PlantLogo } from './Buddy4PlantLogo';
 
 interface FooterProps {
   navigate: (path: string) => void;
@@ -21,250 +20,258 @@ interface FooterProps {
 
 export const Footer: React.FC<FooterProps> = ({ navigate }) => {
   const { settings } = useStoreSettings();
+  const [emailInput, setEmailInput] = useState('');
+  const [isSubscribed, setIsSubscribed] = useState(false);
+
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (emailInput.trim()) {
+      setIsSubscribed(true);
+      setEmailInput('');
+      setTimeout(() => setIsSubscribed(false), 4000);
+    }
+  };
 
   return (
-    <footer className="bg-[#182319] text-[#D5DCD4] pt-16 pb-12 border-t border-[#2A3B2C]">
-      {/* Brand Trust Metrics Row */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 border-b border-[#2A3B2C]">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="flex items-start gap-4">
-            <div className="w-11 h-11 bg-[#2D4A27]/60 border border-[#406837] flex items-center justify-center text-[#A3B899] shrink-0">
-              <Truck className="w-5 h-5" />
+    <footer className="bg-[#FAF9F5] text-[#141414] border-t border-[#E8E5DC] transition-colors">
+      {/* Top Editorial Botanical Statement & Newsletter */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-12 border-b border-[#E8E5DC]">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center justify-between">
+          <div className="lg:col-span-7">
+            <div className="cursor-pointer inline-block" onClick={() => navigate('/')}>
+              <div className="flex items-center gap-3">
+                <span className="font-editorial text-2xl sm:text-3xl font-extrabold tracking-tight text-[#141414]">
+                  buddy4plant
+                </span>
+                <span className="text-[10px] font-bold tracking-[0.24em] text-[#5B6E58] uppercase border-l border-[#DCD7CB] pl-3 py-0.5">
+                  Botanical Studio
+                </span>
+              </div>
             </div>
-            <div>
-              <h4 className="font-serif font-bold text-[#FDFCF9] text-sm">Safe Transit Packaging</h4>
-              <p className="text-xs text-[#95A593] mt-1 leading-relaxed font-light">
-                Specialized breathable honeycomb boxes guaranteed to arrive healthy.
-              </p>
-            </div>
+            <p className="mt-4 text-xs sm:text-sm text-[#5C5C5C] leading-relaxed max-w-xl font-normal">
+              Cultivating mindful living spaces through hand-nurtured botanical flora, microbiome-rich organic soil,
+              and artisanal planters designed to endure.
+            </p>
           </div>
 
-          <div className="flex items-start gap-4">
-            <div className="w-11 h-11 bg-[#2D4A27]/60 border border-[#406837] flex items-center justify-center text-[#A3B899] shrink-0">
-              <ShieldCheck className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="font-serif font-bold text-[#FDFCF9] text-sm">Plant Health Warranty</h4>
-              <p className="text-xs text-[#95A593] mt-1 leading-relaxed font-light">
-                Free replacement if any plant arrives damaged or stressed within 7 days.
+          <div className="lg:col-span-5">
+            <div className="bg-[#F2EFE8] p-5 sm:p-6 rounded-3xl border border-[#E2DED4]">
+              <span className="text-[10px] font-bold text-[#5B6E58] uppercase tracking-[0.22em] block mb-1.5">
+                The Botanical Journal
+              </span>
+              <p className="text-xs text-[#525252] mb-3">
+                Subscribe for seasonal watering rhythms, rare specimen drops, and indoor styling guides.
               </p>
-            </div>
-          </div>
 
-          <div className="flex items-start gap-4">
-            <div className="w-11 h-11 bg-[#2D4A27]/60 border border-[#406837] flex items-center justify-center text-[#A3B899] shrink-0">
-              <Sparkles className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="font-serif font-bold text-[#FDFCF9] text-sm">Organic Nursery Grown</h4>
-              <p className="text-xs text-[#95A593] mt-1 leading-relaxed font-light">
-                Nurtured with organic bio-stimulants and cold-pressed neem nutrients.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-4">
-            <div className="w-11 h-11 bg-[#2D4A27]/60 border border-[#406837] flex items-center justify-center text-[#A3B899] shrink-0">
-              <RotateCcw className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="font-serif font-bold text-[#FDFCF9] text-sm">Free Plant Doctor Support</h4>
-              <p className="text-xs text-[#95A593] mt-1 leading-relaxed font-light">
-                Lifetime WhatsApp guidance from our horticulturists for all your greens.
-              </p>
+              {isSubscribed ? (
+                <div className="flex items-center gap-2 text-xs font-semibold text-[#1F3B22] bg-white px-4 py-2.5 rounded-full border border-[#D5DEC4]">
+                  <Check className="w-4 h-4 text-[#1F3B22]" />
+                  <span>Welcome to the journal. Check your inbox soon!</span>
+                </div>
+              ) : (
+                <form onSubmit={handleSubscribe} className="flex gap-2">
+                  <input
+                    type="email"
+                    required
+                    value={emailInput}
+                    onChange={(e) => setEmailInput(e.target.value)}
+                    placeholder="Enter your email address"
+                    className="grow bg-white border border-[#DDD9CF] px-4 py-2.5 rounded-full text-xs text-[#141414] placeholder-[#8A8A8A] focus:outline-none focus:border-[#1F3B22] focus:ring-1 focus:ring-[#1F3B22]"
+                  />
+                  <button
+                    type="submit"
+                    className="pill-btn-dark px-5 py-2.5 text-[11px] font-bold uppercase tracking-wider shrink-0"
+                  >
+                    Join
+                  </button>
+                </form>
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Main Footer Links */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-10">
-          {/* Brand Col */}
-          <div className="md:col-span-2 space-y-4">
-            <div className="cursor-pointer" onClick={() => navigate('/')}>
-              <Buddy4PlantLogo size={46} textColor="#FDFCF9" />
-            </div>
-            <p className="text-xs text-[#95A593] leading-relaxed max-w-sm font-light">
-              We bring sustainable greenery into modern living spaces. Every plant is acclimatized,
-              potted in premium soil, and shipped directly from our botanical nurseries across India.
-            </p>
-            <div className="pt-2 space-y-2 text-xs text-[#95A593]">
-              <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-[#A3B899] shrink-0" />
-                <span>{settings.storeAddress}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Mail className="w-4 h-4 text-[#A3B899] shrink-0" />
-                <a href={`mailto:${settings.contactEmail}`} className="hover:text-[#FDFCF9]">
+      {/* Main Clean Navigation Columns */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12">
+          {/* Column 1: Collections */}
+          <div>
+            <h4 className="text-[10px] font-bold text-[#141414] uppercase tracking-[0.24em] mb-4">
+              Flora Collections
+            </h4>
+            <ul className="space-y-2.5 text-xs text-[#5C5C5C]">
+              <li>
+                <button onClick={() => navigate('/plants/indoor-plants')} className="hover:text-[#1F3B22] transition-colors">
+                  Indoor Foliage Plants
+                </button>
+              </li>
+              <li>
+                <button onClick={() => navigate('/plants/air-purifying')} className="hover:text-[#1F3B22] transition-colors">
+                  NASA Air Cleaners
+                </button>
+              </li>
+              <li>
+                <button onClick={() => navigate('/plants/low-maintenance')} className="hover:text-[#1F3B22] transition-colors">
+                  Low Maintenance &amp; Beginner
+                </button>
+              </li>
+              <li>
+                <button onClick={() => navigate('/plants/cacti-succulents')} className="hover:text-[#1F3B22] transition-colors">
+                  Rare Cacti &amp; Succulents
+                </button>
+              </li>
+              <li>
+                <button onClick={() => navigate('/plants/combos')} className="hover:text-[#1F3B22] transition-colors">
+                  Curated Sanctuary Packs
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          {/* Column 2: Plant Doctor Clinic */}
+          <div>
+            <h4 className="text-[10px] font-bold text-[#141414] uppercase tracking-[0.24em] mb-4">
+              Plant Care Clinic
+            </h4>
+            <ul className="space-y-2.5 text-xs text-[#5C5C5C]">
+              <li>
+                <button onClick={() => navigate('/plant-doctor')} className="hover:text-[#1F3B22] transition-colors flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#1F3B22]" />
+                  WhatsApp Diagnosis Clinic
+                </button>
+              </li>
+              <li>
+                <button onClick={() => navigate('/care-guide')} className="hover:text-[#1F3B22] transition-colors">
+                  Seasonal Watering Rhythms
+                </button>
+              </li>
+              <li>
+                <button onClick={() => navigate('/care-guide')} className="hover:text-[#1F3B22] transition-colors">
+                  Organic Soil &amp; Repotting
+                </button>
+              </li>
+              <li>
+                <button onClick={() => navigate('/care-guide')} className="hover:text-[#1F3B22] transition-colors">
+                  Natural Pest Prevention
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          {/* Column 3: The Sanctuary */}
+          <div>
+            <h4 className="text-[10px] font-bold text-[#141414] uppercase tracking-[0.24em] mb-4">
+              The Sanctuary
+            </h4>
+            <ul className="space-y-2.5 text-xs text-[#5C5C5C]">
+              <li>
+                <button onClick={() => navigate('/about')} className="hover:text-[#1F3B22] transition-colors">
+                  Our Nursery Origins
+                </button>
+              </li>
+              <li>
+                <button onClick={() => navigate('/about')} className="hover:text-[#1F3B22] transition-colors">
+                  Botanical Ethics &amp; Peat-Free
+                </button>
+              </li>
+              <li>
+                <button onClick={() => navigate('/reviews')} className="hover:text-[#1F3B22] transition-colors">
+                  Verified Plant Parent Stories
+                </button>
+              </li>
+              <li>
+                <button onClick={() => navigate('/about')} className="hover:text-[#1F3B22] transition-colors">
+                  Sustainable Packaging Standard
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          {/* Column 4: Client Services */}
+          <div>
+            <h4 className="text-[10px] font-bold text-[#141414] uppercase tracking-[0.24em] mb-4">
+              Support &amp; Studio
+            </h4>
+            <ul className="space-y-2.5 text-xs text-[#5C5C5C]">
+              <li>
+                <button onClick={() => navigate('/my-orders')} className="hover:text-[#1F3B22] transition-colors">
+                  Track Live Orders
+                </button>
+              </li>
+              <li>
+                <button onClick={() => navigate('/shipping-policy')} className="hover:text-[#1F3B22] transition-colors">
+                  14-Day Transit Health Guarantee
+                </button>
+              </li>
+              <li>
+                <a href={`mailto:${settings.contactEmail}`} className="hover:text-[#1F3B22] transition-colors block">
                   {settings.contactEmail}
                 </a>
-              </div>
-              <div className="flex items-center gap-2">
-                <Phone className="w-4 h-4 text-[#A3B899] shrink-0" />
-                <a href={`tel:${settings.contactPhone}`} className="hover:text-[#FDFCF9]">
-                  {settings.contactPhone}
+              </li>
+              <li>
+                <a
+                  href={`https://wa.me/${(settings.whatsappSupportNumber || '919876543210').replace(/[^0-9]/g, '')}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="hover:text-[#1F3B22] transition-colors flex items-center gap-1.5"
+                >
+                  <MessageCircle className="w-3.5 h-3.5 text-[#1F3B22]" />
+                  Chat on WhatsApp
                 </a>
-              </div>
-              {settings.whatsappSupportNumber && (
-                <div className="flex items-center gap-2 pt-1">
-                  <a
-                    href={`https://wa.me/${settings.whatsappSupportNumber.replace(/[^0-9]/g, '')}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#2D4A27] border border-[#45703C] text-[#D8E6D4] text-[10px] font-bold uppercase tracking-wider hover:bg-[#385B30] transition-colors"
-                  >
-                    <MessageCircle className="w-3.5 h-3.5" />
-                    WhatsApp Plant Care Clinic
-                  </a>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Quick Categories */}
-          <div>
-            <h4 className="text-[10px] font-bold text-[#FDFCF9] uppercase tracking-[0.25em] mb-4">
-              Explore Plants
-            </h4>
-            <ul className="space-y-2.5 text-xs text-[#95A593]">
-              <li>
-                <button onClick={() => navigate('/plants/indoor-plants')} className="hover:text-[#FDFCF9]">
-                  Indoor Foliage
-                </button>
-              </li>
-              <li>
-                <button onClick={() => navigate('/plants/air-purifying')} className="hover:text-[#FDFCF9]">
-                  Air Purifiers
-                </button>
-              </li>
-              <li>
-                <button onClick={() => navigate('/plants/low-maintenance')} className="hover:text-[#FDFCF9]">
-                  Low Maintenance
-                </button>
-              </li>
-              <li>
-                <button onClick={() => navigate('/plants/cacti-succulents')} className="hover:text-[#FDFCF9]">
-                  Cacti & Succulents
-                </button>
-              </li>
-              <li>
-                <button onClick={() => navigate('/plants/flowering-plants')} className="hover:text-[#FDFCF9]">
-                  Flowering Beauties
-                </button>
-              </li>
-              <li>
-                <button onClick={() => navigate('/plants/combos')} className="hover:text-[#A3B899] text-[#A3B899] font-medium">
-                  Curated Bundles
-                </button>
               </li>
             </ul>
-          </div>
-
-          {/* Planters & Care */}
-          <div>
-            <h4 className="text-[10px] font-bold text-[#FDFCF9] uppercase tracking-[0.25em] mb-4">
-              Planters & Care
-            </h4>
-            <ul className="space-y-2.5 text-xs text-[#95A593]">
-              <li>
-                <button onClick={() => navigate('/plants/pots-planters')} className="hover:text-[#FDFCF9]">
-                  Artisan Ceramic Pots
-                </button>
-              </li>
-              <li>
-                <button onClick={() => navigate('/plants/pots-planters')} className="hover:text-[#FDFCF9]">
-                  Self-Watering Pots
-                </button>
-              </li>
-              <li>
-                <button onClick={() => navigate('/plants/plant-care')} className="hover:text-[#FDFCF9]">
-                  Neem Pest Defense
-                </button>
-              </li>
-              <li>
-                <button onClick={() => navigate('/plants/plant-care')} className="hover:text-[#FDFCF9]">
-                  Enriched Potting Mix
-                </button>
-              </li>
-              <li>
-                <button onClick={() => navigate('/track-order')} className="hover:text-[#FDFCF9]">
-                  Track Live Delivery
-                </button>
-              </li>
-            </ul>
-          </div>
-
-          {/* Newsletter Box */}
-          <div>
-            <h4 className="text-[10px] font-bold text-[#FDFCF9] uppercase tracking-[0.25em] mb-4">
-              Join The Green Club
-            </h4>
-            <p className="text-xs text-[#95A593] mb-3 leading-relaxed font-light">
-              Get ₹100 off your first botanical order and weekly plant care tips.
-            </p>
-            <form onSubmit={(e) => { e.preventDefault(); }} className="space-y-2">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                required
-                className="w-full px-3.5 py-2.5 bg-[#233124] border border-[#3A4E3B] text-xs text-[#FDFCF9] placeholder-[#7A8E7C] focus:outline-none focus:border-[#52B788]"
-              />
-              <button
-                type="submit"
-                className="w-full py-2.5 bg-[#2D4A27] hover:bg-[#385B30] text-white text-[10px] font-bold uppercase tracking-widest transition-colors"
-              >
-                Subscribe & Get 10% Off
-              </button>
-            </form>
-
-            <div className="flex items-center space-x-3 mt-5">
-              {settings.socialLinks?.instagram && (
-                <a
-                  href={settings.socialLinks.instagram}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="w-8 h-8 bg-[#233124] border border-[#3A4E3B] flex items-center justify-center text-[#95A593] hover:text-[#A3B899] hover:border-[#52B788] transition-colors"
-                  aria-label="Instagram"
-                >
-                  <Instagram className="w-3.5 h-3.5" />
-                </a>
-              )}
-              {settings.socialLinks?.facebook && (
-                <a
-                  href={settings.socialLinks.facebook}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="w-8 h-8 bg-[#233124] border border-[#3A4E3B] flex items-center justify-center text-[#95A593] hover:text-[#A3B899] hover:border-[#52B788] transition-colors"
-                  aria-label="Facebook"
-                >
-                  <Facebook className="w-3.5 h-3.5" />
-                </a>
-              )}
-              {settings.socialLinks?.youtube && (
-                <a
-                  href={settings.socialLinks.youtube}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="w-8 h-8 bg-[#233124] border border-[#3A4E3B] flex items-center justify-center text-[#95A593] hover:text-[#A3B899] hover:border-[#52B788] transition-colors"
-                  aria-label="YouTube"
-                >
-                  <Youtube className="w-3.5 h-3.5" />
-                </a>
-              )}
-            </div>
           </div>
         </div>
+      </div>
 
-        {/* Bottom Bar & Payment Badges */}
-        <div className="mt-12 pt-8 border-t border-[#2A3B2C] flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-[#8A9B89]">
-          <p>© {new Date().getFullYear()} buddy4plant. All rights reserved.</p>
-          <div className="flex items-center gap-3 text-[10px] uppercase tracking-wider text-[#8A9B89]">
-            <span className="font-bold text-[#D5DCD4]">Secure Payments:</span>
-            <span className="bg-[#233124] border border-[#3A4E3B] px-2 py-0.5 text-[#D5DCD4]">UPI</span>
-            <span className="bg-[#233124] border border-[#3A4E3B] px-2 py-0.5 text-[#D5DCD4]">Cards</span>
-            <span className="bg-[#233124] border border-[#3A4E3B] px-2 py-0.5 text-[#D5DCD4]">NetBanking</span>
-            <span className="bg-[#233124] border border-[#3A4E3B] px-2 py-0.5 text-[#D5DCD4]">COD Available</span>
+      {/* Minimal Bottom Bar */}
+      <div className="border-t border-[#E8E5DC] py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-[#7A7A7A]">
+          <div>
+            &copy; {new Date().getFullYear()} buddy4plant Studio. Handcrafted for mindful botanical living.
+          </div>
+
+          {/* Clean Social Icons */}
+          <div className="flex items-center space-x-5 text-[#5C5C5C]">
+            <a
+              href="https://instagram.com"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Instagram"
+              className="hover:text-[#1F3B22] transition-colors"
+            >
+              <Instagram className="w-4 h-4" />
+            </a>
+            <a
+              href="https://facebook.com"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Facebook"
+              className="hover:text-[#1F3B22] transition-colors"
+            >
+              <Facebook className="w-4 h-4" />
+            </a>
+            <a
+              href="https://youtube.com"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="YouTube"
+              className="hover:text-[#1F3B22] transition-colors"
+            >
+              <Youtube className="w-4 h-4" />
+            </a>
+          </div>
+
+          <div className="flex items-center space-x-6 text-[11px]">
+            <button onClick={() => navigate('/privacy-policy')} className="hover:text-[#141414] transition-colors">
+              Privacy Policy
+            </button>
+            <button onClick={() => navigate('/terms')} className="hover:text-[#141414] transition-colors">
+              Terms
+            </button>
+            <button onClick={() => navigate('/shipping-policy')} className="hover:text-[#141414] transition-colors">
+              Shipping &amp; Returns
+            </button>
           </div>
         </div>
       </div>

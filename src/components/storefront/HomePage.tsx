@@ -4,12 +4,15 @@ import { getProducts } from '../../services/productService';
 import { getCategories } from '../../services/categoryService';
 import { getRecentReviews } from '../../services/reviewService';
 import { HeroBanner } from './HeroBanner';
+import { BotanicaSection } from './BotanicaSection';
+import { WhatsInsideSection } from './WhatsInsideSection';
 import { CategoryBar } from './CategoryBar';
 import { BestSellersSection } from './BestSellersSection';
 import { ShopBySpaceSection } from './ShopBySpaceSection';
 import { ComboPacksSection } from './ComboPacksSection';
 import { WhyChooseUs } from './WhyChooseUs';
 import { CustomerReviewsSection } from './CustomerReviewsSection';
+import { ProjectsSection } from './ProjectsSection';
 import { MessageCircle, ArrowRight, Sparkles, ShieldCheck } from 'lucide-react';
 
 import { useStoreSettings } from '../../context/StoreSettingsContext';
@@ -61,8 +64,14 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate, onQuickView }) => 
         backgroundAttachment: 'fixed',
       }}
     >
-      {/* Hero Banner */}
+      {/* Hero Banner - Exact Thornfield Editorial Match */}
       <HeroBanner navigate={navigate} />
+
+      {/* Botanica Section - Slow-grown stone slab presentation */}
+      <BotanicaSection navigate={navigate} />
+
+      {/* What's Inside Section - Arched botanical ingredient cards */}
+      <WhatsInsideSection navigate={navigate} />
 
       {/* Category Pills & Grid */}
       <CategoryBar categories={categories} navigate={navigate} />
@@ -83,6 +92,9 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate, onQuickView }) => 
         navigate={navigate}
         onQuickView={onQuickView}
       />
+
+      {/* Curated Botanical Projects Showcase */}
+      <ProjectsSection navigate={navigate} />
 
       {/* Why Choose Us Standard */}
       <WhyChooseUs />

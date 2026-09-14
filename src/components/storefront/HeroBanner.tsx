@@ -1,7 +1,6 @@
 import React from 'react';
-import { ArrowRight, Sparkles, ShieldCheck, Truck, Droplets } from 'lucide-react';
+import { ArrowRight, Leaf } from 'lucide-react';
 import { useStoreSettings } from '../../context/StoreSettingsContext';
-import { PlantImage, DEFAULT_PLANT_IMAGE } from '../../utils/imageFallback';
 
 interface HeroBannerProps {
   navigate: (path: string) => void;
@@ -11,78 +10,45 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ navigate }) => {
   const { homepageCMS } = useStoreSettings();
 
   return (
-    <section className="relative overflow-hidden bg-[#1A1A1A] text-[#FDFCF9]">
-      {/* Background Cinematic Image with Natural Editorial Overlay */}
-      <div className="absolute inset-0 z-0">
-        <PlantImage
-          src={homepageCMS.heroImage || DEFAULT_PLANT_IMAGE}
-          alt="Lush botanical nursery plants"
-          className="w-full h-full object-cover object-center opacity-30 mix-blend-luminosity"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#1A1A1A] via-[#1A1A1A]/85 to-transparent" />
+    <section className="relative bg-[#FBFBFA] text-[#141414] overflow-hidden pt-12 sm:pt-16 lg:pt-20 pb-10 sm:pb-16 border-b border-[#EAE8E3]">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 text-center">
+        {/* Centered Editorial Headline tailored for Plants & Organic Plant Food */}
+        <h1 className="font-editorial text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-[#141414] leading-[1.05] max-w-3xl mx-auto">
+          {homepageCMS.heroTitle || 'The roots remember what the soil provides.'}
+        </h1>
+
+        {/* Centered Editorial Subtitle */}
+        <p className="mt-5 sm:mt-6 text-xs sm:text-sm md:text-base text-[#525252] font-normal leading-relaxed max-w-2xl mx-auto">
+          {homepageCMS.heroSubtitle ||
+            'A slow-release botanical elixir crafted from cold-pressed kelp, mycorrhizal bio-actives, and vermicompost humus. Feeds roots deep, settles clean. Nurture weekly after watering on damp soil for lush leaves and resilient blooms.'}
+        </p>
+
+        {/* Centered Pill Button */}
+        <div className="mt-7 flex justify-center">
+          <button
+            id="hero-see-collections-btn"
+            onClick={() => navigate('/plants')}
+            className="pill-btn-light px-8 py-3.5 text-xs uppercase tracking-widest font-bold shadow-xs hover:shadow-md flex items-center gap-2"
+          >
+            {homepageCMS.heroPrimaryButtonText || 'Shop Plants & Organic Food'}
+            <ArrowRight className="w-3.5 h-3.5 text-[#1F3B22]" />
+          </button>
+        </div>
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32 flex flex-col justify-center min-h-[560px]">
-        <div className="max-w-2xl">
-          {/* Badge */}
-          {homepageCMS.heroBadge && (
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#2D4A27]/80 border border-[#2D4A27] text-[#A3B899] text-[10px] font-bold uppercase tracking-[0.25em] mb-6 backdrop-blur-xs">
-              <Sparkles className="w-3 h-3 text-[#A3B899]" />
-              {homepageCMS.heroBadge}
-            </div>
-          )}
+      {/* Hero Visual: Moss-Covered Branch with Botanical Jar */}
+      <div className="relative max-w-6xl mx-auto px-3 sm:px-6 mt-8 sm:mt-12">
+        <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-[#E3DFD5] bg-[#F7F6F2] group">
+          <img
+            src="/editorial/hero-botanical-branch.jpg"
+            alt="buddy4plant organic plant elixir resting on lush moss branch"
+            className="w-full h-auto object-cover max-h-[620px] transform transition-transform duration-1000 ease-out group-hover:scale-102"
+          />
 
-          {/* Heading */}
-          <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-normal tracking-tight text-[#FDFCF9] leading-[1.12]">
-            {homepageCMS.heroTitle ? (
-              homepageCMS.heroTitle
-            ) : (
-              <>
-                Bring Home a Little More <span className="italic font-light text-[#E0E5E2]">Green</span>.
-              </>
-            )}
-          </h1>
-
-          {/* Subtitle */}
-          <p className="mt-5 text-sm sm:text-base text-[#D5D2C9] font-light leading-relaxed max-w-xl">
-            {homepageCMS.heroSubtitle ||
-              'Hand-nurtured botanical plants, artisanal planters, and organic care kits crafted for serene Indian homes.'}
-          </p>
-
-          {/* Buttons */}
-          <div className="mt-8 flex flex-wrap gap-4 items-center">
-            <button
-              id="hero-shop-plants-btn"
-              onClick={() => navigate(homepageCMS.heroPrimaryButtonLink || '/plants')}
-              className="px-8 py-3.5 bg-[#2D4A27] hover:bg-[#1F341C] text-white font-bold text-[11px] uppercase tracking-widest transition-all flex items-center gap-2 shadow-sm active:scale-98"
-            >
-              {homepageCMS.heroPrimaryButtonText || 'Shop All Plants'}
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-
-            <button
-              id="hero-explore-combos-btn"
-              onClick={() => navigate(homepageCMS.heroSecondaryButtonLink || '/plants/combos')}
-              className="px-8 py-3.5 bg-transparent hover:bg-white/10 border border-[#E5E2D9]/40 text-[#FDFCF9] font-bold text-[11px] uppercase tracking-widest transition-all active:scale-98"
-            >
-              {homepageCMS.heroSecondaryButtonText || 'Explore Curated Combos'}
-            </button>
-          </div>
-
-          {/* Micro trust stats */}
-          <div className="mt-12 pt-8 border-t border-[#333333] grid grid-cols-3 gap-6 text-xs text-[#D5D2C9]">
-            <div>
-              <div className="font-serif font-bold text-2xl text-[#FDFCF9]">100%</div>
-              <div className="text-[#8A8A8A] text-[11px] mt-0.5 tracking-wider uppercase">Transit Health Guarantee</div>
-            </div>
-            <div>
-              <div className="font-serif font-bold text-2xl text-[#FDFCF9]">50,000+</div>
-              <div className="text-[#8A8A8A] text-[11px] mt-0.5 tracking-wider uppercase">Happy Green Spaces</div>
-            </div>
-            <div>
-              <div className="font-serif font-bold text-2xl text-[#FDFCF9]">Free</div>
-              <div className="text-[#8A8A8A] text-[11px] mt-0.5 tracking-wider uppercase">Plant Doctor WhatsApp</div>
-            </div>
+          {/* Micro overlay tag */}
+          <div className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 px-4 py-1.5 rounded-full bg-black/50 backdrop-blur-md text-white/95 text-[10px] font-medium tracking-wider uppercase border border-white/20 flex items-center gap-1.5">
+            <Leaf className="w-3 h-3 text-[#A3B899]" />
+            Cold-Pressed Bio-Active Plant Nutrition &bull; 100% Organic &amp; Peat-Free
           </div>
         </div>
       </div>

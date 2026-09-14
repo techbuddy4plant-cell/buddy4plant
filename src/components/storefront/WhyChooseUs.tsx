@@ -1,60 +1,62 @@
 import React from 'react';
-import { Truck, ShieldCheck, HeartHandshake, Leaf, PhoneCall } from 'lucide-react';
+import { Truck, ShieldCheck, Leaf, Sparkles } from 'lucide-react';
 
 export const WhyChooseUs: React.FC = () => {
   const features = [
     {
-      icon: <Truck className="w-5 h-5 text-[#2D4A27]" />,
-      title: 'Botanical Safe-Transit Box',
-      desc: 'Our proprietary honeycomb corrugated boxes lock pot soil in place and allow air circulation so leaves arrive fresh and undamaged.',
+      icon: <Truck className="w-5 h-5 text-[#1F3B22]" />,
+      title: 'Botanical Safe-Transit System',
+      desc: 'Our bespoke shock-absorbing ventilated chambers secure organic roots and lock moisture so plants arrive lush, hydrated, and intact.',
     },
     {
-      icon: <ShieldCheck className="w-5 h-5 text-[#2D4A27]" />,
-      title: '7-Day Replacement Guarantee',
-      desc: 'If your plant arrives stressed, damaged, or unhealthy, simply send a photo on WhatsApp for an immediate free replacement.',
+      icon: <ShieldCheck className="w-5 h-5 text-[#1F3B22]" />,
+      title: '14-Day Vitality Guarantee',
+      desc: 'Should your living botanical show transit distress or soil imbalance, our horticulturist team replaces or nurtures it immediately.',
     },
     {
-      icon: <Leaf className="w-5 h-5 text-[#2D4A27]" />,
-      title: 'Potted in Nutrient-Rich Mix',
-      desc: 'No sub-standard nursery red soil. Every plant is potted in enriched cocopeat, vermicompost, perlite, and organic neem meal.',
+      icon: <Leaf className="w-5 h-5 text-[#1F3B22]" />,
+      title: 'Microbiome-Enriched Organic Soil',
+      desc: 'Formulated with organic composted bark, perlite, and cold-pressed bio-actives rather than heavy compacted field clay.',
     },
     {
-      icon: <PhoneCall className="w-5 h-5 text-[#2D4A27]" />,
-      title: 'Free Plant Doctor Advice',
-      desc: 'Got a yellow leaf or pest question? Connect with our dedicated horticulturists anytime via WhatsApp for step-by-step guidance.',
+      icon: <Sparkles className="w-5 h-5 text-[#1F3B22]" />,
+      title: 'Lifetime Botanical Support',
+      desc: 'Receive personalized watering rhythms, lighting guidance, and seasonal diagnosis direct from certified botanists.',
     },
   ];
 
   return (
-    <section className="py-16 bg-[#F5F2EB]/50 border-b border-[#E5E2D9]">
+    <section className="py-20 sm:py-28 bg-[#F5F4EE] border-b border-[#E8E5DC]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-xl mx-auto mb-12">
-          <span className="text-[10px] font-bold text-[#2D4A27] uppercase tracking-[0.25em] block">
-            The Vana Botanica Standard
+        <div className="text-center max-w-2xl mx-auto mb-16">
+          <span className="text-[10px] font-bold text-[#5B6E58] uppercase tracking-[0.24em] block">
+            The Botanical Promise
           </span>
-          <h2 className="font-serif text-3xl font-normal text-[#1A1A1A] mt-1">
-            Why Indian Plant Lovers Trust Us
+          <h2 className="font-editorial text-3xl sm:text-4xl lg:text-5xl font-bold text-[#141414] mt-2 tracking-tight">
+            Cultivated with Patience &amp; Precision
           </h2>
-          <p className="text-xs text-[#5A5A5A] mt-2 font-light">
-            Every green specimen is acclimatized in our eco-controlled greenhouse before reaching your doorstep.
+          <p className="text-xs sm:text-sm text-[#616161] mt-3 font-normal leading-relaxed">
+            Every green specimen is acclimatized in our bio-controlled sanctuary before finding a home in your living space.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
           {features.map((f, i) => (
             <div
               key={i}
-              className="bg-white p-6 border border-[#E5E2D9] hover:border-[#2D4A27]/40 transition-colors"
+              className="bg-[#FAF9F5] p-8 rounded-3xl border border-[#E5E2D9] hover:border-[#1F3B22]/40 hover:shadow-lg transition-all duration-300 flex flex-col justify-between"
             >
-              <div className="w-11 h-11 bg-[#F5F2EB] border border-[#E5E2D9] flex items-center justify-center mb-4">
-                {f.icon}
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-[#EFECE3] border border-[#DDD9CE] flex items-center justify-center mb-6 shadow-xs">
+                  {f.icon}
+                </div>
+                <h3 className="font-editorial font-bold text-[#141414] text-lg mb-2.5">
+                  {f.title}
+                </h3>
+                <p className="text-xs sm:text-sm text-[#616161] leading-relaxed font-normal">
+                  {f.desc}
+                </p>
               </div>
-              <h3 className="font-serif font-bold text-[#1A1A1A] text-base mb-2">
-                {f.title}
-              </h3>
-              <p className="text-xs text-[#5A5A5A] leading-relaxed font-light">
-                {f.desc}
-              </p>
             </div>
           ))}
         </div>

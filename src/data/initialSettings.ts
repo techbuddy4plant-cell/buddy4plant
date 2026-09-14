@@ -35,11 +35,11 @@ export const INITIAL_PAYMENT_SETTINGS: PaymentSettings = {
 };
 
 export const INITIAL_HOMEPAGE_CMS: HomepageCMS = {
-  heroTitle: 'Bring Home a Little More Green.',
-  heroSubtitle: 'Hand-nurtured botanical plants, artisanal planters, and organic care kits crafted for serene Indian homes.',
-  heroBadge: 'Premium Indian Botanical Living',
-  heroImage: 'https://images.unsplash.com/photo-1545241047-6083a3684587?auto=format&fit=crop&w=1600&q=85',
-  heroPrimaryButtonText: 'Shop All Plants',
+  heroTitle: 'The roots remember what the soil provides.',
+  heroSubtitle: 'A slow-release organic plant elixir built from cold-pressed kelp, mycorrhizal bio-actives, and vermicompost humus. Feeds roots deep, settles clean. Nurture weekly after watering on damp soil for lush leaves and resilient blooms.',
+  heroBadge: 'Cold-Pressed Bio-Active Plant Nutrition • 100% Organic & Peat-Free',
+  heroImage: '/editorial/hero-botanical-branch.jpg',
+  heroPrimaryButtonText: 'Shop Plants & Organic Food',
   heroPrimaryButtonLink: '/plants',
   heroSecondaryButtonText: 'Explore Curated Combos',
   heroSecondaryButtonLink: '/plants/combos',
