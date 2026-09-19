@@ -19,8 +19,15 @@ import { OrderSuccess } from './components/order/OrderSuccess';
 import { OrderTrackingPage } from './components/order/OrderTrackingPage';
 import { UserProfilePage } from './components/account/UserProfilePage';
 import { UserOrdersPage } from './components/account/UserOrdersPage';
-import { AboutUsPage, PlantDoctorPage, ContactUsPage } from './components/pages/StaticPages';
 import { WishlistPage } from './components/pages/WishlistPage';
+import {
+  AboutUsPage,
+  PlantDoctorPage,
+  ContactUsPage,
+  ReviewsPage,
+  CareGuidePage,
+  ShippingPolicyPage
+} from './components/pages/StaticPages';
 import { ProjectsPage } from './components/pages/ProjectsPage';
 import { AdminDashboard } from './components/admin/AdminDashboard';
 import { AdminLoginPage } from './components/admin/AdminLoginPage';
@@ -152,6 +159,18 @@ export default function App() {
 
     if (path === '/contact') {
       return <ContactUsPage />;
+    }
+
+    if (path === '/reviews' || path.startsWith('/reviews')) {
+      return <ReviewsPage navigate={navigate} />;
+    }
+
+    if (path === '/care-guide' || path.startsWith('/care-guide')) {
+      return <CareGuidePage navigate={navigate} />;
+    }
+
+    if (path === '/shipping-policy' || path.startsWith('/shipping-policy')) {
+      return <ShippingPolicyPage navigate={navigate} />;
     }
 
     // Default fallback

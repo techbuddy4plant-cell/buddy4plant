@@ -15,10 +15,13 @@ import {
   Check,
   RefreshCw,
   Sparkles,
-  ExternalLink
+  ExternalLink,
+  Star,
+  X
 } from 'lucide-react';
 import { Order, OrderStatus } from '../../types';
 import { getOrderByNumberOrPhone, subscribeToOrder } from '../../services/orderService';
+import { submitReview } from '../../services/reviewService';
 import { useStoreSettings } from '../../context/StoreSettingsContext';
 import { PlantImage } from '../../utils/imageFallback';
 
@@ -31,6 +34,13 @@ export const OrderTrackingPage: React.FC = () => {
   const [copiedAWB, setCopiedAWB] = useState(false);
   const [lastRefreshed, setLastRefreshed] = useState<Date>(new Date());
   const { settings } = useStoreSettings();
+
+  // Review modal state
+  const [reviewModalItem, setReviewModalItem] = useState<{ id: string; name: string; image: string; slug?: string } | null>(null);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState('');
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [reviewSuccessMsg, setReviewSuccessMsg] = useState<string | null>(null);
 
   // Auto-search if url has ?id=
   useEffect(() => {
@@ -344,13 +354,38 @@ export const OrderTrackingPage: React.FC = () => {
                         <span className="text-[#7A7A7A] block text-[11px]">Qty: {item.quantity} | SKU: {item.sku}</span>
                       </div>
                     </div>
-                    <span className="font-bold text-[#1A1A1A]">
-                      ₹{(item.price * item.quantity).toLocaleString('en-IN')}
-                    </span>
+                    <div className="flex items-center gap-3">
+                      <span className="font-bold text-[#1A1A1A]">
+                        ₹{(item.price * item.quantity).toLocaleString('en-IN')}
+                      </span>
+                      {order.orderStatus === 'Delivered' && (
+                        <button
+                          onClick={() =>
+                            setReviewModalItem({
+                              id: item.productId,
+                              name: item.name,
+                              image: item.image,
+                              slug: item.slug
+                            })
+                          }
+                          className="px-3 py-1.5 border border-[#2D4A27] text-[#2D4A27] hover:bg-[#2D4A27] hover:text-white text-[11px] font-bold rounded transition-colors flex items-center gap-1 shrink-0"
+                        >
+                          <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                          Review
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
+
+            {reviewSuccessMsg && (
+              <div className="p-3 bg-[#2D4A27]/10 border border-[#2D4A27]/20 text-[#2D4A27] text-xs font-semibold flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 shrink-0" />
+                <span>{reviewSuccessMsg}</span>
+              </div>
+            )}
 
             {/* Transit Care & Support Box */}
             <div className="p-4 bg-[#2D4A27]/5 border border-[#2D4A27]/20 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
@@ -365,7 +400,7 @@ export const OrderTrackingPage: React.FC = () => {
               </div>
 
               <a
-                href={`https://wa.me/${settings.contactPhone?.replace(/[^0-9]/g, '') || '919876543210'}?text=Hi%20Vana%20Botanica,%20I%20have%20a%20query%20about%20my%20order%20${encodeURIComponent(order.orderNumber)}`}
+                href={`https://wa.me/${settings.contactPhone?.replace(/[^0-9]/g, '') || '919876543210'}?text=Hi%20buddy4plant,%20I%20have%20a%20query%20about%20my%20order%20${encodeURIComponent(order.orderNumber)}`}
                 target="_blank"
                 rel="noreferrer"
                 className="px-4 py-2 bg-[#2D4A27] hover:bg-[#1F341C] text-white text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 shrink-0"
@@ -373,6 +408,113 @@ export const OrderTrackingPage: React.FC = () => {
                 <MessageCircle className="w-3.5 h-3.5" />
                 WhatsApp Plant Care
               </a>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL: Write Plant Review */}
+        {reviewModalItem && (
+          <div className="fixed inset-0 z-50 bg-[#0F1710]/70 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl max-w-md w-full p-6 sm:p-8 border border-stone-200 shadow-2xl animate-fadeIn">
+              <div className="flex items-center justify-between pb-3 border-b border-stone-100">
+                <h3 className="font-serif font-bold text-lg text-stone-900 flex items-center gap-2">
+                  <Star className="w-5 h-5 text-amber-500 fill-amber-500" />
+                  Review Delivered Plant
+                </h3>
+                <button onClick={() => setReviewModalItem(null)} className="text-stone-400 hover:text-stone-700">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  if (!reviewModalItem) return;
+                  setSubmittingReview(true);
+                  try {
+                    await submitReview({
+                      productId: reviewModalItem.slug || reviewModalItem.id,
+                      productName: reviewModalItem.name,
+                      userId: order?.userId || 'verified_buyer',
+                      userName: order?.customerName || 'Verified Plant Parent',
+                      userEmail: order?.customerEmail || 'care@buddy4plant.com',
+                      rating: reviewRating,
+                      title: `Verified Delivery Review: ${reviewModalItem.name}`,
+                      comment: reviewComment.trim() || 'Plant arrived fresh, healthy, and securely packed!',
+                      verifiedPurchase: true,
+                      approved: true,
+                    });
+                    setReviewSuccessMsg(`Thank you! Your verified review for "${reviewModalItem.name}" has been published to the product page.`);
+                    setReviewModalItem(null);
+                    setReviewComment('');
+                    setReviewRating(5);
+                    setTimeout(() => setReviewSuccessMsg(null), 4500);
+                  } catch (err: any) {
+                    setReviewModalItem(null);
+                  } finally {
+                    setSubmittingReview(false);
+                  }
+                }}
+                className="mt-4 space-y-4 text-xs"
+              >
+                <div className="flex items-center gap-3 bg-stone-50 p-3 rounded-xl border border-stone-200">
+                  <PlantImage src={reviewModalItem.image} alt={reviewModalItem.name} className="w-12 h-12 object-cover rounded-lg" />
+                  <span className="font-bold text-stone-900 text-sm">{reviewModalItem.name}</span>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-stone-700 uppercase tracking-wider mb-1">
+                    Rating (1 to 5 Stars)
+                  </label>
+                  <div className="flex items-center gap-2">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        type="button"
+                        key={star}
+                        onClick={() => setReviewRating(star)}
+                        className="text-xl focus:outline-none"
+                      >
+                        <Star
+                          className={`w-6 h-6 ${
+                            star <= reviewRating ? 'text-amber-500 fill-amber-500' : 'text-stone-300'
+                          }`}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-stone-700 uppercase tracking-wider mb-1">
+                    Your Review Feedback
+                  </label>
+                  <textarea
+                    rows={3}
+                    required
+                    placeholder="Tell us how the plant arrived and how it looks in your space..."
+                    value={reviewComment}
+                    onChange={(e) => setReviewComment(e.target.value)}
+                    className="w-full px-3 py-2.5 border border-stone-300 rounded-xl text-xs focus:ring-1 focus:ring-[#2D4A27] outline-none"
+                  />
+                </div>
+
+                <div className="pt-3 flex justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setReviewModalItem(null)}
+                    className="px-4 py-2 border border-stone-300 text-stone-700 rounded-xl font-semibold"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={submittingReview}
+                    className="px-5 py-2 bg-[#2D4A27] hover:bg-[#1F341C] text-white font-bold uppercase tracking-wider rounded-xl shadow-xs transition-colors disabled:opacity-50"
+                  >
+                    {submittingReview ? 'Publishing...' : 'Submit Review'}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}

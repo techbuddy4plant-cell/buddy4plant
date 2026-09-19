@@ -14,8 +14,9 @@ import {
   Package,
   Plus
 } from 'lucide-react';
-import { Product } from '../../types';
+import { Product, Review } from '../../types';
 import { getProductBySlug, getProducts } from '../../services/productService';
+import { getProductReviews } from '../../services/reviewService';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { ImageGallery } from './ImageGallery';
@@ -39,6 +40,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
   const { isInWishlist, toggleWishlist } = useWishlist();
 
   const [product, setProduct] = useState<Product | null>(null);
+  const [productReviews, setProductReviews] = useState<Review[]>([]);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -48,18 +50,34 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
 
   const potOptions = ['Ivory White', 'Terracotta Red', 'Sage Green', 'Matte Charcoal'];
 
+  const refreshReviews = (p: Product) => {
+    getProductReviews(p.id, p.slug, p.name).then(setProductReviews);
+  };
+
   useEffect(() => {
     setLoading(true);
     getProductBySlug(slug).then((p) => {
       setProduct(p);
       setLoading(false);
       if (p) {
+        refreshReviews(p);
         getProducts(p.category).then((all) => {
           setRelatedProducts(all.filter((item) => item.id !== p.id).slice(0, 4));
         });
       }
     });
-  }, [slug]);
+
+    const handleReviewsChanged = () => {
+      if (product) refreshReviews(product);
+    };
+
+    window.addEventListener('b4p_reviews_changed', handleReviewsChanged);
+    window.addEventListener('b4p_store_data_changed', handleReviewsChanged);
+    return () => {
+      window.removeEventListener('b4p_reviews_changed', handleReviewsChanged);
+      window.removeEventListener('b4p_store_data_changed', handleReviewsChanged);
+    };
+  }, [slug, product?.id]);
 
   if (loading) {
     return (
@@ -92,6 +110,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
     product.compareAtPrice && product.compareAtPrice > product.price
       ? Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100)
       : null;
+
+  const displayReviewCount = productReviews.length > 0 ? productReviews.length : product.reviewCount;
+  const displayRating = productReviews.length > 0
+    ? productReviews.reduce((sum, r) => sum + r.rating, 0) / productReviews.length
+    : product.rating;
 
   const handleBuyNow = () => {
     addToCart(product, quantity, selectedPotColor);
@@ -151,13 +174,13 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                     <Star
                       key={i}
                       className={`w-3.5 h-3.5 ${
-                        i < Math.round(product.rating) ? 'fill-[#2D4A27] text-[#2D4A27]' : 'text-[#E5E2D9]'
+                        i < Math.round(displayRating) ? 'fill-[#2D4A27] text-[#2D4A27]' : 'text-[#E5E2D9]'
                       }`}
                     />
                   ))}
-                  <span className="ml-1.5 font-bold text-[#1A1A1A]">{product.rating.toFixed(1)}</span>
+                  <span className="ml-1.5 font-bold text-[#1A1A1A]">{displayRating.toFixed(1)}</span>
                 </div>
-                <span className="text-xs text-[#7A7A7A]">({product.reviewCount} customer reviews)</span>
+                <span className="text-xs text-[#7A7A7A]">({displayReviewCount} customer reviews)</span>
               </div>
 
               {/* Pricing */}
@@ -314,7 +337,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                   : 'text-[#7A7A7A] hover:text-[#1A1A1A]'
               }`}
             >
-              Customer Reviews ({product.reviewCount})
+              Customer Reviews ({displayReviewCount})
             </button>
           </div>
 

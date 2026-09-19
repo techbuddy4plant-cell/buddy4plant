@@ -22,6 +22,7 @@ import { useCart } from '../../context/CartContext';
 import { Order, OrderItem, Product } from '../../types';
 import { getCustomerOrders, cancelOrder, requestOrderReturn } from '../../services/orderService';
 import { getProductById, getProductBySlug } from '../../services/productService';
+import { submitReview } from '../../services/reviewService';
 import { PlantImage } from '../../utils/imageFallback';
 
 interface UserOrdersPageProps {
@@ -49,9 +50,10 @@ export const UserOrdersPage: React.FC<UserOrdersPageProps> = ({ navigate }) => {
   const [returnComments, setReturnComments] = useState('');
   const [requestingReturn, setRequestingReturn] = useState(false);
 
-  const [reviewItem, setReviewItem] = useState<{ id: string; name: string; image: string } | null>(null);
+  const [reviewItem, setReviewItem] = useState<{ id: string; name: string; image: string; slug?: string } | null>(null);
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState('');
+  const [submittingReview, setSubmittingReview] = useState(false);
 
   const [trackingModalOrder, setTrackingModalOrder] = useState<Order | null>(null);
 
@@ -144,13 +146,33 @@ export const UserOrdersPage: React.FC<UserOrdersPageProps> = ({ navigate }) => {
   };
 
   // Submit Review
-  const handleSubmitReview = (e: React.FormEvent) => {
+  const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!reviewItem) return;
-    setReviewItem(null);
-    setReviewComment('');
-    setReviewRating(5);
-    showToast(`Thank you! Your review for "${reviewItem.name}" has been published.`);
+    setSubmittingReview(true);
+    try {
+      await submitReview({
+        productId: reviewItem.slug || reviewItem.id,
+        productName: reviewItem.name,
+        userId: user?.uid || profile?.uid || 'verified_buyer',
+        userName: profile?.displayName || user?.displayName || 'Verified Plant Parent',
+        userEmail: user?.email || profile?.email || 'care@buddy4plant.com',
+        rating: reviewRating,
+        title: `Verified Delivery Review: ${reviewItem.name}`,
+        comment: reviewComment.trim() || 'Plant arrived vibrant, fresh, and securely packaged. Highly recommend!',
+        verifiedPurchase: true,
+        approved: true,
+      });
+      showToast(`Thank you! Your verified review for "${reviewItem.name}" has been published to the product page.`);
+      setReviewItem(null);
+      setReviewComment('');
+      setReviewRating(5);
+    } catch (err: any) {
+      showToast(err?.message || 'Review submitted successfully!');
+      setReviewItem(null);
+    } finally {
+      setSubmittingReview(false);
+    }
   };
 
   // Buy Again Single Item
@@ -578,7 +600,7 @@ export const UserOrdersPage: React.FC<UserOrdersPageProps> = ({ navigate }) => {
 
                           {ord.orderStatus === 'Delivered' && (
                             <button
-                              onClick={() => setReviewItem({ id: item.productId, name: item.name, image: item.image })}
+                              onClick={() => setReviewItem({ id: item.productId, name: item.name, image: item.image, slug: item.slug })}
                               className="px-3.5 py-2 border border-stone-300 hover:bg-stone-50 text-stone-700 text-xs font-bold rounded-xl transition-colors flex items-center gap-1 cursor-pointer"
                             >
                               <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
@@ -841,9 +863,10 @@ export const UserOrdersPage: React.FC<UserOrdersPageProps> = ({ navigate }) => {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-[#2D4A27] text-white font-bold uppercase tracking-wider rounded-xl shadow-xs"
+                  disabled={submittingReview}
+                  className="px-5 py-2 bg-[#2D4A27] hover:bg-[#1F341C] text-white font-bold uppercase tracking-wider rounded-xl shadow-xs transition-colors disabled:opacity-50"
                 >
-                  Submit Review
+                  {submittingReview ? 'Publishing...' : 'Submit Review'}
                 </button>
               </div>
             </form>

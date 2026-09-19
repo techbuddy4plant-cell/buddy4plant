@@ -18,9 +18,27 @@ export const ReviewList: React.FC<ReviewListProps> = ({ product }) => {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
 
+  const loadProductReviews = () => {
+    getProductReviews(product.id, product.slug, product.name).then(setReviews);
+  };
+
   useEffect(() => {
-    getProductReviews(product.id).then(setReviews);
-  }, [product.id]);
+    loadProductReviews();
+
+    const handleReviewsUpdate = () => {
+      loadProductReviews();
+    };
+
+    window.addEventListener('b4p_reviews_changed', handleReviewsUpdate);
+    window.addEventListener('b4p_store_data_changed', handleReviewsUpdate);
+    window.addEventListener('storage', handleReviewsUpdate);
+
+    return () => {
+      window.removeEventListener('b4p_reviews_changed', handleReviewsUpdate);
+      window.removeEventListener('b4p_store_data_changed', handleReviewsUpdate);
+      window.removeEventListener('storage', handleReviewsUpdate);
+    };
+  }, [product.id, product.slug, product.name]);
 
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,18 +51,19 @@ export const ReviewList: React.FC<ReviewListProps> = ({ product }) => {
     setSubmitting(true);
     try {
       const newRev = await submitReview({
-        productId: product.id,
+        productId: product.slug || product.id,
         productName: product.name,
         userId: user?.uid || profile?.uid || 'guest',
         userName: profile?.displayName || user?.displayName || 'Botanical Enthusiast',
-        userEmail: user?.email || 'customer@vanabotanica.com',
+        userEmail: user?.email || profile?.email || 'customer@buddy4plant.com',
         rating,
         title,
         comment,
         verifiedPurchase: true,
+        approved: true,
       });
 
-      setReviews([newRev, ...reviews]);
+      setReviews((prev) => [newRev, ...prev.filter((r) => r.id !== newRev.id)]);
       setSuccess(true);
       setShowForm(false);
       setTitle('');
@@ -55,6 +74,10 @@ export const ReviewList: React.FC<ReviewListProps> = ({ product }) => {
       setSubmitting(false);
     }
   };
+
+  const liveAvgRating = reviews.length > 0
+    ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+    : product.rating;
 
   return (
     <div className="space-y-6">
@@ -69,13 +92,13 @@ export const ReviewList: React.FC<ReviewListProps> = ({ product }) => {
                 <Star
                   key={i}
                   className={`w-3.5 h-3.5 ${
-                    i < Math.round(product.rating) ? 'fill-[#2D4A27] text-[#2D4A27]' : 'text-[#E5E2D9]'
+                    i < Math.round(liveAvgRating) ? 'fill-[#2D4A27] text-[#2D4A27]' : 'text-[#E5E2D9]'
                   }`}
                 />
               ))}
             </div>
             <span className="text-xs font-bold text-[#1A1A1A]">
-              {product.rating.toFixed(1)} out of 5 stars
+              {liveAvgRating.toFixed(1)} out of 5 stars
             </span>
           </div>
         </div>
