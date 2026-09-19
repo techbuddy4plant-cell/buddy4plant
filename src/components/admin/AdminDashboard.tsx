@@ -11,7 +11,8 @@ import {
   ExternalLink,
   ShieldCheck,
   RefreshCw,
-  LogOut
+  LogOut,
+  Trees
 } from 'lucide-react';
 import { Order, Product, Category, Coupon } from '../../types';
 import { getOrders, subscribeToAllOrders } from '../../services/orderService';
@@ -23,6 +24,7 @@ import { AdminOverview } from './AdminOverview';
 import { AdminProducts } from './AdminProducts';
 import { AdminOrders } from './AdminOrders';
 import { AdminCategories } from './AdminCategories';
+import { AdminProjects } from './AdminProjects';
 import { AdminCoupons } from './AdminCoupons';
 import { AdminCMS } from './AdminCMS';
 import { AdminSettings } from './AdminSettings';
@@ -32,7 +34,7 @@ interface AdminDashboardProps {
   navigate: (path: string) => void;
 }
 
-type AdminTab = 'overview' | 'products' | 'orders' | 'categories' | 'coupons' | 'cms' | 'settings';
+type AdminTab = 'overview' | 'products' | 'orders' | 'categories' | 'projects' | 'coupons' | 'cms' | 'settings';
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
   const { profile, user, promptSignOut } = useAuth();
@@ -88,18 +90,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
     { id: 'orders', label: 'Orders & Shipments', icon: <ShoppingBag className="w-4 h-4" />, badge: orders.filter((o) => o.orderStatus === 'Pending').length },
     { id: 'products', label: 'Plants & Stock', icon: <Package className="w-4 h-4" />, badge: products.filter((p) => p.stock <= 5).length },
     { id: 'categories', label: 'Collections / Cats', icon: <Layers className="w-4 h-4" /> },
+    { id: 'projects', label: 'Landscaping Projects', icon: <Trees className="w-4 h-4" /> },
     { id: 'coupons', label: 'Coupons & Promos', icon: <Tag className="w-4 h-4" /> },
     { id: 'cms', label: 'Homepage CMS', icon: <Palette className="w-4 h-4" /> },
     { id: 'settings', label: 'Store & Payments', icon: <Settings className="w-4 h-4" /> },
   ];
 
   return (
-    <div className="min-h-screen bg-[#FDFCF9] flex flex-col md:flex-row font-sans">
-      {/* Sidebar Navigation */}
-      <aside className="w-full md:w-64 bg-[#182319] text-[#E5E2D9] flex flex-col justify-between shrink-0">
+    <div className="h-screen bg-[#FDFCF9] flex flex-col md:flex-row font-sans overflow-hidden">
+      {/* Sidebar Navigation - Fixed & Sticky (Does not move when scrolling) */}
+      <aside className="w-full md:w-64 bg-[#182319] text-[#E5E2D9] flex flex-col justify-between shrink-0 md:h-screen md:sticky md:top-0 md:overflow-y-auto z-40 border-r border-[#2A3B2C] shadow-lg">
         <div>
           {/* Top Admin Brand */}
-          <div className="p-4 sm:p-5 border-b border-[#2A3B2C] flex items-center justify-between">
+          <div className="p-4 sm:p-5 border-b border-[#2A3B2C] flex items-center justify-between sticky top-0 bg-[#182319] z-10">
             <div className="flex items-center gap-2.5">
               <Buddy4PlantLogo size={36} showText={false} variant="full-circle" />
               <div>
@@ -117,9 +120,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 text-xs font-medium transition-all ${
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 text-xs font-medium rounded-lg transition-all ${
                   activeTab === item.id
-                    ? 'bg-[#2D4A27] text-white'
+                    ? 'bg-[#2D4A27] text-white shadow-xs font-bold'
                     : 'text-[#B0BBAA] hover:text-white hover:bg-[#253222]'
                 }`}
               >
@@ -138,7 +141,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
         </div>
 
         {/* Bottom Sidebar info & Return to store */}
-        <div className="p-4 border-t border-[#2A3628] space-y-2 text-xs">
+        <div className="p-4 border-t border-[#2A3628] space-y-2 text-xs sticky bottom-0 bg-[#182319] z-10">
           <button
             onClick={() => navigate('/')}
             className="w-full px-3.5 py-2 bg-[#253222] hover:bg-[#2D4A27] text-[#E5E2D9] flex items-center justify-center gap-2 font-medium text-[11px] uppercase tracking-wider transition-colors rounded-lg"
@@ -159,13 +162,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
         </div>
       </aside>
 
-      {/* Main Admin Content Canvas */}
-      <main className="flex-1 flex flex-col min-w-0">
+      {/* Main Admin Content Canvas - Independently Scrollable */}
+      <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         {/* Top bar */}
-        <header className="h-16 bg-white border-b border-[#E5E2D9] px-6 flex items-center justify-between">
+        <header className="h-16 bg-white border-b border-[#E5E2D9] px-6 flex items-center justify-between shrink-0 sticky top-0 z-30">
           <div className="flex items-center gap-3">
             <span className="font-serif font-bold text-lg text-[#1A1A1A] capitalize">
-              {activeTab === 'cms' ? 'Homepage Merchandising & CMS' : activeTab}
+              {activeTab === 'cms'
+                ? 'Homepage Merchandising & CMS'
+                : activeTab === 'projects'
+                ? 'Landscaping & Botanical Projects Portfolio'
+                : activeTab}
             </span>
           </div>
 
@@ -173,7 +180,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
             <button
               onClick={loadAllData}
               disabled={loading}
-              className="p-2 text-[#5A5A5A] hover:text-[#1A1A1A] hover:bg-[#F5F2EB] transition-colors"
+              className="p-2 text-[#5A5A5A] hover:text-[#1A1A1A] hover:bg-[#F5F2EB] transition-colors rounded-lg"
               title="Refresh Data"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -224,6 +231,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
 
           {activeTab === 'categories' && (
             <AdminCategories categories={categories} onRefresh={loadAllData} />
+          )}
+
+          {activeTab === 'projects' && (
+            <AdminProjects onRefresh={loadAllData} />
           )}
 
           {activeTab === 'coupons' && (

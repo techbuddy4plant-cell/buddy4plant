@@ -49,6 +49,24 @@ export interface Category {
   active: boolean;
 }
 
+export interface BotanicalProject {
+  id: string;
+  title: string;
+  location: string;
+  category: string;
+  image: string;
+  description: string;
+  speciesCount: number;
+  plantHighlights: string[];
+  tag: string;
+  featured?: boolean;
+  area?: string;
+  duration?: string;
+  client?: string;
+  active?: boolean;
+  createdAt?: number;
+}
+
 export interface CartItem {
   product: Product;
   quantity: number;

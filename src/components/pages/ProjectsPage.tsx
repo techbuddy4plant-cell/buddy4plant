@@ -3,6 +3,7 @@ import { Sparkles, MapPin, CheckCircle, ArrowRight, MessageCircle, Leaf, ShieldC
 import { PlantImage } from '../../utils/imageFallback';
 import { BOTANICAL_PROJECTS } from '../storefront/ProjectsSection';
 import { useStoreSettings } from '../../context/StoreSettingsContext';
+import { getProjects } from '../../services/projectService';
 
 interface ProjectsPageProps {
   navigate: (path: string) => void;
@@ -10,6 +11,28 @@ interface ProjectsPageProps {
 
 export const ProjectsPage: React.FC<ProjectsPageProps> = ({ navigate }) => {
   const { settings } = useStoreSettings();
+  const [projects, setProjects] = React.useState<any[]>(BOTANICAL_PROJECTS);
+
+  React.useEffect(() => {
+    getProjects().then((data) => {
+      if (data && data.length > 0) {
+        setProjects(data.filter((p) => p.active !== false));
+      }
+    });
+
+    const handleDataChanged = () => {
+      getProjects().then((data) => {
+        if (data && data.length > 0) {
+          setProjects(data.filter((p) => p.active !== false));
+        }
+      });
+    };
+
+    window.addEventListener('b4p_store_data_changed', handleDataChanged);
+    return () => {
+      window.removeEventListener('b4p_store_data_changed', handleDataChanged);
+    };
+  }, []);
 
   return (
     <div className="bg-[#FDFCF9] min-h-screen py-12 text-[#141414]">
@@ -40,7 +63,7 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({ navigate }) => {
 
         {/* Projects Deep Showcase */}
         <div className="space-y-16 lg:space-y-24">
-          {BOTANICAL_PROJECTS.map((project, idx) => (
+          {projects.map((project, idx) => (
             <div
               key={project.id}
               className={`grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center bg-[#FAF9F5] p-6 sm:p-10 rounded-4xl border border-[#E5E2D9] ${

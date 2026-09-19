@@ -145,59 +145,89 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({ categories, on
         ))}
       </div>
 
-      {/* Category Modal */}
+      {/* Responsive Category Modal (Auto-fits screen height) */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 overflow-y-auto">
+          {/* Backdrop */}
           <div
-            className="fixed inset-0 bg-[#1A1A1A]/60 backdrop-blur-xs"
+            className="fixed inset-0 bg-[#0F1710]/70 backdrop-blur-xs transition-opacity"
             onClick={() => setIsModalOpen(false)}
           />
 
-          <div className="relative bg-white border border-[#E5E2D9] max-w-md w-full p-6 z-10">
-            <h3 className="font-serif font-bold text-lg text-[#1A1A1A] mb-4">
-              {editingCategory ? 'Edit Collection' : 'Create New Collection'}
-            </h3>
+          {/* Modal Container */}
+          <div className="relative bg-white border border-[#E5E2D9] max-w-lg w-full rounded-2xl shadow-2xl z-10 flex flex-col max-h-[90vh] sm:max-h-[85vh] overflow-hidden animate-fadeIn my-auto">
+            {/* Sticky Header */}
+            <div className="px-6 py-4 border-b border-[#E5E2D9] flex items-center justify-between bg-[#FCFBF8] shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-[#EBF3EC] text-[#1F3B22] flex items-center justify-center font-bold">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-serif font-bold text-base sm:text-lg text-[#1A1A1A] leading-none">
+                    {editingCategory ? 'Edit Collection' : 'Create New Collection'}
+                  </h3>
+                  <p className="text-[11px] text-[#6A7B6B] mt-0.5">
+                    Updates reflect in the storefront navigation and catalogue filters.
+                  </p>
+                </div>
+              </div>
 
-            <form onSubmit={handleSave} className="space-y-4 text-xs">
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-full text-[#6A7B6B] hover:text-[#1A1A1A] hover:bg-[#F2EFEB] transition-colors"
+                aria-label="Close modal"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Scrollable Form Body */}
+            <form
+              id="category-edit-form"
+              onSubmit={handleSave}
+              className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4 text-xs"
+            >
               <div>
-                <label className="block font-semibold text-[#1A1A1A] mb-1">Collection Name *</label>
+                <label className="block font-bold text-[#1A1A1A] mb-1">Collection Name *</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Rare Foliage"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
+                  className="w-full px-3 py-2 bg-white border border-[#D5D2C9] rounded-lg text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27] focus:ring-1 focus:ring-[#2D4A27]"
                 />
               </div>
 
               <div>
-                <label className="block font-semibold text-[#1A1A1A] mb-1">URL Slug</label>
+                <label className="block font-bold text-[#1A1A1A] mb-1">URL Slug</label>
                 <input
                   type="text"
                   placeholder="rare-foliage"
                   value={slug}
                   onChange={(e) => setSlug(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-[#1A1A1A] font-mono focus:outline-none focus:border-[#2D4A27]"
+                  className="w-full px-3 py-2 bg-white border border-[#D5D2C9] rounded-lg text-[#1A1A1A] font-mono text-[11px] focus:outline-none focus:border-[#2D4A27]"
                 />
               </div>
 
               <div>
-                <label className="block font-semibold text-[#1A1A1A] mb-1">Description</label>
+                <label className="block font-bold text-[#1A1A1A] mb-1">Description</label>
                 <textarea
                   rows={2}
+                  placeholder="Brief summary of what species or plants belong in this collection..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
+                  className="w-full px-3 py-2 bg-white border border-[#D5D2C9] rounded-lg text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
                 />
               </div>
 
               <div>
-                <label className="block font-semibold text-[#1A1A1A] mb-1">Collection Cover Photo</label>
+                <label className="block font-bold text-[#1A1A1A] mb-1">Collection Cover Photo</label>
 
-                {/* Preview Thumbnail */}
+                {/* Compact Preview Thumbnail */}
                 {image && (
-                  <div className="relative aspect-video w-full bg-[#F5F2EB] border border-[#E5E2D9] mb-2 overflow-hidden">
+                  <div className="relative aspect-video max-h-36 w-full bg-[#F5F2EB] border border-[#E5E2D9] rounded-lg mb-2 overflow-hidden">
                     <PlantImage src={image} alt="Cover preview" className="w-full h-full object-cover" />
                   </div>
                 )}
@@ -209,11 +239,11 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({ categories, on
                       placeholder="https://images.unsplash.com/..."
                       value={image}
                       onChange={(e) => setImage(e.target.value)}
-                      className="flex-1 px-3 py-1.5 bg-white border border-[#E5E2D9] text-[#1A1A1A] font-mono text-[11px] focus:outline-none focus:border-[#2D4A27]"
+                      className="flex-1 px-3 py-1.5 bg-white border border-[#D5D2C9] rounded-lg text-[#1A1A1A] font-mono text-[11px] focus:outline-none focus:border-[#2D4A27]"
                     />
-                    <label className="px-3 py-1.5 bg-[#2D4A27]/10 hover:bg-[#2D4A27]/20 text-[#2D4A27] text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors shrink-0">
+                    <label className="px-3 py-1.5 bg-[#2D4A27]/10 hover:bg-[#2D4A27]/20 text-[#2D4A27] text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors shrink-0">
                       <Upload className="w-3.5 h-3.5" />
-                      Upload File
+                      Upload
                       <input
                         type="file"
                         accept="image/*"
@@ -241,7 +271,7 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({ categories, on
                           key={idx}
                           type="button"
                           onClick={() => setImage(imgUrl)}
-                          className={`aspect-square border overflow-hidden transition-all ${
+                          className={`aspect-square rounded border overflow-hidden transition-all ${
                             image === imgUrl ? 'border-[#2D4A27] ring-2 ring-[#2D4A27]' : 'border-[#E5E2D9]'
                           }`}
                         >
@@ -254,44 +284,46 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({ categories, on
               </div>
 
               <div>
-                <label className="block font-semibold text-[#1A1A1A] mb-1">Sub-Categories (comma separated)</label>
+                <label className="block font-bold text-[#1A1A1A] mb-1">Sub-Categories (comma separated)</label>
                 <input
                   type="text"
                   placeholder="e.g. Monsteras, Philodendrons, Alocasias"
                   value={subCategories}
                   onChange={(e) => setSubCategories(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
+                  className="w-full px-3 py-2 bg-white border border-[#D5D2C9] rounded-lg text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
                 />
               </div>
 
               <div className="pt-2">
-                <label className="flex items-center gap-2 cursor-pointer">
+                <label className="flex items-center gap-2 cursor-pointer select-none">
                   <input
                     type="checkbox"
                     checked={active}
                     onChange={(e) => setActive(e.target.checked)}
-                    className="w-4 h-4 rounded text-[#2D4A27]"
+                    className="w-4 h-4 rounded text-[#2D4A27] focus:ring-[#2D4A27]"
                   />
-                  <span className="font-medium text-[#1A1A1A]">Display in store navigation</span>
+                  <span className="font-semibold text-[#1A1A1A]">Display in store navigation &amp; filters</span>
                 </label>
               </div>
-
-              <div className="pt-4 flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-[#5A5A5A] hover:bg-[#F5F2EB]"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 bg-[#2D4A27] hover:bg-[#1F341C] text-white text-[11px] font-bold uppercase tracking-wider"
-                >
-                  Save Collection
-                </button>
-              </div>
             </form>
+
+            {/* Sticky Footer */}
+            <div className="px-6 py-3.5 border-t border-[#E5E2D9] bg-[#FAF9F5] flex items-center justify-end gap-3 shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className="px-4 py-2 text-[#5A5A5A] hover:bg-[#EAE7DF] rounded-lg transition-colors font-semibold text-xs"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                form="category-edit-form"
+                className="px-6 py-2 bg-[#2D4A27] hover:bg-[#1F341C] text-white text-xs font-bold uppercase tracking-wider rounded-lg shadow-sm transition-all"
+              >
+                Save Collection
+              </button>
+            </div>
           </div>
         </div>
       )}
