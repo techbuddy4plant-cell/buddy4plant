@@ -19,7 +19,9 @@ import {
   Gift,
   Truck,
   Star,
-  FolderTree
+  FolderTree,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { Order, Product, Category, Coupon } from '../../types';
 import { getOrders, subscribeToAllOrders } from '../../services/orderService';
@@ -27,6 +29,7 @@ import { getProducts } from '../../services/productService';
 import { getCategories } from '../../services/categoryService';
 import { getCoupons } from '../../services/couponService';
 import { useAuth } from '../../context/AuthContext';
+import { useStoreSettings } from '../../context/StoreSettingsContext';
 import { AdminOverview } from './AdminOverview';
 import { AdminProducts } from './AdminProducts';
 import { AdminOrders } from './AdminOrders';
@@ -58,6 +61,7 @@ type AdminTab =
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
   const { profile, user, promptSignOut } = useAuth();
+  const { adminDarkMode, toggleAdminDarkMode } = useStoreSettings();
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
 
   const [orders, setOrders] = useState<Order[]>([]);
@@ -167,7 +171,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
   };
 
   return (
-    <div className="h-screen bg-[#FDFCF9] flex flex-col md:flex-row font-sans overflow-hidden">
+    <div className={`h-screen flex flex-col md:flex-row font-sans overflow-hidden transition-colors duration-200 ${
+      adminDarkMode ? 'admin-dark-mode bg-[#0E150F] text-[#E5EAE3]' : 'bg-[#FDFCF9] text-[#1A1A1A]'
+    }`}>
       {/* Sidebar Navigation - Fixed & Sticky (Does not move when scrolling) */}
       <aside className="w-full md:w-64 bg-[#182319] text-[#E5E2D9] flex flex-col justify-between shrink-0 md:h-screen md:sticky md:top-0 md:overflow-y-auto z-40 border-r border-[#2A3B2C] shadow-lg">
         <div>
@@ -235,24 +241,42 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
       {/* Main Admin Content Canvas - Independently Scrollable */}
       <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         {/* Top bar */}
-        <header className="h-16 bg-white border-b border-[#E5E2D9] px-6 flex items-center justify-between shrink-0 sticky top-0 z-30">
+        <header className={`h-16 px-6 flex items-center justify-between shrink-0 sticky top-0 z-30 transition-colors ${
+          adminDarkMode ? 'bg-[#152016] border-b border-[#243525] text-white' : 'bg-white border-b border-[#E5E2D9] text-[#1A1A1A]'
+        }`}>
           <div className="flex items-center gap-3">
-            <span className="font-serif font-bold text-lg text-[#1A1A1A]">
+            <span className={`font-serif font-bold text-lg ${adminDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>
               {getTabTitle(activeTab)}
             </span>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Theme Toggle (Dark / Light) */}
+            <button
+              onClick={toggleAdminDarkMode}
+              className={`p-2 transition-colors rounded-lg flex items-center gap-1.5 text-xs font-semibold ${
+                adminDarkMode
+                  ? 'text-amber-300 hover:bg-[#253222] bg-[#253222]/70 border border-amber-400/20'
+                  : 'text-[#5A5A5A] hover:text-[#1A1A1A] hover:bg-[#F5F2EB] border border-black/5'
+              }`}
+              title={adminDarkMode ? 'Switch Admin to Light Mode' : 'Switch Admin to Dark Mode'}
+            >
+              {adminDarkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
+              <span className="hidden sm:inline">{adminDarkMode ? 'Dark' : 'Light'}</span>
+            </button>
+
             <button
               onClick={loadAllData}
               disabled={loading}
-              className="p-2 text-[#5A5A5A] hover:text-[#1A1A1A] hover:bg-[#F5F2EB] transition-colors rounded-lg"
+              className={`p-2 transition-colors rounded-lg ${
+                adminDarkMode ? 'text-[#A3B3A2] hover:text-white hover:bg-[#253222]' : 'text-[#5A5A5A] hover:text-[#1A1A1A] hover:bg-[#F5F2EB]'
+              }`}
               title="Refresh Data"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             </button>
 
-            <div className="flex items-center gap-2 pl-3 border-l border-[#E5E2D9] text-xs">
+            <div className={`flex items-center gap-2 pl-3 border-l text-xs ${adminDarkMode ? 'border-[#283A2A]' : 'border-[#E5E2D9]'}`}>
               <span className="w-7 h-7 bg-[#2D4A27] text-white flex items-center justify-center font-bold text-xs rounded-full">
                 <i className="fa-solid fa-user-shield text-xs" />
               </span>

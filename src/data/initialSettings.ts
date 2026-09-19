@@ -48,6 +48,7 @@ export const INITIAL_HOMEPAGE_CMS: HomepageCMS = {
   featuredCollectionTitle: 'Curated for Conscious Spaces',
   featuredCategoryIds: ['indoor-plants', 'air-purifying', 'low-maintenance', 'combos'],
   siteBackground: '#FDFCF9',
+  siteTextColor: 'auto',
   siteThemeMode: 'cream',
   amazonBadgesEnabled: true,
   announcementText: 'Welcome to buddy4plant: Free Ceramic Pot with Orders above ₹1,499 | Free Express Delivery over ₹999',

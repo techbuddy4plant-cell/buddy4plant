@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Sparkles, Save, CheckCircle2, Upload, Palette, Image as ImageIcon, ShieldCheck, Star, Type } from 'lucide-react';
 import { HomepageCMS } from '../../types';
-import { useStoreSettings } from '../../context/StoreSettingsContext';
+import { useStoreSettings, calculateLuminance, getAutoTextColor } from '../../context/StoreSettingsContext';
 import { PlantImage } from '../../utils/imageFallback';
 import { AdminToastNotification } from './AdminToastNotification';
 
@@ -19,6 +19,16 @@ const SITE_BACKGROUND_PRESETS = [
   { name: 'Soft Sage Green', color: '#F4F7F2', preview: '#F4F7F2' },
   { name: 'Warm Terracotta Sand', color: '#FAF4EE', preview: '#FAF4EE' },
   { name: 'Dark Luxury Forest', color: '#182319', preview: '#182319' },
+  { name: 'Midnight Charcoal', color: '#111827', preview: '#111827' },
+];
+
+const TEXT_COLOR_PRESETS = [
+  { name: 'Charcoal Black', hex: '#1A1A1A' },
+  { name: 'Crisp White', hex: '#FFFFFF' },
+  { name: 'Soft Pearl', hex: '#F3F4F6' },
+  { name: 'Muted Forest Mist', hex: '#D6E2D5' },
+  { name: 'Warm Cream', hex: '#F7F5EE' },
+  { name: 'Botanical Gold', hex: '#D4AF37' },
 ];
 
 const PRIMARY_COLOR_PRESETS = [
@@ -39,6 +49,11 @@ export const AdminCMS: React.FC = () => {
   React.useEffect(() => {
     setFormData({ ...homepageCMS });
   }, [homepageCMS]);
+
+  const currentBg = formData.siteBackground || '#FDFCF9';
+  const autoComputedText = getAutoTextColor(currentBg);
+  const currentText = (formData.siteTextColor && formData.siteTextColor !== 'auto') ? formData.siteTextColor : autoComputedText;
+  const isAutoText = !formData.siteTextColor || formData.siteTextColor === 'auto';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -221,6 +236,125 @@ export const AdminCMS: React.FC = () => {
                 className="w-8 h-8 rounded border border-[#E5E2D9] cursor-pointer"
                 title="Custom color picker"
               />
+            </div>
+          </div>
+
+          {/* Site Text Color & Dynamic Contrast Control */}
+          <div className="pt-4 border-t border-[#E5E2D9] space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <span className="font-bold text-[#1A1A1A] block text-xs flex items-center gap-1.5">
+                  <Type className="w-3.5 h-3.5 text-[#2D4A27]" />
+                  Site Text Color & Auto Contrast System
+                </span>
+                <p className="text-[#5A5A5A] text-[11px]">
+                  Let buddy4plant automatically compute the highest contrast text color based on your background, or choose a custom font color.
+                </p>
+              </div>
+              <div className="flex items-center gap-1.5 bg-[#F5F2EB] p-1 rounded-lg shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, siteTextColor: 'auto' })}
+                  className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${
+                    isAutoText
+                      ? 'bg-[#2D4A27] text-white shadow-xs'
+                      : 'text-[#5A5A5A] hover:text-[#1A1A1A]'
+                  }`}
+                >
+                  Auto Contrast (Smart)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (isAutoText) {
+                      setFormData({ ...formData, siteTextColor: autoComputedText });
+                    }
+                  }}
+                  className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${
+                    !isAutoText
+                      ? 'bg-[#2D4A27] text-white shadow-xs'
+                      : 'text-[#5A5A5A] hover:text-[#1A1A1A]'
+                  }`}
+                >
+                  Custom Color
+                </button>
+              </div>
+            </div>
+
+            {/* Auto mode indicator badge */}
+            {isAutoText ? (
+              <div className="p-3 bg-[#EBF3EC] border border-[#2D4A27]/20 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <span
+                    className="w-4 h-4 rounded-full border border-black/20 shrink-0"
+                    style={{ backgroundColor: autoComputedText }}
+                  />
+                  <span className="text-xs text-[#1F341C] font-semibold">
+                    Smart Detection Active: Optimal text color computed as <code className="bg-white/80 px-1 py-0.5 rounded font-bold font-mono text-[#182319]">{autoComputedText}</code> ({autoComputedText === '#F3F4F6' ? 'Light text for dark background' : 'Dark text for light background'})
+                  </span>
+                </div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#2D4A27] bg-white px-2 py-0.5 rounded border border-[#2D4A27]/20 w-max">
+                  AAA High Contrast
+                </span>
+              </div>
+            ) : (
+              <div className="space-y-3 pt-1">
+                <div className="flex flex-wrap gap-2.5 items-center">
+                  {TEXT_COLOR_PRESETS.map((t, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, siteTextColor: t.hex })}
+                      className={`px-3 py-1.5 text-[11px] font-bold flex items-center gap-2 border transition-all ${
+                        formData.siteTextColor === t.hex ? 'border-[#1A1A1A] ring-2 ring-[#1A1A1A]/20 bg-white' : 'border-[#E5E2D9] bg-white hover:border-[#2D4A27]'
+                      }`}
+                    >
+                      <span className="w-3.5 h-3.5 rounded-full border border-black/20" style={{ backgroundColor: t.hex }} />
+                      <span>{t.name}</span>
+                    </button>
+                  ))}
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={formData.siteTextColor || '#1A1A1A'}
+                      onChange={(e) => setFormData({ ...formData, siteTextColor: e.target.value })}
+                      className="w-8 h-8 rounded border border-[#E5E2D9] cursor-pointer"
+                      title="Custom text color picker"
+                    />
+                    <input
+                      type="text"
+                      value={formData.siteTextColor || ''}
+                      onChange={(e) => setFormData({ ...formData, siteTextColor: e.target.value })}
+                      placeholder="#1A1A1A"
+                      className="w-24 px-2 py-1 bg-white border border-[#E5E2D9] text-[#1A1A1A] font-mono text-xs focus:outline-none focus:border-[#2D4A27]"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Live Typography Contrast Sample */}
+            <div
+              className="p-4 border border-[#E5E2D9] rounded-lg transition-colors duration-200 mt-2 shadow-xs"
+              style={{
+                backgroundColor: currentBg.startsWith('http') || currentBg.startsWith('/') ? '#182319' : currentBg,
+                color: currentText,
+              }}
+            >
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[10px] uppercase font-bold tracking-widest opacity-80">
+                  Live Contrast Preview
+                </span>
+                <span className="text-[10px] opacity-80 font-mono">
+                  Background: {currentBg.length > 25 ? currentBg.substring(0, 25) + '...' : currentBg} • Text: {currentText}
+                </span>
+              </div>
+              <h4 className="text-base font-serif font-bold tracking-wide mb-1" style={{ color: currentText }}>
+                Ficus Lyrata Bambino • Bio-Active Plant Nutrition
+              </h4>
+              <p className="text-xs opacity-90 leading-relaxed max-w-xl">
+                Cold-pressed kelp feed and volcanic pumice blend designed to nourish indoor greenery and root vitality in all seasons.
+              </p>
             </div>
           </div>
         </div>

@@ -203,24 +203,16 @@ const AppShell: React.FC<{
   quickViewProduct: Product | null;
   setQuickViewProduct: (p: Product | null) => void;
 }> = ({ currentPath, navigate, renderCurrentView, quickViewProduct, setQuickViewProduct }) => {
-  const { homepageCMS } = useStoreSettings();
+  const { homepageCMS, isDarkMode, effectiveTextColor } = useStoreSettings();
   const isB4PAdminRoute = (currentPath || '').startsWith('/b4padmin');
 
-  const siteBg = homepageCMS.siteBackground || '#FDFCF9';
-  const isImage = siteBg.startsWith('http') || siteBg.startsWith('data:') || siteBg.startsWith('/');
-  const isDark = !isImage && (
-    siteBg === '#182319' ||
-    siteBg === '#0F1710' ||
-    siteBg === '#121A13' ||
-    siteBg === '#1A1A1A' ||
-    siteBg.toLowerCase().startsWith('#0') ||
-    siteBg.toLowerCase().startsWith('#1')
-  );
+  const siteBg = isDarkMode ? '#101711' : (homepageCMS.siteBackground || '#FDFCF9');
+  const isImage = !isDarkMode && (siteBg.startsWith('http') || siteBg.startsWith('data:') || siteBg.startsWith('/'));
 
   return (
     <div
       className={`min-h-screen flex flex-col font-sans transition-colors duration-300 selection:bg-[#2D4A27] selection:text-white ${
-        isDark ? 'text-[#E8F0E7]' : 'text-[#1A1A1A]'
+        isDarkMode ? 'dark bg-[#101711] text-[#E5EAE3]' : ''
       }`}
       style={{
         backgroundColor: isImage ? undefined : siteBg,
@@ -228,6 +220,7 @@ const AppShell: React.FC<{
         backgroundSize: 'cover',
         backgroundAttachment: 'fixed',
         backgroundRepeat: 'no-repeat',
+        color: effectiveTextColor,
       }}
     >
       {!isB4PAdminRoute && <Navbar currentPath={currentPath} navigate={navigate} />}

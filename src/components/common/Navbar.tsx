@@ -19,7 +19,9 @@ import {
   Phone,
   Home,
   Grid,
-  Gift
+  Gift,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
@@ -41,7 +43,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
   const { itemCount, setIsCartDrawerOpen } = useCart();
   const { wishlistCount } = useWishlist();
   const { user, profile, isAdmin, openAuthModal, promptSignOut } = useAuth();
-  const { settings } = useStoreSettings();
+  const { settings, isDarkMode, toggleDarkMode } = useStoreSettings();
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -401,6 +403,17 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
                     {itemCount}
                   </span>
                 )}
+              </button>
+
+              {/* Theme Mode Toggle (Light / Dark) */}
+              <button
+                type="button"
+                onClick={toggleDarkMode}
+                className="p-2 text-[#1F341C] hover:text-[#182319] hover:bg-[#EBF3EC] dark:text-[#D4E4D2] dark:hover:text-white dark:hover:bg-[#253524] rounded-full transition-colors"
+                title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                aria-label="Toggle theme mode"
+              >
+                {isDarkMode ? <Sun className="w-5 h-5 text-amber-400" /> : <Moon className="w-5 h-5" />}
               </button>
 
               {/* Account Icon & Dropdown */}
@@ -801,7 +814,21 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
             </div>
 
             {/* Drawer Footer Actions */}
-            <div className="p-4 border-t border-[#E5E2D9] bg-[#F7FBF8] space-y-2">
+            <div className="p-4 border-t border-[#E5E2D9] bg-[#F7FBF8] dark:bg-[#141E15] space-y-2">
+              {/* Theme Mode Switcher in Drawer */}
+              <button
+                type="button"
+                onClick={toggleDarkMode}
+                className="w-full flex items-center justify-between p-2.5 rounded-lg bg-black/5 dark:bg-white/10 text-xs font-semibold text-[#1A1A1A] dark:text-[#F3F4F6] transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  {isDarkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
+                  <span>{isDarkMode ? 'Dark Mode Active' : 'Light Mode Active'}</span>
+                </div>
+                <span className="text-[10px] uppercase font-bold text-[#2D4A27] dark:text-amber-400 bg-white dark:bg-black/40 px-2 py-0.5 rounded border border-black/10 dark:border-white/10">
+                  Switch
+                </span>
+              </button>
 
               {!user && !isAdmin ? (
                 <button

@@ -225,6 +225,7 @@ export interface HomepageCMS {
   featuredCollectionTitle: string;
   featuredCategoryIds: string[];
   siteBackground?: string;
+  siteTextColor?: string;
   siteThemeMode?: 'cream' | 'forest' | 'white' | 'terracotta' | 'dark' | 'custom';
   primaryColor?: string;
   fontStyle?: 'serif' | 'sans' | 'clean';
