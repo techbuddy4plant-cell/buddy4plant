@@ -72,7 +72,7 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({ navigate }) =>
   }, []);
 
   return (
-    <section className="py-20 lg:py-28 bg-[#FBFBFA] border-b border-[#E8E5DC]">
+    <section className="py-20 lg:py-28 bg-transparent border-b border-black/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 gap-6">

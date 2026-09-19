@@ -57,11 +57,38 @@ export const StoreSettingsProvider: React.FC<{ children: React.ReactNode }> = ({
       loadAllSettings();
     };
 
+    const handleCMSChanged = (e: any) => {
+      if (e.detail) {
+        setHomepageCMS(e.detail);
+      } else {
+        loadAllSettings();
+      }
+    };
+
     window.addEventListener('b4p_store_data_changed', handleDataChanged);
+    window.addEventListener('b4p_cms_changed', handleCMSChanged);
     return () => {
       window.removeEventListener('b4p_store_data_changed', handleDataChanged);
+      window.removeEventListener('b4p_cms_changed', handleCMSChanged);
     };
   }, []);
+
+  // Update document body style when siteBackground changes
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      const siteBg = homepageCMS.siteBackground || '#FDFCF9';
+      const isImg = siteBg.startsWith('http') || siteBg.startsWith('data:') || siteBg.startsWith('/');
+      if (isImg) {
+        document.body.style.backgroundImage = `url(${siteBg})`;
+        document.body.style.backgroundSize = 'cover';
+        document.body.style.backgroundAttachment = 'fixed';
+        document.body.style.backgroundColor = '';
+      } else {
+        document.body.style.backgroundImage = '';
+        document.body.style.backgroundColor = siteBg;
+      }
+    }
+  }, [homepageCMS.siteBackground]);
 
   const updateStoreSettings = async (newSettings: StoreSettings) => {
     setSettings(newSettings);
@@ -89,6 +116,8 @@ export const StoreSettingsProvider: React.FC<{ children: React.ReactNode }> = ({
         updatePaymentSettings,
         updateHomepageCMS,
         refreshSettings: loadAllSettings,
+        // @ts-ignore alias for compatibility
+        updateSettings: updateStoreSettings,
       }}
     >
       {children}

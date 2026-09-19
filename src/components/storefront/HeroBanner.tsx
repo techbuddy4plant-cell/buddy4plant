@@ -147,7 +147,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ navigate }) => {
   const slide = HERO_SLIDES[currentSlideIndex];
 
   return (
-    <div className="bg-[#FAF9F5] text-[#1D3A24] overflow-hidden">
+    <div className="bg-transparent text-[#1D3A24] overflow-hidden">
       {/* Kyari-Style Hero Announcement Strip */}
       <div className="bg-[#1F3B22] text-[#E8F0E7] py-2 px-4 text-center text-[11px] sm:text-xs font-semibold tracking-wide flex items-center justify-center gap-2 border-b border-[#2C5230]">
         <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -371,7 +371,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ navigate }) => {
       </div>
 
       {/* Kyari-Style 4-Pillar Trust Proposition Bar */}
-      <section className="bg-[#FAF9F5] border-b border-[#E6EDE5] py-8 sm:py-10">
+      <section className="bg-transparent border-b border-black/10 py-8 sm:py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {/* 1. Safe Pan-India Delivery */}

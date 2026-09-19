@@ -103,7 +103,7 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate, onQuickView }) => 
       <CustomerReviewsSection reviews={reviews} />
 
       {/* WhatsApp Plant Doctor Consultation Banner */}
-      <section className="py-16 bg-[#FDFCF9] border-b border-[#E5E2D9]">
+      <section className="py-16 bg-transparent border-b border-black/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-[#1A1A1A] border border-[#2D4A27]/40 p-8 sm:p-12 text-[#FDFCF9] flex flex-col md:flex-row items-center justify-between gap-8">
             <div className="max-w-xl">

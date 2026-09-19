@@ -54,21 +54,29 @@ const INGREDIENTS: IngredientItem[] = [
   },
 ];
 
+import { useStoreSettings } from '../../context/StoreSettingsContext';
+
 export const WhatsInsideSection: React.FC<WhatsInsideSectionProps> = ({ navigate }) => {
   const [selectedIngredient, setSelectedIngredient] = useState<IngredientItem | null>(null);
   const [activeDot, setActiveDot] = useState(1);
+  const { homepageCMS } = useStoreSettings();
+
+  const sectionTitle = homepageCMS.whatsInsideTitle || "What's inside";
+  const sectionSubtitle =
+    homepageCMS.whatsInsideSubtitle ||
+    'Each organic nutrient was chosen because it works for living plants. Not because it looks good on a label.';
 
   return (
-    <section className="py-20 lg:py-28 bg-[#FBFBFA] border-b border-[#EAE8E3]">
+    <section className="py-20 lg:py-28 bg-transparent border-b border-black/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header Row */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 lg:mb-16">
           <div className="max-w-xl">
             <h2 className="font-editorial text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-[#141414] leading-[1.08]">
-              What&apos;s inside
+              {sectionTitle}
             </h2>
             <p className="mt-4 text-base sm:text-lg text-[#525252] font-normal leading-relaxed">
-              Each organic nutrient was chosen because it works for living plants. Not because it looks good on a label.
+              {sectionSubtitle}
             </p>
           </div>
 

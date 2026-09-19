@@ -10,7 +10,7 @@ export const CustomerReviewsSection: React.FC<CustomerReviewsSectionProps> = ({ 
   const displayReviews = reviews.slice(0, 3);
 
   return (
-    <section className="py-20 sm:py-28 bg-[#FDFCF9] border-b border-[#EAE8E3]">
+    <section className="py-20 sm:py-28 bg-transparent border-b border-black/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-xl mx-auto mb-16">
           <span className="text-[10px] font-bold text-[#5B6E58] uppercase tracking-[0.24em] block">

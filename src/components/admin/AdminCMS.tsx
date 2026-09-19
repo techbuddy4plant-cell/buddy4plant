@@ -36,6 +36,10 @@ export const AdminCMS: React.FC = () => {
   const [toastMsg, setToastMsg] = useState('Storefront custom design & homepage content published live!');
   const [saving, setSaving] = useState(false);
 
+  React.useEffect(() => {
+    setFormData({ ...homepageCMS });
+  }, [homepageCMS]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);

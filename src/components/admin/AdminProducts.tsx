@@ -452,29 +452,33 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
             onClick={() => setIsModalOpen(false)}
           />
 
-          <div className="relative bg-white border border-[#E5E2D9] max-w-3xl w-full p-6 sm:p-8 z-10 max-h-[90vh] overflow-y-auto">
-            <button
-              onClick={() => setIsModalOpen(false)}
-              className="absolute top-4 right-4 p-1.5 text-[#7A7A7A] hover:text-[#1A1A1A]"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <h3 className="font-serif font-bold text-xl text-[#1A1A1A] mb-1">
-              {editingProduct ? 'Edit Botanical Specimen' : 'Add New Plant to Catalogue'}
-            </h3>
-            <p className="text-xs text-[#5A5A5A] mb-5">
-              Easily manage photos, prices, inventory stock, and plant care instructions.
-            </p>
+          <div className="relative bg-white border border-[#E5E2D9] max-w-3xl w-full z-10 max-h-[90vh] sm:max-h-[85vh] flex flex-col rounded-2xl shadow-2xl overflow-hidden">
+            {/* Modal Sticky Header */}
+            <div className="px-6 py-4 border-b border-[#E5E2D9] flex items-center justify-between shrink-0 bg-white sticky top-0 z-20">
+              <div>
+                <h3 className="font-serif font-bold text-lg sm:text-xl text-[#1A1A1A]">
+                  {editingProduct ? 'Edit Botanical Specimen' : 'Add New Plant to Catalogue'}
+                </h3>
+                <p className="text-[11px] text-[#5A5A5A]">
+                  Manage photos, pricing, inventory stock, and care requirements.
+                </p>
+              </div>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="p-1.5 text-[#7A7A7A] hover:text-[#1A1A1A] hover:bg-[#F5F2EB] rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
             {error && (
-              <div className="p-3 mb-4 bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
+              <div className="mx-6 mt-4 p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2 rounded-lg">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{error}</span>
               </div>
             )}
 
-            <form onSubmit={handleSave} className="space-y-6 text-xs">
+            <form id="product-form" onSubmit={handleSave} className="flex-1 overflow-y-auto p-6 space-y-6 text-xs">
               {/* SECTION 1: Basic Info & Pricing */}
               <div className="space-y-3 pb-4 border-b border-[#E5E2D9]">
                 <h4 className="font-bold text-xs uppercase tracking-wider text-[#2D4A27] flex items-center gap-1.5">
@@ -646,31 +650,33 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="pt-4 flex justify-end gap-3 border-t border-[#E5E2D9]">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-5 py-2.5 text-[#5A5A5A] hover:bg-[#F5F2EB] font-medium"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSaving}
-                  className="px-6 py-2.5 bg-[#2D4A27] hover:bg-[#1F341C] text-white text-[11px] font-bold uppercase tracking-wider flex items-center gap-2 transition-all shadow-xs"
-                >
-                  {isSaving ? (
-                    'Saving Plant...'
-                  ) : (
-                    <>
-                      <Check className="w-4 h-4" />
-                      Save Plant to Catalogue
-                    </>
-                  )}
-                </button>
-              </div>
             </form>
+
+            {/* Sticky Action Footer */}
+            <div className="px-6 py-3.5 bg-[#FAF9F5] border-t border-[#E5E2D9] flex items-center justify-end gap-3 shrink-0 sticky bottom-0 z-20">
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className="px-5 py-2 text-[#5A5A5A] hover:bg-[#F5F2EB] font-semibold text-xs rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                form="product-form"
+                disabled={isSaving}
+                className="px-6 py-2.5 bg-[#2D4A27] hover:bg-[#1F341C] text-white text-[11px] font-bold uppercase tracking-wider flex items-center gap-2 transition-all shadow-xs rounded-lg disabled:opacity-50"
+              >
+                {isSaving ? (
+                  'Saving Plant...'
+                ) : (
+                  <>
+                    <Check className="w-4 h-4" />
+                    Save Plant to Catalogue
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}

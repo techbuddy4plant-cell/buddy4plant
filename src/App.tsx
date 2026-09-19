@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { StoreSettingsProvider } from './context/StoreSettingsContext';
+import { StoreSettingsProvider, useStoreSettings } from './context/StoreSettingsContext';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
@@ -177,45 +177,86 @@ export default function App() {
     return <HomePage navigate={navigate} onQuickView={setQuickViewProduct} />;
   };
 
-  const isB4PAdminRoute = (currentPath || '').startsWith('/b4padmin');
-
   return (
     <StoreSettingsProvider>
       <AuthProvider>
         <CartProvider>
           <WishlistProvider>
-            <div className="min-h-screen flex flex-col font-sans text-[#1A1A1A] bg-[#FDFCF9] selection:bg-[#2D4A27] selection:text-white">
-              {!isB4PAdminRoute && <Navbar currentPath={currentPath} navigate={navigate} />}
-
-              <main className="flex-1">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={currentPath}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    transition={{ duration: 0.22, ease: 'easeOut' }}
-                  >
-                    {renderCurrentView()}
-                  </motion.div>
-                </AnimatePresence>
-              </main>
-
-              {!isB4PAdminRoute && <Footer navigate={navigate} />}
-
-              {/* Drawers & Modals */}
-              <CartDrawer navigate={navigate} />
-              <AuthModal />
-              <QuickViewModal
-                product={quickViewProduct}
-                onClose={() => setQuickViewProduct(null)}
-                navigate={navigate}
-              />
-            </div>
+            <AppShell
+              currentPath={currentPath}
+              navigate={navigate}
+              renderCurrentView={renderCurrentView}
+              quickViewProduct={quickViewProduct}
+              setQuickViewProduct={setQuickViewProduct}
+            />
           </WishlistProvider>
         </CartProvider>
       </AuthProvider>
     </StoreSettingsProvider>
   );
 }
+
+const AppShell: React.FC<{
+  currentPath: string;
+  navigate: (path: string) => void;
+  renderCurrentView: () => React.ReactNode;
+  quickViewProduct: Product | null;
+  setQuickViewProduct: (p: Product | null) => void;
+}> = ({ currentPath, navigate, renderCurrentView, quickViewProduct, setQuickViewProduct }) => {
+  const { homepageCMS } = useStoreSettings();
+  const isB4PAdminRoute = (currentPath || '').startsWith('/b4padmin');
+
+  const siteBg = homepageCMS.siteBackground || '#FDFCF9';
+  const isImage = siteBg.startsWith('http') || siteBg.startsWith('data:') || siteBg.startsWith('/');
+  const isDark = !isImage && (
+    siteBg === '#182319' ||
+    siteBg === '#0F1710' ||
+    siteBg === '#121A13' ||
+    siteBg === '#1A1A1A' ||
+    siteBg.toLowerCase().startsWith('#0') ||
+    siteBg.toLowerCase().startsWith('#1')
+  );
+
+  return (
+    <div
+      className={`min-h-screen flex flex-col font-sans transition-colors duration-300 selection:bg-[#2D4A27] selection:text-white ${
+        isDark ? 'text-[#E8F0E7]' : 'text-[#1A1A1A]'
+      }`}
+      style={{
+        backgroundColor: isImage ? undefined : siteBg,
+        backgroundImage: isImage ? `url(${siteBg})` : undefined,
+        backgroundSize: 'cover',
+        backgroundAttachment: 'fixed',
+        backgroundRepeat: 'no-repeat',
+      }}
+    >
+      {!isB4PAdminRoute && <Navbar currentPath={currentPath} navigate={navigate} />}
+
+      <main className="flex-1">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentPath}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.22, ease: 'easeOut' }}
+          >
+            {renderCurrentView()}
+          </motion.div>
+        </AnimatePresence>
+      </main>
+
+      {!isB4PAdminRoute && <Footer navigate={navigate} />}
+
+      {/* Drawers & Modals */}
+      <CartDrawer navigate={navigate} />
+      <AuthModal />
+      <QuickViewModal
+        product={quickViewProduct}
+        onClose={() => setQuickViewProduct(null)}
+        navigate={navigate}
+      />
+    </div>
+  );
+};
 

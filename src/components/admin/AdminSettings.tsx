@@ -4,21 +4,29 @@ import { StoreSettings, PaymentSettings } from '../../types';
 import { useStoreSettings } from '../../context/StoreSettingsContext';
 
 export const AdminSettings: React.FC = () => {
-  const { settings, paymentSettings, updateSettings, updatePaymentSettings } = useStoreSettings();
+  const { settings, paymentSettings, updateStoreSettings, updatePaymentSettings } = useStoreSettings();
 
   const [storeForm, setStoreForm] = useState<StoreSettings>({ ...settings });
   const [payForm, setPayForm] = useState<PaymentSettings>({ ...paymentSettings });
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  React.useEffect(() => {
+    setStoreForm({ ...settings });
+  }, [settings]);
+
+  React.useEffect(() => {
+    setPayForm({ ...paymentSettings });
+  }, [paymentSettings]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     try {
-      await updateSettings(storeForm);
-      await updatePaymentSettings(payForm);
+      if (updateStoreSettings) await updateStoreSettings(storeForm);
+      if (updatePaymentSettings) await updatePaymentSettings(payForm);
       setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
+      setTimeout(() => setSaved(false), 3500);
     } catch (err) {
       console.error('Error saving settings:', err);
     } finally {

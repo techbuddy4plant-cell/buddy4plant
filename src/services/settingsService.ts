@@ -130,24 +130,32 @@ const getLocalHomepageCMS = (): HomepageCMS => {
 };
 
 export async function getHomepageCMS(): Promise<HomepageCMS> {
+  const local = getLocalHomepageCMS();
   try {
     const docRef = doc(db, SETTINGS_COLLECTION, 'homepage');
     const snap = await getDoc(docRef);
     if (snap.exists()) {
-      const merged = { ...INITIAL_HOMEPAGE_CMS, ...snap.data() } as HomepageCMS;
-      localStorage.setItem(HOMEPAGE_CMS_KEY, JSON.stringify(merged));
+      const merged = { ...INITIAL_HOMEPAGE_CMS, ...snap.data(), ...local } as HomepageCMS;
+      try {
+        localStorage.setItem(HOMEPAGE_CMS_KEY, JSON.stringify(merged));
+      } catch (e) {
+        // ignore storage error
+      }
       return merged;
     }
   } catch (error) {
     console.warn('Fallback homepage CMS:', error);
   }
-  return getLocalHomepageCMS();
+  return local;
 }
 
 export async function saveHomepageCMS(cms: HomepageCMS): Promise<void> {
   // 1. Save to localStorage instantly
   try {
     localStorage.setItem(HOMEPAGE_CMS_KEY, JSON.stringify(cms));
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('b4p_cms_changed', { detail: cms }));
+    }
     emitStoreDataChanged();
   } catch (err) {
     console.warn('Error saving homepage CMS locally:', err);
