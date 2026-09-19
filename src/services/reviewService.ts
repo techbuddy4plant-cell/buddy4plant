@@ -66,12 +66,12 @@ export async function getRecentReviews(): Promise<Review[]> {
   return reviews.filter((r) => r.approved).slice(0, 6);
 }
 
-export async function submitReview(reviewData: Omit<Review, 'id' | 'createdAt' | 'approved'>): Promise<Review> {
+export async function submitReview(reviewData: Omit<Review, 'id' | 'createdAt' | 'approved'> & { approved?: boolean }): Promise<Review> {
   const id = `rev-${Date.now()}`;
   const newReview: Review = {
     ...reviewData,
     id,
-    approved: true, // Auto-approve or queue for moderation
+    approved: reviewData.approved ?? true, // Auto-approve or queue for moderation
     createdAt: Date.now(),
   };
 
@@ -82,6 +82,18 @@ export async function submitReview(reviewData: Omit<Review, 'id' | 'createdAt' |
     console.warn('Error saving review to Firestore:', err);
   }
   return newReview;
+}
+
+export const addReview = submitReview;
+
+export async function updateReview(reviewId: string, updates: Partial<Review>): Promise<void> {
+  try {
+    const docRef = doc(db, REVIEWS_COLLECTION, reviewId);
+    await updateDoc(docRef, updates);
+  } catch (err) {
+    console.error('Error updating review:', err);
+    throw err;
+  }
 }
 
 export async function updateReviewStatus(reviewId: string, approved: boolean): Promise<void> {

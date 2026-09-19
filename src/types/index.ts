@@ -231,6 +231,17 @@ export interface HomepageCMS {
   amazonBadgesEnabled?: boolean;
   announcementText?: string;
   announcementLink?: string;
+  botanicaTitle?: string;
+  botanicaSubtitle?: string;
+  botanicaImage?: string;
+  botanicaButtonText?: string;
+  botanicaButtonLink?: string;
+  whatsInsideTitle?: string;
+  whatsInsideSubtitle?: string;
+  trustBadge1?: string;
+  trustBadge2?: string;
+  trustBadge3?: string;
+  trustBadge4?: string;
 }
 
 export interface UserProfile {

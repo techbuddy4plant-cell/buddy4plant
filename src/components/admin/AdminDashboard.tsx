@@ -12,7 +12,14 @@ import {
   ShieldCheck,
   RefreshCw,
   LogOut,
-  Trees
+  Trees,
+  Home,
+  Leaf,
+  FlaskConical,
+  Gift,
+  Truck,
+  Star,
+  FolderTree
 } from 'lucide-react';
 import { Order, Product, Category, Coupon } from '../../types';
 import { getOrders, subscribeToAllOrders } from '../../services/orderService';
@@ -25,6 +32,7 @@ import { AdminProducts } from './AdminProducts';
 import { AdminOrders } from './AdminOrders';
 import { AdminCategories } from './AdminCategories';
 import { AdminProjects } from './AdminProjects';
+import { AdminReviews } from './AdminReviews';
 import { AdminCoupons } from './AdminCoupons';
 import { AdminCMS } from './AdminCMS';
 import { AdminSettings } from './AdminSettings';
@@ -34,7 +42,19 @@ interface AdminDashboardProps {
   navigate: (path: string) => void;
 }
 
-type AdminTab = 'overview' | 'products' | 'orders' | 'categories' | 'projects' | 'coupons' | 'cms' | 'settings';
+type AdminTab =
+  | 'overview'
+  | 'cms'
+  | 'plants'
+  | 'pots-planters'
+  | 'plant-care'
+  | 'combos'
+  | 'projects'
+  | 'orders'
+  | 'categories'
+  | 'reviews'
+  | 'coupons'
+  | 'settings';
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
   const { profile, user, promptSignOut } = useAuth();
@@ -85,16 +105,66 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
     };
   }, []);
 
+  const lowStockLivePlants = products.filter((p) => {
+    const cat = (p.category || '').toLowerCase();
+    const type = (p.plantType || '').toLowerCase();
+    const isPot = cat.includes('pot') || type.includes('pot') || cat.includes('planter') || type.includes('planter');
+    const isCare = cat.includes('care') || cat.includes('fertilizer') || cat.includes('soil') || cat.includes('nutrition') || type.includes('fertilizer') || type.includes('soil');
+    const isCombo = cat.includes('combo') || cat.includes('gift') || cat.includes('bundle') || type.includes('combo');
+    return !isPot && !isCare && !isCombo && p.stock <= 5;
+  }).length;
+
+  const lowStockPots = products.filter((p) => {
+    const cat = (p.category || '').toLowerCase();
+    const type = (p.plantType || '').toLowerCase();
+    return (cat.includes('pot') || type.includes('pot') || cat.includes('planter') || type.includes('planter')) && p.stock <= 5;
+  }).length;
+
   const navItems: { id: AdminTab; label: string; icon: React.ReactNode; badge?: number }[] = [
     { id: 'overview', label: 'Overview & Stats', icon: <LayoutDashboard className="w-4 h-4" /> },
-    { id: 'orders', label: 'Orders & Shipments', icon: <ShoppingBag className="w-4 h-4" />, badge: orders.filter((o) => o.orderStatus === 'Pending').length },
-    { id: 'products', label: 'Plants & Stock', icon: <Package className="w-4 h-4" />, badge: products.filter((p) => p.stock <= 5).length },
-    { id: 'categories', label: 'Collections / Cats', icon: <Layers className="w-4 h-4" /> },
-    { id: 'projects', label: 'Landscaping Projects', icon: <Trees className="w-4 h-4" /> },
-    { id: 'coupons', label: 'Coupons & Promos', icon: <Tag className="w-4 h-4" /> },
-    { id: 'cms', label: 'Homepage CMS', icon: <Palette className="w-4 h-4" /> },
-    { id: 'settings', label: 'Store & Payments', icon: <Settings className="w-4 h-4" /> },
+    { id: 'cms', label: '🏠 Home Page Sections', icon: <Home className="w-4 h-4" /> },
+    { id: 'plants', label: '🌿 All Plants Catalog', icon: <Leaf className="w-4 h-4" />, badge: lowStockLivePlants },
+    { id: 'pots-planters', label: '🪴 Pots & Planters', icon: <Package className="w-4 h-4" />, badge: lowStockPots },
+    { id: 'plant-care', label: '🧪 Plant Care & Organic Food', icon: <FlaskConical className="w-4 h-4" /> },
+    { id: 'combos', label: '🎁 Combos & Gifts', icon: <Gift className="w-4 h-4" /> },
+    { id: 'projects', label: '🌿 Projects & Landscaping', icon: <Trees className="w-4 h-4" /> },
+    { id: 'orders', label: '🚚 Track Order & Shipments', icon: <Truck className="w-4 h-4" />, badge: orders.filter((o) => o.orderStatus === 'Pending' || o.orderStatus === 'Confirmed').length },
+    { id: 'categories', label: '🗂️ Collections & Categories', icon: <FolderTree className="w-4 h-4" /> },
+    { id: 'reviews', label: '⭐ Customer Reviews', icon: <Star className="w-4 h-4" /> },
+    { id: 'coupons', label: '🏷️ Coupons & Promos', icon: <Tag className="w-4 h-4" /> },
+    { id: 'settings', label: '⚙️ Store & Helpline Settings', icon: <Settings className="w-4 h-4" /> },
   ];
+
+  const getTabTitle = (tab: AdminTab) => {
+    switch (tab) {
+      case 'overview':
+        return 'Overview & Business Analytics';
+      case 'cms':
+        return 'Front Page Sections & Merchandising CMS';
+      case 'plants':
+        return 'Live Plants & Houseplants Inventory';
+      case 'pots-planters':
+        return 'Pots, Planters & Ceramics Catalog';
+      case 'plant-care':
+        return 'Plant Care, Organic Nutrition & Bio-Fertilizers';
+      case 'combos':
+        return 'Curated Combos, Green Gifts & Starter Kits';
+      case 'projects':
+        return 'Botanical Installations & Landscaping Portfolio';
+      case 'orders':
+        return 'Orders, Delivery Tracking & Courier Dispatch';
+      case 'categories':
+        return 'Product Collections & Navigation Taxonomy';
+      case 'reviews':
+        return 'Customer Stories & Star Ratings Moderation';
+      case 'coupons':
+        return 'Discount Coupons & Promotional Offers';
+      case 'settings':
+        return 'Store Helpline, Payment Gateways & Policies';
+      default:
+        return 'Admin Console';
+    }
+  };
 
   return (
     <div className="h-screen bg-[#FDFCF9] flex flex-col md:flex-row font-sans overflow-hidden">
@@ -115,23 +185,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
           </div>
 
           {/* Nav list */}
-          <nav className="p-4 space-y-1">
+          <nav className="p-3 sm:p-4 space-y-1">
             {navItems.map((item) => (
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 text-xs font-medium rounded-lg transition-all ${
+                className={`w-full flex items-center justify-between px-3 py-2.5 text-xs font-medium rounded-lg transition-all ${
                   activeTab === item.id
                     ? 'bg-[#2D4A27] text-white shadow-xs font-bold'
                     : 'text-[#B0BBAA] hover:text-white hover:bg-[#253222]'
                 }`}
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2.5 truncate">
                   {item.icon}
-                  <span>{item.label}</span>
+                  <span className="truncate">{item.label}</span>
                 </div>
                 {item.badge !== undefined && item.badge > 0 ? (
-                  <span className="bg-[#8B5E3C] text-white font-bold px-1.5 py-0.2 rounded-full text-[10px]">
+                  <span className="bg-[#8B5E3C] text-white font-bold px-1.5 py-0.2 rounded-full text-[10px] shrink-0">
                     {item.badge}
                   </span>
                 ) : null}
@@ -167,12 +237,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
         {/* Top bar */}
         <header className="h-16 bg-white border-b border-[#E5E2D9] px-6 flex items-center justify-between shrink-0 sticky top-0 z-30">
           <div className="flex items-center gap-3">
-            <span className="font-serif font-bold text-lg text-[#1A1A1A] capitalize">
-              {activeTab === 'cms'
-                ? 'Homepage Merchandising & CMS'
-                : activeTab === 'projects'
-                ? 'Landscaping & Botanical Projects Portfolio'
-                : activeTab}
+            <span className="font-serif font-bold text-lg text-[#1A1A1A]">
+              {getTabTitle(activeTab)}
             </span>
           </div>
 
@@ -217,12 +283,54 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
             />
           )}
 
-          {activeTab === 'products' && (
+          {activeTab === 'cms' && <AdminCMS />}
+
+          {activeTab === 'plants' && (
             <AdminProducts
               products={products}
               categories={categories}
               onRefresh={loadAllData}
+              sectionFilter="plants"
+              sectionTitle="All Live Plants & Houseplants"
+              sectionDescription="Manage indoor plants, air purifiers, succulents, flowering plants, and desktop greens."
             />
+          )}
+
+          {activeTab === 'pots-planters' && (
+            <AdminProducts
+              products={products}
+              categories={categories}
+              onRefresh={loadAllData}
+              sectionFilter="pots-planters"
+              sectionTitle="Pots & Planters Collection"
+              sectionDescription="Manage ceramic planters, self-watering pots, metal planters, and terracotta containers."
+            />
+          )}
+
+          {activeTab === 'plant-care' && (
+            <AdminProducts
+              products={products}
+              categories={categories}
+              onRefresh={loadAllData}
+              sectionFilter="plant-care"
+              sectionTitle="Plant Care & Organic Plant Food"
+              sectionDescription="Manage organic bio-fertilizers, neem elixir oils, cold-pressed kelp feed, and potting soils."
+            />
+          )}
+
+          {activeTab === 'combos' && (
+            <AdminProducts
+              products={products}
+              categories={categories}
+              onRefresh={loadAllData}
+              sectionFilter="combos"
+              sectionTitle="Combos & Green Gifts"
+              sectionDescription="Manage curated botanical gift boxes, beginner starter kits, duo/trio plant bundles, and festive gifting."
+            />
+          )}
+
+          {activeTab === 'projects' && (
+            <AdminProjects onRefresh={loadAllData} />
           )}
 
           {activeTab === 'orders' && (
@@ -233,15 +341,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
             <AdminCategories categories={categories} onRefresh={loadAllData} />
           )}
 
-          {activeTab === 'projects' && (
-            <AdminProjects onRefresh={loadAllData} />
+          {activeTab === 'reviews' && (
+            <AdminReviews />
           )}
 
           {activeTab === 'coupons' && (
             <AdminCoupons coupons={coupons} onRefresh={loadAllData} />
           )}
-
-          {activeTab === 'cms' && <AdminCMS />}
 
           {activeTab === 'settings' && <AdminSettings />}
         </div>

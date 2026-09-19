@@ -22,12 +22,18 @@ interface AdminProductsProps {
   products: Product[];
   categories: Category[];
   onRefresh: () => void;
+  sectionFilter?: 'all' | 'plants' | 'pots-planters' | 'plant-care' | 'combos';
+  sectionTitle?: string;
+  sectionDescription?: string;
 }
 
 export const AdminProducts: React.FC<AdminProductsProps> = ({
   products,
   categories,
   onRefresh,
+  sectionFilter = 'all',
+  sectionTitle,
+  sectionDescription,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
@@ -76,8 +82,31 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
   const [productImages, setProductImages] = useState<string[]>([]);
 
   const openAddModal = () => {
+    let defaultCat = 'indoor-plants';
+    let defaultType = 'Indoor Plants';
+    let defaultTags = ['indoor', 'air purifying'];
+
+    if (sectionFilter === 'pots-planters') {
+      defaultCat = 'pots-planters';
+      defaultType = 'Self-Watering Planters';
+      defaultTags = ['ceramic', 'self-watering', 'planter'];
+    } else if (sectionFilter === 'plant-care') {
+      defaultCat = 'plant-care';
+      defaultType = 'Organic Plant Food';
+      defaultTags = ['organic', 'bio-fertilizer', 'soil nutrition'];
+    } else if (sectionFilter === 'combos') {
+      defaultCat = 'combos';
+      defaultType = 'Combo Pack';
+      defaultTags = ['gift bundle', 'starter kit'];
+    }
+
     setEditingProduct(null);
-    setFormData(initialFormState);
+    setFormData({
+      ...initialFormState,
+      category: defaultCat,
+      plantType: defaultType,
+      tags: defaultTags,
+    });
     setProductImages(initialFormState.images || ['https://images.unsplash.com/photo-1545241047-6083a3684587?auto=format&fit=crop&w=800&q=80']);
     setIsModalOpen(true);
   };
@@ -173,14 +202,74 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
     onRefresh();
   };
 
-  // Filter and search
+  // Filter by section and search
   const filteredProducts = products.filter((p) => {
+    const cat = (p.category || '').toLowerCase();
+    const type = (p.plantType || '').toLowerCase();
+    const name = (p.name || '').toLowerCase();
+
+    // 1. Section matching
+    if (sectionFilter === 'pots-planters') {
+      const isPot = cat.includes('pot') || cat.includes('planter') || type.includes('pot') || type.includes('planter') || name.includes('pot') || name.includes('planter');
+      if (!isPot) return false;
+    } else if (sectionFilter === 'plant-care') {
+      const isCare = cat.includes('care') || cat.includes('fertilizer') || cat.includes('soil') || type.includes('care') || type.includes('food') || type.includes('fertilizer') || name.includes('elixir') || name.includes('neem') || name.includes('fertilizer');
+      if (!isCare) return false;
+    } else if (sectionFilter === 'combos') {
+      const isCombo = cat.includes('combo') || cat.includes('gift') || type.includes('combo') || type.includes('bundle') || name.includes('combo') || name.includes('bundle') || name.includes('trio');
+      if (!isCombo) return false;
+    } else if (sectionFilter === 'plants') {
+      const isPot = cat.includes('pot') || cat.includes('planter') || type.includes('pot') || type.includes('planter') || name.includes('pot') || name.includes('planter');
+      const isCare = cat.includes('care') || cat.includes('fertilizer') || cat.includes('soil') || type.includes('care') || type.includes('food') || type.includes('fertilizer') || name.includes('elixir') || name.includes('neem');
+      const isCombo = cat.includes('combo') || cat.includes('gift') || type.includes('combo') || type.includes('bundle') || name.includes('combo') || name.includes('bundle') || name.includes('trio');
+      if (isPot || isCare || isCombo) return false;
+    }
+
+    // 2. Search query matching
     const matchesSearch =
       p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.sku.toLowerCase().includes(searchTerm.toLowerCase());
+
+    // 3. Specific category dropdown filter
     const matchesCategory = categoryFilter === 'all' || p.category === categoryFilter;
+
     return matchesSearch && matchesCategory;
   });
+
+  const displayTitle =
+    sectionTitle ||
+    (sectionFilter === 'plants'
+      ? 'Live Plants & Houseplants Catalog'
+      : sectionFilter === 'pots-planters'
+      ? 'Pots, Planters & Ceramics'
+      : sectionFilter === 'plant-care'
+      ? 'Plant Care & Organic Bio-Fertilizers'
+      : sectionFilter === 'combos'
+      ? 'Combos & Gift Packs'
+      : 'Plant Catalogue & Inventory');
+
+  const displayDesc =
+    sectionDescription ||
+    (sectionFilter === 'plants'
+      ? 'Manage botanical live specimens, light tiers, watering frequency, and stock.'
+      : sectionFilter === 'pots-planters'
+      ? 'Manage self-watering pots, ceramic planters, terracotta, colors, and stock.'
+      : sectionFilter === 'plant-care'
+      ? 'Manage cold-pressed kelp, bio-fertilizers, neem sprays, and potting mixes.'
+      : sectionFilter === 'combos'
+      ? 'Manage bundled plant sets, festive gifts, and beginner green kits.'
+      : 'Manage plant species, pricing, live stock, and care parameters.');
+
+  const addBtnLabel =
+    sectionFilter === 'plants'
+      ? 'Add Live Plant'
+      : sectionFilter === 'pots-planters'
+      ? 'Add Planter / Pot'
+      : sectionFilter === 'plant-care'
+      ? 'Add Plant Care Item'
+      : sectionFilter === 'combos'
+      ? 'Add Combo / Gift Pack'
+      : 'Add New Item';
 
   return (
     <div className="space-y-6">
@@ -194,16 +283,21 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
       {/* Top Header & Search Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="font-serif font-bold text-xl text-[#1A1A1A]">Plant Catalogue & Inventory</h2>
-          <p className="text-xs text-[#5A5A5A] font-light">Manage plant species, pricing, live stock, and care parameters.</p>
+          <div className="flex items-center gap-2">
+            <h2 className="font-serif font-bold text-xl text-[#1A1A1A]">{displayTitle}</h2>
+            <span className="bg-[#EBF3EC] text-[#2D6A4F] text-[10px] font-bold px-2 py-0.5 rounded-full">
+              {filteredProducts.length} Items
+            </span>
+          </div>
+          <p className="text-xs text-[#5A5A5A] font-light mt-0.5">{displayDesc}</p>
         </div>
 
         <button
           onClick={openAddModal}
-          className="px-4 py-2.5 bg-[#2D4A27] hover:bg-[#1F341C] text-white text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all self-start sm:self-auto"
+          className="px-4 py-2.5 bg-[#2D4A27] hover:bg-[#1F341C] text-white text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all self-start sm:self-auto rounded-md shadow-xs"
         >
           <Plus className="w-4 h-4" />
-          Add New Plant
+          {addBtnLabel}
         </button>
       </div>
 

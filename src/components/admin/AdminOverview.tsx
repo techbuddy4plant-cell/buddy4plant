@@ -160,7 +160,7 @@ export const AdminOverview: React.FC<AdminOverviewProps> = ({
             <div className="flex items-center justify-between pb-4 border-b border-[#E5E2D9]">
               <h3 className="font-serif font-bold text-base text-[#1A1A1A]">Inventory Alerts</h3>
               <button
-                onClick={() => setActiveTab('products')}
+                onClick={() => setActiveTab('plants')}
                 className="text-xs text-[#2D4A27] font-semibold hover:underline"
               >
                 Manage

@@ -339,16 +339,145 @@ export const AdminCMS: React.FC = () => {
           </div>
         </div>
 
-        {/* SECTION 4: Amazon-Style Trust Badges */}
+        {/* SECTION 4: Botanica & Soil Science Formulation */}
+        <div className="space-y-4 pb-6 border-b border-[#E5E2D9]">
+          <h3 className="font-serif font-bold text-base text-[#1A1A1A] flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-[#2D4A27]" />
+            Botanica &amp; Organic Soil Science Section
+          </h3>
+          <p className="text-[#5A5A5A] text-[11px]">Controls the stone slab formulation section highlighting cold-pressed bio-actives.</p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block font-semibold text-[#1A1A1A] mb-1">Section Title</label>
+              <input
+                type="text"
+                placeholder="Slow-grown. Nurtured weekly."
+                value={formData.botanicaTitle || 'Slow-grown. Nurtured weekly.'}
+                onChange={(e) => setFormData({ ...formData, botanicaTitle: e.target.value })}
+                className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
+              />
+            </div>
+            <div>
+              <label className="block font-semibold text-[#1A1A1A] mb-1">Button Action Link</label>
+              <input
+                type="text"
+                value={formData.botanicaButtonLink || '/plants/plant-care'}
+                onChange={(e) => setFormData({ ...formData, botanicaButtonLink: e.target.value })}
+                className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-[#1A1A1A] font-mono text-[11px] focus:outline-none focus:border-[#2D4A27]"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block font-semibold text-[#1A1A1A] mb-1">Section Subtitle</label>
+            <textarea
+              rows={2}
+              value={formData.botanicaSubtitle || 'Organic plant food and microbiome fertilizers crafted from what takes nature years to form. Feeds roots deep, settles clean.'}
+              onChange={(e) => setFormData({ ...formData, botanicaSubtitle: e.target.value })}
+              className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
+            />
+          </div>
+
+          <div>
+            <label className="block font-semibold text-[#1A1A1A] mb-1">Travertine Stone Slab Image URL</label>
+            <input
+              type="text"
+              value={formData.botanicaImage || '/editorial/botanica-stone-slab.jpg'}
+              onChange={(e) => setFormData({ ...formData, botanicaImage: e.target.value })}
+              className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-[#1A1A1A] font-mono text-[11px] focus:outline-none focus:border-[#2D4A27]"
+            />
+          </div>
+        </div>
+
+        {/* SECTION 5: What's Inside Arched Bio-Active Cards */}
+        <div className="space-y-4 pb-6 border-b border-[#E5E2D9]">
+          <h3 className="font-serif font-bold text-base text-[#1A1A1A] flex items-center gap-2">
+            <Palette className="w-4 h-4 text-[#2D4A27]" />
+            &ldquo;What&apos;s Inside&rdquo; Bio-Active Ingredients Section
+          </h3>
+          <p className="text-[#5A5A5A] text-[11px]">Headline &amp; copy for the three arched active ingredient cards.</p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block font-semibold text-[#1A1A1A] mb-1">Section Title</label>
+              <input
+                type="text"
+                value={formData.whatsInsideTitle || "What's inside"}
+                onChange={(e) => setFormData({ ...formData, whatsInsideTitle: e.target.value })}
+                className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
+              />
+            </div>
+            <div>
+              <label className="block font-semibold text-[#1A1A1A] mb-1">Section Subtitle</label>
+              <input
+                type="text"
+                value={formData.whatsInsideSubtitle || 'Each organic nutrient was chosen because it works for living plants. Not because it looks good on a label.'}
+                onChange={(e) => setFormData({ ...formData, whatsInsideSubtitle: e.target.value })}
+                className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* SECTION 6: 4-Pillar Trust Propositions */}
+        <div className="space-y-4 pb-6 border-b border-[#E5E2D9]">
+          <h3 className="font-serif font-bold text-base text-[#1A1A1A] flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-[#2D4A27]" />
+            Homepage 4-Pillar Trust Propositions
+          </h3>
+          <p className="text-[#5A5A5A] text-[11px]">The four value cards shown below the hero banner on the homepage.</p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block font-semibold text-[#1A1A1A] mb-1">Pillar 1: Safe Transit</label>
+              <input
+                type="text"
+                value={formData.trustBadge1 || 'Safe Pan-India Transit — Guaranteed zero leaf breakage'}
+                onChange={(e) => setFormData({ ...formData, trustBadge1: e.target.value })}
+                className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
+              />
+            </div>
+            <div>
+              <label className="block font-semibold text-[#1A1A1A] mb-1">Pillar 2: Self-Watering</label>
+              <input
+                type="text"
+                value={formData.trustBadge2 || 'Self-Watering Planters — Hydrates for 10-14 days'}
+                onChange={(e) => setFormData({ ...formData, trustBadge2: e.target.value })}
+                className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
+              />
+            </div>
+            <div>
+              <label className="block font-semibold text-[#1A1A1A] mb-1">Pillar 3: Organic Nutrition</label>
+              <input
+                type="text"
+                value={formData.trustBadge3 || '100% Organic Nutrition — Cold-pressed kelp & microbes'}
+                onChange={(e) => setFormData({ ...formData, trustBadge3: e.target.value })}
+                className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
+              />
+            </div>
+            <div>
+              <label className="block font-semibold text-[#1A1A1A] mb-1">Pillar 4: Plant Doctor</label>
+              <input
+                type="text"
+                value={formData.trustBadge4 || 'Free Plant Doctor Help — Direct WhatsApp guidance'}
+                onChange={(e) => setFormData({ ...formData, trustBadge4: e.target.value })}
+                className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* SECTION 7: Amazon-Style Trust Badges */}
         <div className="space-y-4">
           <h3 className="font-serif font-bold text-base text-[#1A1A1A] flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-[#8B5E3C]" />
-            Amazon-Style Store Highlights & Badges
+            Amazon-Style Store Highlights &amp; Badges
           </h3>
 
           <div className="p-4 bg-[#F5F2EB] border border-[#E5E2D9] flex items-center justify-between">
             <div>
-              <span className="font-bold text-[#1A1A1A] block">Enable Amazon-Style "Choice" & "Trust" Badges</span>
+              <span className="font-bold text-[#1A1A1A] block">Enable Amazon-Style &ldquo;Choice&rdquo; &amp; &ldquo;Trust&rdquo; Badges</span>
               <span className="text-[11px] text-[#5A5A5A]">Renders gold star badges on bestseller items and eco-packaging trust seals.</span>
             </div>
             <label className="flex items-center gap-2 cursor-pointer">
