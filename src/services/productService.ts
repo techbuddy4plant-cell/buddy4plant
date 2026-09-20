@@ -17,6 +17,8 @@ import { INITIAL_PRODUCTS } from '../data/initialProducts';
 
 const PRODUCTS_COLLECTION = 'products';
 const LOCAL_STORAGE_KEY = 'b4p_products_db';
+const DELETED_IDS_KEY = 'b4p_deleted_product_ids';
+const SEEDED_FLAG_KEY = 'b4p_products_seeded';
 
 const emitStoreDataChanged = () => {
   if (typeof window !== 'undefined') {
@@ -24,24 +26,61 @@ const emitStoreDataChanged = () => {
   }
 };
 
+const getDeletedProductIds = (): Set<string> => {
+  try {
+    const saved = localStorage.getItem(DELETED_IDS_KEY);
+    if (saved) {
+      const arr = JSON.parse(saved);
+      if (Array.isArray(arr)) return new Set(arr);
+    }
+  } catch (e) {}
+  return new Set();
+};
+
+const markProductDeleted = (id: string) => {
+  const set = getDeletedProductIds();
+  set.add(id);
+  try {
+    localStorage.setItem(DELETED_IDS_KEY, JSON.stringify(Array.from(set)));
+  } catch (e) {}
+};
+
+const unmarkProductDeleted = (id: string) => {
+  const set = getDeletedProductIds();
+  set.delete(id);
+  try {
+    localStorage.setItem(DELETED_IDS_KEY, JSON.stringify(Array.from(set)));
+  } catch (e) {}
+};
+
 const getLocalProducts = (): Product[] => {
+  const deletedIds = getDeletedProductIds();
   try {
     const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (saved) {
+    if (saved !== null) {
       const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
+      // Valid array even if empty (length 0 means user deleted all items)
+      if (Array.isArray(parsed)) {
+        return parsed.filter((p) => p && p.id && !deletedIds.has(p.id));
       }
     }
   } catch (err) {
     console.warn('Error reading products from localStorage:', err);
   }
-  return INITIAL_PRODUCTS;
+
+  // If already seeded/initialized before, don't resurrect demo items
+  const isSeeded = typeof window !== 'undefined' ? localStorage.getItem(SEEDED_FLAG_KEY) : null;
+  if (isSeeded === 'true') {
+    return [];
+  }
+
+  return INITIAL_PRODUCTS.filter((p) => !deletedIds.has(p.id));
 };
 
 const setLocalProducts = (products: Product[]) => {
   try {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(products));
+    localStorage.setItem(SEEDED_FLAG_KEY, 'true');
     emitStoreDataChanged();
   } catch (err) {
     console.warn('Error saving products to localStorage:', err);
@@ -61,6 +100,13 @@ const sanitizeProduct = (p: Product): Product => {
 };
 
 export async function seedProductsIfEmpty(): Promise<void> {
+  // If products have already been seeded once, NEVER re-seed!
+  if (typeof window !== 'undefined') {
+    if (localStorage.getItem(SEEDED_FLAG_KEY) === 'true' || localStorage.getItem(LOCAL_STORAGE_KEY) !== null) {
+      return;
+    }
+  }
+
   try {
     const colRef = collection(db, PRODUCTS_COLLECTION);
     const snap = await getDocs(query(colRef, limit(1)));
@@ -75,6 +121,9 @@ export async function seedProductsIfEmpty(): Promise<void> {
         });
       }
       await batch.commit();
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(SEEDED_FLAG_KEY, 'true');
+      }
     }
   } catch (error) {
     console.warn('Firestore seeding check fallback (offline/permission fallback):', error);
@@ -82,13 +131,54 @@ export async function seedProductsIfEmpty(): Promise<void> {
 }
 
 export async function getAllProducts(): Promise<Product[]> {
+  const deletedIds = getDeletedProductIds();
+  const saved = typeof window !== 'undefined' ? localStorage.getItem(LOCAL_STORAGE_KEY) : null;
+  const isSeeded = typeof window !== 'undefined' ? localStorage.getItem(SEEDED_FLAG_KEY) === 'true' : false;
+
+  // If local store explicitly exists and is empty, user deliberately deleted all products!
+  if (saved !== null) {
+    try {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length === 0) {
+        return [];
+      }
+    } catch (e) {}
+  }
+
   try {
-    await seedProductsIfEmpty();
+    if (!isSeeded && saved === null) {
+      await seedProductsIfEmpty();
+    }
     const snap = await getDocs(collection(db, PRODUCTS_COLLECTION));
     if (!snap.empty) {
-      const remoteProducts = snap.docs.map((d) => sanitizeProduct({ id: d.id, ...d.data() } as Product));
+      const remoteProducts = snap.docs
+        .map((d) => sanitizeProduct({ id: d.id, ...d.data() } as Product))
+        .filter((p) => !deletedIds.has(p.id));
+
+      // If user locally has saved state, keep local items as authority
+      if (saved !== null) {
+        const local = getLocalProducts();
+        if (local.length === 0 && isSeeded) {
+          return [];
+        }
+        // Merge without resurrected deleted items
+        const localIds = new Set(local.map((p) => p.id));
+        const combined = [...local];
+        for (const rp of remoteProducts) {
+          if (!localIds.has(rp.id) && !deletedIds.has(rp.id)) {
+            combined.push(rp);
+          }
+        }
+        setLocalProducts(combined);
+        return combined;
+      }
+
       setLocalProducts(remoteProducts);
       return remoteProducts;
+    } else {
+      if (saved !== null) {
+        return getLocalProducts();
+      }
     }
   } catch (error) {
     console.warn('Using local cache for products:', error);
@@ -161,7 +251,10 @@ export async function saveProduct(product: Partial<Product> & { name: string; pr
     createdAt: product.createdAt || Date.now(),
   };
 
-  // 1. Update localStorage instantly
+  // 1. Unmark from deleted IDs if re-created
+  unmarkProductDeleted(id);
+
+  // 2. Update localStorage instantly
   const current = getLocalProducts();
   const existingIdx = current.findIndex((p) => p.id === id);
   let updatedList: Product[];
@@ -173,7 +266,7 @@ export async function saveProduct(product: Partial<Product> & { name: string; pr
   }
   setLocalProducts(updatedList);
 
-  // 2. Sync to Firestore in background
+  // 3. Sync to Firestore in background
   try {
     const docRef = doc(db, PRODUCTS_COLLECTION, id);
     await setDoc(docRef, productData, { merge: true });
@@ -185,17 +278,41 @@ export async function saveProduct(product: Partial<Product> & { name: string; pr
 }
 
 export async function deleteProduct(id: string): Promise<void> {
-  // 1. Update localStorage instantly
+  // 1. Mark in persistent deleted set so remote Firestore cannot resurrect it
+  markProductDeleted(id);
+
+  // 2. Update localStorage instantly
   const current = getLocalProducts();
   const updatedList = current.filter((p) => p.id !== id);
   setLocalProducts(updatedList);
 
-  // 2. Sync to Firestore
+  // 3. Sync to Firestore
   try {
     const docRef = doc(db, PRODUCTS_COLLECTION, id);
     await deleteDoc(docRef);
   } catch (err) {
     console.warn('Firestore delete failed, removed locally:', err);
+  }
+}
+
+export async function deleteAllProducts(): Promise<void> {
+  const current = getLocalProducts();
+  for (const p of current) {
+    markProductDeleted(p.id);
+  }
+  setLocalProducts([]);
+  try {
+    localStorage.setItem(SEEDED_FLAG_KEY, 'true');
+  } catch (e) {}
+  emitStoreDataChanged();
+
+  try {
+    const snap = await getDocs(collection(db, PRODUCTS_COLLECTION));
+    const batch = writeBatch(db);
+    snap.docs.forEach((d) => batch.delete(d.ref));
+    await batch.commit();
+  } catch (err) {
+    console.warn('Firestore bulk delete fallback:', err);
   }
 }
 

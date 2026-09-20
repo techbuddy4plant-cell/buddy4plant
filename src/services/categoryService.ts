@@ -14,6 +14,8 @@ import { INITIAL_CATEGORIES } from '../data/initialCategories';
 
 const CATEGORIES_COLLECTION = 'categories';
 const LOCAL_STORAGE_KEY = 'b4p_categories_db';
+const DELETED_IDS_KEY = 'b4p_deleted_category_ids';
+const SEEDED_FLAG_KEY = 'b4p_categories_seeded';
 
 const emitStoreDataChanged = () => {
   if (typeof window !== 'undefined') {
@@ -21,24 +23,59 @@ const emitStoreDataChanged = () => {
   }
 };
 
+const getDeletedCategoryIds = (): Set<string> => {
+  try {
+    const saved = localStorage.getItem(DELETED_IDS_KEY);
+    if (saved) {
+      const arr = JSON.parse(saved);
+      if (Array.isArray(arr)) return new Set(arr);
+    }
+  } catch (e) {}
+  return new Set();
+};
+
+const markCategoryDeleted = (id: string) => {
+  const set = getDeletedCategoryIds();
+  set.add(id);
+  try {
+    localStorage.setItem(DELETED_IDS_KEY, JSON.stringify(Array.from(set)));
+  } catch (e) {}
+};
+
+const unmarkCategoryDeleted = (id: string) => {
+  const set = getDeletedCategoryIds();
+  set.delete(id);
+  try {
+    localStorage.setItem(DELETED_IDS_KEY, JSON.stringify(Array.from(set)));
+  } catch (e) {}
+};
+
 const getLocalCategories = (): Category[] => {
+  const deletedIds = getDeletedCategoryIds();
   try {
     const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (saved) {
+    if (saved !== null) {
       const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
+      if (Array.isArray(parsed)) {
+        return parsed.filter((c) => c && c.id && !deletedIds.has(c.id));
       }
     }
   } catch (err) {
     console.warn('Error reading categories from localStorage:', err);
   }
-  return INITIAL_CATEGORIES;
+
+  const isSeeded = typeof window !== 'undefined' ? localStorage.getItem(SEEDED_FLAG_KEY) : null;
+  if (isSeeded === 'true') {
+    return [];
+  }
+
+  return INITIAL_CATEGORIES.filter((c) => !deletedIds.has(c.id));
 };
 
 const setLocalCategories = (categories: Category[]) => {
   try {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(categories));
+    localStorage.setItem(SEEDED_FLAG_KEY, 'true');
     emitStoreDataChanged();
   } catch (err) {
     console.warn('Error saving categories to localStorage:', err);
@@ -57,6 +94,12 @@ const sanitizeCategory = (cat: Category): Category => {
 };
 
 export async function seedCategoriesIfEmpty(): Promise<void> {
+  if (typeof window !== 'undefined') {
+    if (localStorage.getItem(SEEDED_FLAG_KEY) === 'true' || localStorage.getItem(LOCAL_STORAGE_KEY) !== null) {
+      return;
+    }
+  }
+
   try {
     const colRef = collection(db, CATEGORIES_COLLECTION);
     const snap = await getDocs(query(colRef, limit(1)));
@@ -67,6 +110,9 @@ export async function seedCategoriesIfEmpty(): Promise<void> {
         batch.set(docRef, cat);
       }
       await batch.commit();
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(SEEDED_FLAG_KEY, 'true');
+      }
     }
   } catch (error) {
     console.warn('Category seeding error/fallback:', error);
@@ -74,14 +120,52 @@ export async function seedCategoriesIfEmpty(): Promise<void> {
 }
 
 export async function getAllCategories(): Promise<Category[]> {
+  const deletedIds = getDeletedCategoryIds();
+  const saved = typeof window !== 'undefined' ? localStorage.getItem(LOCAL_STORAGE_KEY) : null;
+  const isSeeded = typeof window !== 'undefined' ? localStorage.getItem(SEEDED_FLAG_KEY) === 'true' : false;
+
+  if (saved !== null) {
+    try {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length === 0) {
+        return [];
+      }
+    } catch (e) {}
+  }
+
   try {
-    await seedCategoriesIfEmpty();
+    if (!isSeeded && saved === null) {
+      await seedCategoriesIfEmpty();
+    }
     const snap = await getDocs(collection(db, CATEGORIES_COLLECTION));
     if (!snap.empty) {
-      const cats = snap.docs.map((d) => sanitizeCategory({ id: d.id, ...d.data() } as Category));
+      const cats = snap.docs
+        .map((d) => sanitizeCategory({ id: d.id, ...d.data() } as Category))
+        .filter((c) => !deletedIds.has(c.id));
       const sorted = cats.sort((a, b) => (a.order || 0) - (b.order || 0));
+
+      if (saved !== null) {
+        const local = getLocalCategories();
+        if (local.length === 0 && isSeeded) {
+          return [];
+        }
+        const localIds = new Set(local.map((c) => c.id));
+        const combined = [...local];
+        for (const rc of sorted) {
+          if (!localIds.has(rc.id) && !deletedIds.has(rc.id)) {
+            combined.push(rc);
+          }
+        }
+        setLocalCategories(combined);
+        return combined;
+      }
+
       setLocalCategories(sorted);
       return sorted;
+    } else {
+      if (saved !== null) {
+        return getLocalCategories();
+      }
     }
   } catch (error) {
     console.warn('Falling back to local categories:', error);
@@ -107,7 +191,10 @@ export async function saveCategory(category: Partial<Category> & { name: string 
     active: category.active !== undefined ? category.active : true,
   };
 
-  // 1. Update localStorage instantly
+  // 1. Unmark deleted if re-created
+  unmarkCategoryDeleted(id);
+
+  // 2. Update localStorage instantly
   const current = getLocalCategories();
   const existingIdx = current.findIndex((c) => c.id === id);
   let updatedList: Category[];
@@ -119,7 +206,7 @@ export async function saveCategory(category: Partial<Category> & { name: string 
   }
   setLocalCategories(updatedList);
 
-  // 2. Sync to Firestore in background
+  // 3. Sync to Firestore in background
   try {
     const docRef = doc(db, CATEGORIES_COLLECTION, id);
     await setDoc(docRef, catData, { merge: true });
@@ -131,16 +218,37 @@ export async function saveCategory(category: Partial<Category> & { name: string 
 }
 
 export async function deleteCategory(id: string): Promise<void> {
-  // 1. Update localStorage instantly
+  markCategoryDeleted(id);
+
   const current = getLocalCategories();
   const updatedList = current.filter((c) => c.id !== id);
   setLocalCategories(updatedList);
 
-  // 2. Sync to Firestore
   try {
     const docRef = doc(db, CATEGORIES_COLLECTION, id);
     await deleteDoc(docRef);
   } catch (err) {
     console.warn('Firestore category delete failed, removed locally:', err);
+  }
+}
+
+export async function deleteAllCategories(): Promise<void> {
+  const current = getLocalCategories();
+  for (const c of current) {
+    markCategoryDeleted(c.id);
+  }
+  setLocalCategories([]);
+  try {
+    localStorage.setItem(SEEDED_FLAG_KEY, 'true');
+  } catch (e) {}
+  emitStoreDataChanged();
+
+  try {
+    const snap = await getDocs(collection(db, CATEGORIES_COLLECTION));
+    const batch = writeBatch(db);
+    snap.docs.forEach((d) => batch.delete(d.ref));
+    await batch.commit();
+  } catch (err) {
+    console.warn('Firestore deleteAllCategories warning:', err);
   }
 }

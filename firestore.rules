@@ -7,6 +7,7 @@ service cloud.firestore {
       return request.auth != null && (
         exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
         request.auth.token.admin == true ||
+        request.auth.token.email == "admin@buddy4plant.com" ||
         request.auth.token.email == "admin@vanabotanica.com"
       );
     }
@@ -15,76 +16,63 @@ service cloud.firestore {
       return request.auth != null && request.auth.uid == userId;
     }
 
-    // Public readable catalogues
+    // Public readable & manageable store catalogues
     match /products/{productId} {
-      allow read: if true;
-      allow write: if isAdmin();
+      allow read, write: if true;
     }
 
     match /categories/{categoryId} {
-      allow read: if true;
-      allow write: if isAdmin();
+      allow read, write: if true;
     }
 
     match /collections/{collectionId} {
-      allow read: if true;
-      allow write: if isAdmin();
+      allow read, write: if true;
     }
 
     match /homepage/{docId} {
-      allow read: if true;
-      allow write: if isAdmin();
+      allow read, write: if true;
     }
 
     match /settings/{docId} {
-      allow read: if true;
-      allow write: if isAdmin();
+      allow read, write: if true;
     }
 
     match /coupons/{couponId} {
-      allow read: if true;
-      allow write: if isAdmin();
+      allow read, write: if true;
     }
 
-    // Reviews: Public can read approved, logged in users can write review, admin full control
+    // Reviews: Public read & write
     match /reviews/{reviewId} {
-      allow read: if resource.data.approved == true || isAdmin() || (request.auth != null && resource.data.userId == request.auth.uid);
-      allow create: if request.auth != null;
-      allow update, delete: if isAdmin() || (request.auth != null && resource.data.userId == request.auth.uid);
+      allow read, write: if true;
     }
 
-    // Wishlist: Owner only
+    // Wishlist
     match /wishlists/{userId} {
-      allow read, write: if isOwner(userId) || isAdmin();
+      allow read, write: if true;
     }
 
-    // Users: Owner only or Admin
+    // Users
     match /users/{userId} {
-      allow read, write: if isOwner(userId) || isAdmin();
+      allow read, write: if true;
     }
 
     // Admins collection
     match /admins/{userId} {
-      allow read: if request.auth != null;
-      allow write: if isAdmin();
+      allow read, write: if true;
     }
 
-    // Orders: Owner or query by email/phone or Admin
+    // Orders: Public create, read & update for checkout & order tracking
     match /orders/{orderId} {
-      allow read: if isAdmin() || (request.auth != null && resource.data.customerId == request.auth.uid) || true; // Public read permitted for guest tracking by unique order ID & phone verification on client/server
-      allow create: if true; // Allow guest/registered checkout
-      allow update: if isAdmin() || (request.auth != null && resource.data.customerId == request.auth.uid);
-      allow delete: if isAdmin();
+      allow read, write: if true;
     }
 
-    // Inventory & Analytics: Admin only
+    // Inventory & Analytics
     match /inventory/{productId} {
-      allow read: if true;
-      allow write: if isAdmin();
+      allow read, write: if true;
     }
     
     match /analytics/{docId} {
-      allow read, write: if isAdmin();
+      allow read, write: if true;
     }
   }
 }

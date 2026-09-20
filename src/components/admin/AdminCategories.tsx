@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Plus, Edit2, Trash2, Check, X, Image as ImageIcon, Upload, Sparkles } from 'lucide-react';
 import { Category } from '../../types';
-import { saveCategory, deleteCategory } from '../../services/categoryService';
+import { saveCategory, deleteCategory, deleteAllCategories } from '../../services/categoryService';
 import { PlantImage, PLANT_FALLBACK_IMAGES } from '../../utils/imageFallback';
 
 interface AdminCategoriesProps {
@@ -73,6 +73,15 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({ categories, on
     }
   };
 
+  const handleDeleteAll = async () => {
+    const count = categories.length;
+    if (count === 0) return;
+    if (window.confirm(`⚠️ Are you sure you want to delete ALL ${count} collections? This cannot be undone.`)) {
+      await deleteAllCategories();
+      onRefresh();
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -81,13 +90,25 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({ categories, on
           <p className="text-xs text-[#5A5A5A] font-light">Organize plants by living space, light tier, and species families.</p>
         </div>
 
-        <button
-          onClick={openAddModal}
-          className="px-4 py-2.5 bg-[#2D4A27] hover:bg-[#1F341C] text-white text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all self-start sm:self-auto"
-        >
-          <Plus className="w-4 h-4" />
-          Add New Collection
-        </button>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          {categories.length > 0 && (
+            <button
+              onClick={handleDeleteAll}
+              className="px-3 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all rounded-md"
+              title="Delete all categories"
+            >
+              <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+              Clear All ({categories.length})
+            </button>
+          )}
+          <button
+            onClick={openAddModal}
+            className="px-4 py-2.5 bg-[#2D4A27] hover:bg-[#1F341C] text-white text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all rounded-md shadow-xs"
+          >
+            <Plus className="w-4 h-4" />
+            Add New Collection
+          </button>
+        </div>
       </div>
 
       {/* Categories Grid */}

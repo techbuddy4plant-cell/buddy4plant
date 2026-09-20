@@ -55,12 +55,23 @@ export const ProductListingPage: React.FC<ProductListingPageProps> = ({
     }
   }, [initialCategorySlug]);
 
-  useEffect(() => {
+  const loadData = () => {
     Promise.all([getProducts(), getCategories()]).then(([pList, cList]) => {
       setProducts(pList);
       setCategories(cList);
       setLoading(false);
     });
+  };
+
+  useEffect(() => {
+    loadData();
+    const handleDataChanged = () => {
+      loadData();
+    };
+    window.addEventListener('b4p_store_data_changed', handleDataChanged);
+    return () => {
+      window.removeEventListener('b4p_store_data_changed', handleDataChanged);
+    };
   }, []);
 
   const resetFilters = () => {

@@ -52,6 +52,8 @@ export const INITIAL_PROJECTS: BotanicalProject[] = [
 ];
 
 const LOCAL_STORAGE_KEY = 'b4p_projects_db';
+const DELETED_IDS_KEY = 'b4p_deleted_project_ids';
+const SEEDED_FLAG_KEY = 'b4p_projects_seeded';
 
 const emitStoreDataChanged = () => {
   if (typeof window !== 'undefined') {
@@ -61,26 +63,57 @@ const emitStoreDataChanged = () => {
   }
 };
 
+const getDeletedProjectIds = (): Set<string> => {
+  try {
+    const saved = localStorage.getItem(DELETED_IDS_KEY);
+    if (saved) {
+      const arr = JSON.parse(saved);
+      if (Array.isArray(arr)) return new Set(arr);
+    }
+  } catch (e) {}
+  return new Set();
+};
+
+const markProjectDeleted = (id: string) => {
+  const set = getDeletedProjectIds();
+  set.add(id);
+  try {
+    localStorage.setItem(DELETED_IDS_KEY, JSON.stringify(Array.from(set)));
+  } catch (e) {}
+};
+
+const unmarkProjectDeleted = (id: string) => {
+  const set = getDeletedProjectIds();
+  set.delete(id);
+  try {
+    localStorage.setItem(DELETED_IDS_KEY, JSON.stringify(Array.from(set)));
+  } catch (e) {}
+};
+
 export const getProjects = async (): Promise<BotanicalProject[]> => {
+  const deletedIds = getDeletedProjectIds();
   try {
     const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (saved) {
+    if (saved !== null) {
       const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
+      if (Array.isArray(parsed)) {
+        return parsed.filter((p) => p && p.id && !deletedIds.has(p.id));
       }
     }
   } catch (err) {
     console.warn('Error reading projects from storage:', err);
   }
-  // Fallback & seed initial
-  try {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(INITIAL_PROJECTS));
-  } catch {}
-  return INITIAL_PROJECTS;
+
+  const isSeeded = typeof window !== 'undefined' ? localStorage.getItem(SEEDED_FLAG_KEY) : null;
+  if (isSeeded === 'true') {
+    return [];
+  }
+
+  return INITIAL_PROJECTS.filter((p) => !deletedIds.has(p.id));
 };
 
 export const saveProject = async (project: BotanicalProject): Promise<void> => {
+  unmarkProjectDeleted(project.id);
   const current = await getProjects();
   const existingIndex = current.findIndex((p) => p.id === project.id);
   let updated: BotanicalProject[];
@@ -93,17 +126,32 @@ export const saveProject = async (project: BotanicalProject): Promise<void> => {
   }
 
   localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
+  localStorage.setItem(SEEDED_FLAG_KEY, 'true');
   emitStoreDataChanged();
 };
 
 export const deleteProject = async (id: string): Promise<void> => {
+  markProjectDeleted(id);
   const current = await getProjects();
   const updated = current.filter((p) => p.id !== id);
   localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
+  localStorage.setItem(SEEDED_FLAG_KEY, 'true');
+  emitStoreDataChanged();
+};
+
+export const deleteAllProjects = async (): Promise<void> => {
+  const current = await getProjects();
+  for (const p of current) {
+    markProjectDeleted(p.id);
+  }
+  localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify([]));
+  localStorage.setItem(SEEDED_FLAG_KEY, 'true');
   emitStoreDataChanged();
 };
 
 export const resetProjectsToDefault = async (): Promise<void> => {
+  localStorage.removeItem(DELETED_IDS_KEY);
   localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(INITIAL_PROJECTS));
+  localStorage.setItem(SEEDED_FLAG_KEY, 'true');
   emitStoreDataChanged();
 };

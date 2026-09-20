@@ -59,9 +59,20 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
   const mobileSearchInputRef = useRef<HTMLInputElement>(null);
   const accountMenuRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  const loadNavData = () => {
     getAllCategories().then(setCategories);
     getAllProducts().then(setAllProducts);
+  };
+
+  useEffect(() => {
+    loadNavData();
+    const handleDataChanged = () => {
+      loadNavData();
+    };
+    window.addEventListener('b4p_store_data_changed', handleDataChanged);
+    return () => {
+      window.removeEventListener('b4p_store_data_changed', handleDataChanged);
+    };
   }, []);
 
   // Lock body scroll when mobile menu is open

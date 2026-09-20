@@ -15,24 +15,62 @@ import { INITIAL_REVIEWS } from '../data/initialSettings';
 
 const REVIEWS_COLLECTION = 'reviews';
 const REVIEWS_STORAGE_KEY = 'b4p_customer_reviews';
+const DELETED_IDS_KEY = 'b4p_deleted_review_ids';
+const SEEDED_FLAG_KEY = 'b4p_reviews_seeded';
+
+const getDeletedReviewIds = (): Set<string> => {
+  try {
+    const saved = localStorage.getItem(DELETED_IDS_KEY);
+    if (saved) {
+      const arr = JSON.parse(saved);
+      if (Array.isArray(arr)) return new Set(arr);
+    }
+  } catch (e) {}
+  return new Set();
+};
+
+const markReviewDeleted = (id: string) => {
+  const set = getDeletedReviewIds();
+  set.add(id);
+  try {
+    localStorage.setItem(DELETED_IDS_KEY, JSON.stringify(Array.from(set)));
+  } catch (e) {}
+};
+
+const unmarkReviewDeleted = (id: string) => {
+  const set = getDeletedReviewIds();
+  set.delete(id);
+  try {
+    localStorage.setItem(DELETED_IDS_KEY, JSON.stringify(Array.from(set)));
+  } catch (e) {}
+};
 
 export function getLocalReviews(): Review[] {
+  const deletedIds = getDeletedReviewIds();
   try {
     const raw = localStorage.getItem(REVIEWS_STORAGE_KEY);
-    if (!raw) {
-      localStorage.setItem(REVIEWS_STORAGE_KEY, JSON.stringify(INITIAL_REVIEWS));
-      return INITIAL_REVIEWS;
+    if (raw !== null) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        return parsed.filter((r) => r && r.id && !deletedIds.has(r.id));
+      }
     }
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed : INITIAL_REVIEWS;
   } catch {
-    return INITIAL_REVIEWS;
+    // ignore
   }
+
+  const isSeeded = typeof window !== 'undefined' ? localStorage.getItem(SEEDED_FLAG_KEY) : null;
+  if (isSeeded === 'true') {
+    return [];
+  }
+
+  return INITIAL_REVIEWS.filter((r) => !deletedIds.has(r.id));
 }
 
 export function saveLocalReviews(reviews: Review[]): void {
   try {
     localStorage.setItem(REVIEWS_STORAGE_KEY, JSON.stringify(reviews));
+    localStorage.setItem(SEEDED_FLAG_KEY, 'true');
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new Event('b4p_reviews_changed'));
       window.dispatchEvent(new Event('b4p_store_data_changed'));
@@ -43,6 +81,12 @@ export function saveLocalReviews(reviews: Review[]): void {
 }
 
 export async function seedReviewsIfEmpty(): Promise<void> {
+  if (typeof window !== 'undefined') {
+    if (localStorage.getItem(SEEDED_FLAG_KEY) === 'true' || localStorage.getItem(REVIEWS_STORAGE_KEY) !== null) {
+      return;
+    }
+  }
+
   try {
     const colRef = collection(db, REVIEWS_COLLECTION);
     const snap = await getDocs(query(colRef, limit(1)));
@@ -53,6 +97,9 @@ export async function seedReviewsIfEmpty(): Promise<void> {
         batch.set(docRef, rev);
       }
       await batch.commit();
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(SEEDED_FLAG_KEY, 'true');
+      }
     }
   } catch (err) {
     console.warn('Reviews seed warning (using local store):', err);
@@ -60,22 +107,47 @@ export async function seedReviewsIfEmpty(): Promise<void> {
 }
 
 export async function getAllReviews(): Promise<Review[]> {
+  const deletedIds = getDeletedReviewIds();
   const local = getLocalReviews();
+  const saved = typeof window !== 'undefined' ? localStorage.getItem(REVIEWS_STORAGE_KEY) : null;
+  const isSeeded = typeof window !== 'undefined' ? localStorage.getItem(SEEDED_FLAG_KEY) === 'true' : false;
+
+  if (saved !== null) {
+    try {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length === 0) {
+        return [];
+      }
+    } catch (e) {}
+  }
+
   try {
-    await seedReviewsIfEmpty();
+    if (!isSeeded && saved === null) {
+      await seedReviewsIfEmpty();
+    }
     const snap = await getDocs(collection(db, REVIEWS_COLLECTION));
     if (!snap.empty) {
-      const remote = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Review));
-      const map = new Map<string, Review>();
-      local.forEach((r) => map.set(r.id, r));
-      remote.forEach((r) => map.set(r.id, r));
-      const merged = Array.from(map.values());
-      try {
-        localStorage.setItem(REVIEWS_STORAGE_KEY, JSON.stringify(merged));
-      } catch (e) {
-        // ignore
+      const remote = snap.docs
+        .map((d) => ({ id: d.id, ...d.data() } as Review))
+        .filter((r) => !deletedIds.has(r.id));
+
+      if (saved !== null) {
+        if (local.length === 0 && isSeeded) {
+          return [];
+        }
+        const localIds = new Set(local.map((r) => r.id));
+        const combined = [...local];
+        for (const rr of remote) {
+          if (!localIds.has(rr.id) && !deletedIds.has(rr.id)) {
+            combined.push(rr);
+          }
+        }
+        saveLocalReviews(combined);
+        return combined;
       }
-      return merged;
+
+      saveLocalReviews(remote);
+      return remote;
     }
     return local;
   } catch (err) {
@@ -184,6 +256,7 @@ export async function updateReviewStatus(reviewId: string, approved: boolean): P
 }
 
 export async function deleteReview(reviewId: string): Promise<void> {
+  markReviewDeleted(reviewId);
   const current = getLocalReviews();
   const updated = current.filter((r) => r.id !== reviewId);
   saveLocalReviews(updated);
@@ -193,5 +266,21 @@ export async function deleteReview(reviewId: string): Promise<void> {
     await deleteDoc(docRef);
   } catch (err) {
     console.warn('Firestore delete failed, updated locally:', err);
+  }
+}
+
+export async function deleteAllReviews(): Promise<void> {
+  const current = getLocalReviews();
+  for (const r of current) {
+    markReviewDeleted(r.id);
+  }
+  saveLocalReviews([]);
+  try {
+    const snap = await getDocs(collection(db, REVIEWS_COLLECTION));
+    const batch = writeBatch(db);
+    snap.docs.forEach((d) => batch.delete(d.ref));
+    await batch.commit();
+  } catch (err) {
+    console.warn('Firestore bulk delete review fallback:', err);
   }
 }

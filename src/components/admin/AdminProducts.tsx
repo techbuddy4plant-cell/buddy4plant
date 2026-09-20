@@ -13,7 +13,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { Product, Category } from '../../types';
-import { saveProduct, deleteProduct } from '../../services/productService';
+import { saveProduct, deleteProduct, deleteAllProducts } from '../../services/productService';
 import { PlantImage } from '../../utils/imageFallback';
 import { PlantImageUploader } from './PlantImageUploader';
 import { AdminToastNotification } from './AdminToastNotification';
@@ -192,6 +192,22 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
     }
   };
 
+  const handleDeleteAll = async () => {
+    const count = products.length;
+    if (count === 0) return;
+    if (window.confirm(`⚠️ Are you sure you want to delete ALL ${count} products from the store? This will completely clear the inventory and cannot be undone.`)) {
+      setIsSaving(true);
+      try {
+        await deleteAllProducts();
+        onRefresh();
+        setToastMsg(`Deleted all ${count} products from store catalogue.`);
+        setShowToast(true);
+      } finally {
+        setIsSaving(false);
+      }
+    }
+  };
+
   const handleToggleActive = async (p: Product) => {
     await saveProduct({ ...p, active: !p.active, updatedAt: Date.now() });
     onRefresh();
@@ -292,13 +308,25 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
           <p className="text-xs text-[#5A5A5A] font-light mt-0.5">{displayDesc}</p>
         </div>
 
-        <button
-          onClick={openAddModal}
-          className="px-4 py-2.5 bg-[#2D4A27] hover:bg-[#1F341C] text-white text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all self-start sm:self-auto rounded-md shadow-xs"
-        >
-          <Plus className="w-4 h-4" />
-          {addBtnLabel}
-        </button>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          {products.length > 0 && (
+            <button
+              onClick={handleDeleteAll}
+              className="px-3 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all rounded-md"
+              title="Delete all products from store catalogue"
+            >
+              <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+              Clear All Products ({products.length})
+            </button>
+          )}
+          <button
+            onClick={openAddModal}
+            className="px-4 py-2.5 bg-[#2D4A27] hover:bg-[#1F341C] text-white text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all rounded-md shadow-xs"
+          >
+            <Plus className="w-4 h-4" />
+            {addBtnLabel}
+          </button>
+        </div>
       </div>
 
       {/* Filter & Search Bar */}
