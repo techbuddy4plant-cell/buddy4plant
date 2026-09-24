@@ -2,6 +2,52 @@ import { Product } from '../types';
 
 export const INITIAL_PRODUCTS: Product[] = [
   {
+    id: 'vermicompost-best-topsoil-enricher',
+    name: 'Vermicompost',
+    slug: 'vermicompost',
+    shortDescription: '100% pure organic topsoil enricher promoting beneficial microbes and vigorous aeration.',
+    description: 'Enriched organic vermicompost packed with essential macro- and micro-nutrients, beneficial soil microbes, and humic substances. Regulates soil pH, improves moisture retention, and delivers steady, odorless nutrition directly to root networks.',
+    price: 199,
+    compareAtPrice: 299,
+    stock: 250,
+    sku: 'PC-VERMI-001',
+    category: 'plant-care',
+    subCategory: 'fertilizers',
+    images: [
+      'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=800&q=80'
+    ],
+    rating: 4.8,
+    reviewCount: 114,
+    plantType: 'Plant Food & Fertilizers',
+    plantSize: '1 KG',
+    weightVolume: '1 KG',
+    weightOptions: ['1 KG', '5 KG', '10 KG'],
+    variants: [
+      { size: '1 KG', price: 199, compareAtPrice: 299, unitRate: '₹199/kg' },
+      { size: '5 KG', price: 349, compareAtPrice: 499, unitRate: '(₹70/kg)' },
+      { size: '10 KG', price: 649, compareAtPrice: 899, unitRate: '(₹65/kg)' }
+    ],
+    lightRequirement: 'Medium Light',
+    wateringFrequency: 'Every 10-14 days',
+    maintenanceLevel: 'Easy',
+    location: 'Balcony',
+    indoorOutdoor: 'Both',
+    petFriendly: true,
+    featured: true,
+    bestseller: true,
+    newArrival: false,
+    active: true,
+    tags: ['plant-care', 'vermicompost', 'fertilizer', 'soil enricher', 'organic'],
+    careInstructions: {
+      light: 'Store bag in a cool, shaded environment away from direct sun.',
+      water: 'Water potting soil immediately after dressing with vermicompost.',
+      temperature: 'Ambient storage.',
+      fertilizer: 'Add 2-3 tablespoons per 6-8 inch pot every 15 days.',
+      tips: 'Gently rake the top 1 inch of soil before spreading for rapid root uptake.'
+    }
+  },
+  {
     id: 'peace-lily-deluxe',
     name: 'Spathiphyllum Peace Lily',
     slug: 'peace-lily-deluxe',

@@ -10,9 +10,10 @@ import {
   Eye,
   AlertCircle,
   Upload,
-  Sparkles
+  Sparkles,
+  Tag
 } from 'lucide-react';
-import { Product, Category } from '../../types';
+import { Product, Category, ProductVariant } from '../../types';
 import { INITIAL_CATEGORIES } from '../../data/initialCategories';
 import { saveProduct, deleteProduct, deleteAllProducts } from '../../services/productService';
 import { PlantImage } from '../../utils/imageFallback';
@@ -81,6 +82,42 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
 
   const [formData, setFormData] = useState<Partial<Product>>(initialFormState);
   const [productImages, setProductImages] = useState<string[]>([]);
+  const [formVariants, setFormVariants] = useState<ProductVariant[]>([]);
+
+  const handleAddVariantRow = () => {
+    setFormVariants((prev) => [
+      ...prev,
+      { size: `${prev.length + 1} KG`, price: 299, compareAtPrice: 399, unitRate: '' }
+    ]);
+  };
+
+  const handleUpdateVariant = (index: number, field: keyof ProductVariant, val: any) => {
+    setFormVariants((prev) => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], [field]: val };
+      return updated;
+    });
+  };
+
+  const handleRemoveVariantRow = (index: number) => {
+    setFormVariants((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleAddPresetVariant = (size: string, defaultPrice?: number) => {
+    setFormVariants((prev) => {
+      if (prev.some(v => v.size.toLowerCase() === size.toLowerCase())) return prev;
+      let price = defaultPrice || 199;
+      let rate = '';
+      if (size === '1 KG') { price = 199; rate = '₹199/kg'; }
+      else if (size === '3 KG') { price = 299; rate = '(₹100/kg)'; }
+      else if (size === '5 KG') { price = 349; rate = '(₹70/kg)'; }
+      else if (size === '10 KG') { price = 649; rate = '(₹65/kg)'; }
+      else if (size === '250 ML') { price = 199; rate = ''; }
+      else if (size === '500 ML') { price = 349; rate = ''; }
+      else if (size === '1 L') { price = 599; rate = ''; }
+      return [...prev, { size, price, compareAtPrice: Math.round(price * 1.4), unitRate: rate }];
+    });
+  };
   // Guarantee available categories for every section (Plants, Pots, Care, Gifting)
   const availableCategories = React.useMemo(() => {
     const baseList = (categories && categories.length > 0) ? categories : INITIAL_CATEGORIES;
@@ -174,11 +211,22 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
     }
 
     setEditingProduct(null);
+    let initVariants: ProductVariant[] = [];
+    if (sectionFilter === 'plant-care') {
+      initVariants = [
+        { size: '1 KG', price: 199, compareAtPrice: 299, unitRate: '₹199/kg' },
+        { size: '5 KG', price: 349, compareAtPrice: 499, unitRate: '(₹70/kg)' },
+        { size: '10 KG', price: 649, compareAtPrice: 899, unitRate: '(₹65/kg)' },
+      ];
+    }
+    setFormVariants(initVariants);
     setFormData({
       ...initialFormState,
       category: defaultCat,
       plantType: defaultType,
       tags: defaultTags,
+      price: initVariants.length > 0 ? initVariants[0].price : initialFormState.price,
+      compareAtPrice: initVariants.length > 0 ? initVariants[0].compareAtPrice : initialFormState.compareAtPrice,
     });
     setProductImages(initialFormState.images || ['https://images.unsplash.com/photo-1545241047-6083a3684587?auto=format&fit=crop&w=800&q=80']);
     setIsModalOpen(true);
@@ -188,6 +236,24 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
     setEditingProduct(p);
     setFormData({ ...p });
     setProductImages(p.images && p.images.length > 0 ? p.images : ['https://images.unsplash.com/photo-1545241047-6083a3684587?auto=format&fit=crop&w=800&q=80']);
+    if (p.variants && p.variants.length > 0) {
+      setFormVariants(p.variants);
+    } else if (p.weightOptions && p.weightOptions.length > 0) {
+      setFormVariants(p.weightOptions.map((opt, i) => {
+        const ratio = i === 0 ? 1 : i === 1 ? 1.75 : i === 2 ? 3.25 : 5.5;
+        const price = Math.round(p.price * ratio);
+        return {
+          size: opt,
+          price,
+          compareAtPrice: p.compareAtPrice ? Math.round(p.compareAtPrice * ratio) : Math.round(price * 1.4),
+          unitRate: opt.toLowerCase().includes('kg') ? `(₹${Math.round(price / (i === 0 ? 1 : i === 1 ? 5 : 10))}/kg)` : undefined,
+        };
+      }));
+    } else if (p.weightVolume) {
+      setFormVariants([{ size: p.weightVolume, price: p.price, compareAtPrice: p.compareAtPrice }]);
+    } else {
+      setFormVariants([]);
+    }
     setIsModalOpen(true);
   };
 
@@ -206,6 +272,17 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
         ? productImages
         : ['https://images.unsplash.com/photo-1545241047-6083a3684587?auto=format&fit=crop&w=800&q=80'];
 
+      let fallbackCat = 'indoor-plants';
+      if (sectionFilter === 'plant-care') fallbackCat = 'plant-care';
+      else if (sectionFilter === 'pots-planters') fallbackCat = 'pots-planters';
+      else if (sectionFilter === 'combos') fallbackCat = 'combos';
+
+      const finalCategory = formData.category || fallbackCat;
+      const validVariants = formVariants.filter(v => v.size && v.size.trim());
+      const primaryPrice = validVariants.length > 0 ? validVariants[0].price : Number(formData.price);
+      const primaryCompare = validVariants.length > 0 ? validVariants[0].compareAtPrice : (formData.compareAtPrice ? Number(formData.compareAtPrice) : undefined);
+      const primarySize = validVariants.length > 0 ? validVariants[0].size : (formData.plantSize || (sectionFilter === 'plant-care' ? '1 KG' : 'Medium (9-15")'));
+
       const productToSave: Product = {
         id: editingProduct ? editingProduct.id : `prod_${Date.now()}`,
         name: formData.name,
@@ -213,11 +290,14 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
         sku: formData.sku || 'VB-100',
         shortDescription: formData.shortDescription || '',
         description: formData.description || '',
-        price: Number(formData.price),
-        compareAtPrice: formData.compareAtPrice ? Number(formData.compareAtPrice) : undefined,
-        category: formData.category || 'indoor-plants',
-        plantType: formData.plantType || 'Indoor Plants',
-        plantSize: (formData.plantSize as any) || 'Medium (9-15")',
+        price: primaryPrice,
+        compareAtPrice: primaryCompare,
+        category: finalCategory,
+        plantType: formData.plantType || (sectionFilter === 'plant-care' ? 'Plant Care & Nutrition' : 'Indoor Plants'),
+        plantSize: primarySize,
+        weightVolume: validVariants.length > 0 ? validVariants[0].size : formData.weightVolume,
+        weightOptions: validVariants.map(v => v.size),
+        variants: validVariants,
         lightRequirement: (formData.lightRequirement as any) || 'Bright Indirect Light',
         wateringFrequency: (formData.wateringFrequency as any) || 'Once a week',
         maintenanceLevel: (formData.maintenanceLevel as any) || 'Easy',
@@ -635,14 +715,14 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-[#1A1A1A] mb-1">Category</label>
+                    <label className="block font-semibold text-[#1A1A1A] mb-1">Category *</label>
                     <select
-                      value={formData.category || 'indoor-plants'}
+                      value={formData.category || (sectionFilter === 'plant-care' ? 'plant-care' : 'indoor-plants')}
                       onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                       className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-[#1A1A1A] font-medium focus:outline-none focus:border-[#2D4A27]"
                     >
-                      {categories.map((c) => (
-                        <option key={c.id} value={c.slug}>
+                      {availableCategories.map((c) => (
+                        <option key={c.slug} value={c.slug}>
                           {c.name}
                         </option>
                       ))}
@@ -657,6 +737,119 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
                       onChange={(e) => setFormData({ ...formData, stock: Number(e.target.value) })}
                       className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
                     />
+                  </div>
+                </div>
+
+                {/* Ugaoo-style Size & Weight Variant Builder */}
+                <div className="p-4 bg-[#F2F8F3] border border-[#BDE8C6] rounded-xl space-y-3.5">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                    <div>
+                      <h4 className="font-bold text-xs uppercase tracking-wider text-[#1F4522] flex items-center gap-1.5">
+                        <Tag className="w-3.5 h-3.5 text-[#1F4522]" />
+                        Size &amp; Pack Variants (Ugaoo-Style Cards)
+                      </h4>
+                      <p className="text-[11px] text-[#3D7142]">
+                        Configure pack sizes (e.g. 1 KG, 3 KG, 5 KG, 10 KG), pricing, and rate subtitles. These display as interactive clickable cards on the product page!
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleAddVariantRow}
+                      className="px-3 py-1.5 bg-[#1F4522] hover:bg-[#142F16] text-white text-[10px] font-bold uppercase rounded-lg flex items-center gap-1 shadow-xs transition-colors shrink-0"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      Add Variant
+                    </button>
+                  </div>
+
+                  {/* Variants Table */}
+                  <div className="overflow-x-auto bg-white rounded-lg border border-[#C5DAC3] shadow-xs">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-[#EAF5EC] text-[#1F4522] font-bold text-[10px] uppercase border-b border-[#C5DAC3]">
+                        <tr>
+                          <th className="py-2.5 px-3">Size / Pack (e.g. 1 KG, 3 KG)</th>
+                          <th className="py-2.5 px-3">Price (₹)</th>
+                          <th className="py-2.5 px-3">Compare MRP (₹)</th>
+                          <th className="py-2.5 px-3">Subtitle (e.g. ₹70/kg)</th>
+                          <th className="py-2.5 px-3 text-center">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#E5E2D9]">
+                        {formVariants.length === 0 ? (
+                          <tr>
+                            <td colSpan={5} className="py-4 text-center text-[#7A7A7A] text-[11px]">
+                              No custom variants added. Click below to add 1 KG, 3 KG, 5 KG, etc.
+                            </td>
+                          </tr>
+                        ) : (
+                          formVariants.map((v, idx) => (
+                            <tr key={idx} className="hover:bg-[#FAFDFB]">
+                              <td className="py-2 px-3">
+                                <input
+                                  type="text"
+                                  value={v.size}
+                                  onChange={(e) => handleUpdateVariant(idx, 'size', e.target.value)}
+                                  placeholder="e.g. 3 KG"
+                                  className="w-24 px-2 py-1 border border-[#DDD9CF] rounded text-xs font-bold text-[#141414]"
+                                />
+                              </td>
+                              <td className="py-2 px-3">
+                                <input
+                                  type="number"
+                                  value={v.price}
+                                  onChange={(e) => handleUpdateVariant(idx, 'price', Number(e.target.value))}
+                                  placeholder="199"
+                                  className="w-24 px-2 py-1 border border-[#DDD9CF] rounded text-xs font-bold text-[#1F4522]"
+                                />
+                              </td>
+                              <td className="py-2 px-3">
+                                <input
+                                  type="number"
+                                  value={v.compareAtPrice || ''}
+                                  onChange={(e) => handleUpdateVariant(idx, 'compareAtPrice', Number(e.target.value))}
+                                  placeholder="299"
+                                  className="w-24 px-2 py-1 border border-[#DDD9CF] rounded text-xs text-[#7A7A7A]"
+                                />
+                              </td>
+                              <td className="py-2 px-3">
+                                <input
+                                  type="text"
+                                  value={v.unitRate || ''}
+                                  onChange={(e) => handleUpdateVariant(idx, 'unitRate', e.target.value)}
+                                  placeholder="e.g. (₹70/kg)"
+                                  className="w-28 px-2 py-1 border border-[#DDD9CF] rounded text-xs text-[#555555]"
+                                />
+                              </td>
+                              <td className="py-2 px-3 text-center">
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveVariantRow(idx)}
+                                  className="p-1 text-rose-600 hover:bg-rose-50 rounded transition-colors"
+                                  title="Delete variant"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Fast One-Click Preset Chips */}
+                  <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                    <span className="text-[10px] font-bold text-[#3D7142] uppercase mr-1">One-Click Presets:</span>
+                    {['1 KG', '3 KG', '5 KG', '10 KG', '500 GM', '250 ML', '500 ML', '1 L'].map((preset) => (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => handleAddPresetVariant(preset)}
+                        className="px-2.5 py-1 text-[11px] font-bold bg-white text-[#1F4522] border border-[#BDE8C6] hover:bg-[#DCEDDA] rounded-md transition-colors shadow-2xs"
+                      >
+                        + {preset}
+                      </button>
+                    ))}
                   </div>
                 </div>
 

@@ -1,3 +1,12 @@
+export interface ProductVariant {
+  id?: string;
+  size: string;
+  price: number;
+  compareAtPrice?: number;
+  unitRate?: string;
+  stock?: number;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -18,6 +27,7 @@ export interface Product {
   availableSizes?: string[];
   weightVolume?: string;
   weightOptions?: string[];
+  variants?: ProductVariant[];
   lightRequirement: 'Low Light' | 'Bright Indirect Light' | 'Direct Sunlight' | 'Medium Light';
   wateringFrequency: 'Once a week' | 'Twice a week' | 'When topsoil is dry' | 'Every 10-14 days';
   maintenanceLevel: 'Easy' | 'Moderate' | 'High';
