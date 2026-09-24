@@ -14,6 +14,7 @@ import {
   Leaf
 } from 'lucide-react';
 import { getAllReviews } from '../../services/reviewService';
+import { useStoreSettings } from '../../context/StoreSettingsContext';
 
 export const AboutUsPage: React.FC = () => {
   return (

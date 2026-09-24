@@ -21,7 +21,9 @@ import {
   Star,
   FolderTree,
   Sun,
-  Moon
+  Moon,
+  BookOpen,
+  Building2
 } from 'lucide-react';
 import { Order, Product, Category, Coupon } from '../../types';
 import { getOrders, subscribeToAllOrders } from '../../services/orderService';
@@ -39,6 +41,8 @@ import { AdminReviews } from './AdminReviews';
 import { AdminCoupons } from './AdminCoupons';
 import { AdminCMS } from './AdminCMS';
 import { AdminSettings } from './AdminSettings';
+import { AdminBlog } from './AdminBlog';
+import { AdminAboutUs } from './AdminAboutUs';
 import { Buddy4PlantLogo } from '../common/Buddy4PlantLogo';
 
 interface AdminDashboardProps {
@@ -51,8 +55,10 @@ type AdminTab =
   | 'plants'
   | 'pots-planters'
   | 'plant-care'
-  | 'combos'
-  | 'projects'
+  | 'gifting'
+  | 'blog'
+  | 'garden-services'
+  | 'about-us'
   | 'orders'
   | 'categories'
   | 'reviews'
@@ -124,15 +130,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
     return (cat.includes('pot') || type.includes('pot') || cat.includes('planter') || type.includes('planter')) && p.stock <= 5;
   }).length;
 
+  // Replaced available sections in admin panel to match storefront navbar exactly:
+  // Plants, Pots and Planters, Plant care, Gifting, blog, Garden Services, About us
   const navItems: { id: AdminTab; label: string; icon: React.ReactNode; badge?: number }[] = [
     { id: 'overview', label: 'Overview & Stats', icon: <LayoutDashboard className="w-4 h-4" /> },
     { id: 'cms', label: '🏠 Home Page Sections', icon: <Home className="w-4 h-4" /> },
-    { id: 'plants', label: '🌿 All Plants Catalog', icon: <Leaf className="w-4 h-4" />, badge: lowStockLivePlants },
-    { id: 'pots-planters', label: '🪴 Pots & Planters', icon: <Package className="w-4 h-4" />, badge: lowStockPots },
-    { id: 'plant-care', label: '🧪 Plant Care & Organic Food', icon: <FlaskConical className="w-4 h-4" /> },
-    { id: 'combos', label: '🎁 Combos & Gifts', icon: <Gift className="w-4 h-4" /> },
-    { id: 'projects', label: '🌿 Projects & Landscaping', icon: <Trees className="w-4 h-4" /> },
-    { id: 'orders', label: '🚚 Track Order & Shipments', icon: <Truck className="w-4 h-4" />, badge: orders.filter((o) => o.orderStatus === 'Pending' || o.orderStatus === 'Confirmed').length },
+    // Exact Storefront Navigation Sections (replacing old labels)
+    { id: 'plants', label: '🌿 Plants', icon: <Leaf className="w-4 h-4" />, badge: lowStockLivePlants },
+    { id: 'pots-planters', label: '🪴 Pots and Planters', icon: <Package className="w-4 h-4" />, badge: lowStockPots },
+    { id: 'plant-care', label: '🧪 Plant care', icon: <FlaskConical className="w-4 h-4" /> },
+    { id: 'gifting', label: '🎁 Gifting', icon: <Gift className="w-4 h-4" /> },
+    { id: 'blog', label: '📰 blog', icon: <BookOpen className="w-4 h-4" /> },
+    { id: 'garden-services', label: '🌱 Garden Services', icon: <Trees className="w-4 h-4" /> },
+    { id: 'about-us', label: 'ℹ️ About us', icon: <Building2 className="w-4 h-4" /> },
+    // Core store operations
+    { id: 'orders', label: '📦 Orders & Fulfillment', icon: <Truck className="w-4 h-4" />, badge: orders.filter((o) => o.orderStatus === 'Pending' || o.orderStatus === 'Confirmed').length },
     { id: 'categories', label: '🗂️ Collections & Categories', icon: <FolderTree className="w-4 h-4" /> },
     { id: 'reviews', label: '⭐ Customer Reviews', icon: <Star className="w-4 h-4" /> },
     { id: 'coupons', label: '🏷️ Coupons & Promos', icon: <Tag className="w-4 h-4" /> },
@@ -146,15 +158,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
       case 'cms':
         return 'Front Page Sections & Merchandising CMS';
       case 'plants':
-        return 'Live Plants & Houseplants Inventory';
+        return 'Plants — Live Houseplants & Foliage';
       case 'pots-planters':
-        return 'Pots, Planters & Ceramics Catalog';
+        return 'Pots and Planters — Ceramics & Containers';
       case 'plant-care':
-        return 'Plant Care, Organic Nutrition & Bio-Fertilizers';
-      case 'combos':
-        return 'Curated Combos, Green Gifts & Starter Kits';
-      case 'projects':
-        return 'Botanical Installations & Landscaping Portfolio';
+        return 'Plant care — Organic Food & Bio-Elixirs';
+      case 'gifting':
+        return 'Gifting — Curated Bundles & Starter Kits';
+      case 'blog':
+        return 'blog — Botanical Wisdom & Editorial Guides';
+      case 'garden-services':
+        return 'Garden Services — Landscaping & Installations';
+      case 'about-us':
+        return 'About us — Nursery Origins & Story';
       case 'orders':
         return 'Orders, Delivery Tracking & Courier Dispatch';
       case 'categories':
@@ -174,7 +190,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
     <div className={`h-screen flex flex-col md:flex-row font-sans overflow-hidden transition-colors duration-200 ${
       adminDarkMode ? 'admin-dark-mode bg-[#0E150F] text-[#E5EAE3]' : 'bg-[#FDFCF9] text-[#1A1A1A]'
     }`}>
-      {/* Sidebar Navigation - Fixed & Sticky (Does not move when scrolling) */}
+      {/* Sidebar Navigation - Fixed & Sticky */}
       <aside className="w-full md:w-64 bg-[#182319] text-[#E5E2D9] flex flex-col justify-between shrink-0 md:h-screen md:sticky md:top-0 md:overflow-y-auto z-40 border-r border-[#2A3B2C] shadow-lg">
         <div>
           {/* Top Admin Brand */}
@@ -238,7 +254,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
         </div>
       </aside>
 
-      {/* Main Admin Content Canvas - Independently Scrollable */}
+      {/* Main Admin Content Canvas */}
       <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         {/* Top bar */}
         <header className={`h-16 px-6 flex items-center justify-between shrink-0 sticky top-0 z-30 transition-colors ${
@@ -262,6 +278,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
               <span className="hidden sm:inline">Visit Live Storefront</span>
               <span className="sm:hidden">Store</span>
             </button>
+
             {/* Theme Toggle (Dark / Light) */}
             <button
               onClick={toggleAdminDarkMode}
@@ -320,54 +337,66 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
 
           {activeTab === 'cms' && <AdminCMS />}
 
+          {/* 1. Plants */}
           {activeTab === 'plants' && (
             <AdminProducts
               products={products}
               categories={categories}
               onRefresh={loadAllData}
               sectionFilter="plants"
-              sectionTitle="All Live Plants & Houseplants"
+              sectionTitle="Plants"
               sectionDescription="Manage indoor plants, air purifiers, succulents, flowering plants, and desktop greens."
             />
           )}
 
+          {/* 2. Pots and Planters */}
           {activeTab === 'pots-planters' && (
             <AdminProducts
               products={products}
               categories={categories}
               onRefresh={loadAllData}
               sectionFilter="pots-planters"
-              sectionTitle="Pots & Planters Collection"
+              sectionTitle="Pots and Planters"
               sectionDescription="Manage ceramic planters, self-watering pots, metal planters, and terracotta containers."
             />
           )}
 
+          {/* 3. Plant care */}
           {activeTab === 'plant-care' && (
             <AdminProducts
               products={products}
               categories={categories}
               onRefresh={loadAllData}
               sectionFilter="plant-care"
-              sectionTitle="Plant Care & Organic Plant Food"
-              sectionDescription="Manage organic bio-fertilizers, neem elixir oils, cold-pressed kelp feed, and potting soils."
+              sectionTitle="Plant care"
+              sectionDescription="Manage organic fertilizers, bio-active kelp feed, neem pest shields, and microbiome soils."
             />
           )}
 
-          {activeTab === 'combos' && (
+          {/* 4. Gifting */}
+          {activeTab === 'gifting' && (
             <AdminProducts
               products={products}
               categories={categories}
               onRefresh={loadAllData}
               sectionFilter="combos"
-              sectionTitle="Combos & Green Gifts"
+              sectionTitle="Gifting"
               sectionDescription="Manage curated botanical gift boxes, beginner starter kits, duo/trio plant bundles, and festive gifting."
             />
           )}
 
-          {activeTab === 'projects' && (
+          {/* 5. blog */}
+          {activeTab === 'blog' && <AdminBlog navigate={navigate} />}
+
+          {/* 6. Garden Services */}
+          {activeTab === 'garden-services' && (
             <AdminProjects onRefresh={loadAllData} />
           )}
 
+          {/* 7. About us */}
+          {activeTab === 'about-us' && <AdminAboutUs navigate={navigate} />}
+
+          {/* Core Operations */}
           {activeTab === 'orders' && (
             <AdminOrders orders={orders} onRefresh={loadAllData} />
           )}

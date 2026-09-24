@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { BlogPost, getBlogPosts, INITIAL_BLOG_POSTS } from '../../services/blogService';
 import {
   BookOpen,
   Calendar,
@@ -13,24 +14,6 @@ import {
   X,
   CheckCircle2
 } from 'lucide-react';
-
-interface BlogPost {
-  id: string;
-  slug: string;
-  title: string;
-  excerpt: string;
-  category: 'Plant Care' | 'Interior Styling' | 'Planters & Decor' | 'Urban Gardening';
-  readTime: string;
-  publishDate: string;
-  image: string;
-  author: {
-    name: string;
-    role: string;
-    avatar: string;
-  };
-  content: string[];
-  tags: string[];
-}
 
 const BLOG_POSTS: BlogPost[] = [
   {
@@ -142,11 +125,21 @@ const BLOG_POSTS: BlogPost[] = [
 const CATEGORIES = ['All', 'Plant Care', 'Interior Styling', 'Planters & Decor', 'Urban Gardening'] as const;
 
 export const BlogPage: React.FC<{ navigate: (path: string) => void }> = ({ navigate }) => {
+  const [posts, setPosts] = useState<BlogPost[]>(INITIAL_BLOG_POSTS);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeArticle, setActiveArticle] = useState<BlogPost | null>(null);
 
-  const filteredPosts = BLOG_POSTS.filter((post) => {
+  useEffect(() => {
+    getBlogPosts().then((data) => setPosts(data));
+    const handleDataChanged = () => {
+      getBlogPosts().then((data) => setPosts(data));
+    };
+    window.addEventListener('b4p_store_data_changed', handleDataChanged);
+    return () => window.removeEventListener('b4p_store_data_changed', handleDataChanged);
+  }, []);
+
+  const filteredPosts = posts.filter((post) => {
     const matchesCat = selectedCategory === 'All' || post.category === selectedCategory;
     const matchesSearch =
       post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
