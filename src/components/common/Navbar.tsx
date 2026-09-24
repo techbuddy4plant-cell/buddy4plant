@@ -168,22 +168,9 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
               />
             </div>
 
-            {/* Desktop Navigation Links - Exact Match to Screenshot */}
-            <nav className="hidden lg:flex items-center space-x-5 xl:space-x-7 text-[12px] font-bold tracking-tight text-[#4A4A4A]">
-              <button
-                id="nav-home"
-                onClick={() => navigate('/')}
-                className={`py-2 transition-colors relative flex items-center ${
-                  currentPath === '/' ? 'text-[#1F3B22] font-extrabold' : 'text-[#4A4A4A] hover:text-[#1F3B22]'
-                }`}
-              >
-                Home
-                {currentPath === '/' && (
-                  <span className="absolute -bottom-1 left-0 w-full h-[2.5px] bg-[#1F3B22] rounded-full" />
-                )}
-              </button>
-
-              {/* All Plants with Dropdown */}
+            {/* Desktop Navigation Links */}
+            <nav className="hidden lg:flex items-center space-x-4 xl:space-x-6 text-[12px] font-bold tracking-tight text-[#4A4A4A]">
+              {/* 1. Plants with Dropdown */}
               <div
                 className="relative group"
                 onMouseEnter={() => setActiveMegaMenu('plants')}
@@ -193,14 +180,14 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
                   id="nav-plants-menu"
                   onClick={() => navigate('/plants')}
                   className={`py-2 transition-colors relative flex items-center gap-1 ${
-                    currentPath === '/plants' || (currentPath.startsWith('/plants') && !currentPath.includes('pots-planters') && !currentPath.includes('plant-care') && !currentPath.includes('combos'))
+                    currentPath === '/plants' || (currentPath.startsWith('/plants') && !currentPath.includes('pots-planters') && !currentPath.includes('plant-care') && !currentPath.includes('combos') && !currentPath.includes('gifting'))
                       ? 'text-[#1F3B22] font-extrabold'
                       : 'text-[#4A4A4A] hover:text-[#1F3B22]'
                   }`}
                 >
-                  All Plants
+                  Plants
                   <ChevronDown className="w-3.5 h-3.5 text-[#7A7A7A] group-hover:rotate-180 transition-transform" />
-                  {(currentPath === '/plants' || (currentPath.startsWith('/plants') && !currentPath.includes('pots-planters') && !currentPath.includes('plant-care') && !currentPath.includes('combos'))) && (
+                  {(currentPath === '/plants' || (currentPath.startsWith('/plants') && !currentPath.includes('pots-planters') && !currentPath.includes('plant-care') && !currentPath.includes('combos') && !currentPath.includes('gifting'))) && (
                     <span className="absolute -bottom-1 left-0 w-full h-[2.5px] bg-[#1F3B22] rounded-full" />
                   )}
                 </button>
@@ -278,7 +265,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
                 )}
               </div>
 
-              {/* Pots & Planters */}
+              {/* 2. Pots and Planters */}
               <button
                 id="nav-pots"
                 onClick={() => navigate('/plants/pots-planters')}
@@ -288,75 +275,88 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
                     : 'text-[#4A4A4A] hover:text-[#1F3B22]'
                 }`}
               >
-                Pots &amp; Planters
+                Pots and Planters
                 {currentPath.includes('pots-planters') && (
                   <span className="absolute -bottom-1 left-0 w-full h-[2.5px] bg-[#1F3B22] rounded-full" />
                 )}
               </button>
 
-              {/* Plant Care */}
+              {/* 3. Plant care */}
               <button
                 id="nav-care"
-                onClick={() => navigate('/plants/plant-care')}
+                onClick={() => navigate('/care-guide')}
                 className={`py-2 transition-colors relative flex items-center ${
-                  currentPath.includes('plant-care')
+                  currentPath.includes('plant-care') || currentPath.includes('care-guide')
                     ? 'text-[#1F3B22] font-extrabold'
                     : 'text-[#4A4A4A] hover:text-[#1F3B22]'
                 }`}
               >
-                Plant Care
-                {currentPath.includes('plant-care') && (
+                Plant care
+                {(currentPath.includes('plant-care') || currentPath.includes('care-guide')) && (
                   <span className="absolute -bottom-1 left-0 w-full h-[2.5px] bg-[#1F3B22] rounded-full" />
                 )}
               </button>
 
-              {/* Combos & Gifts */}
+              {/* 4. Gifting */}
               <button
-                id="nav-combos"
-                onClick={() => navigate('/plants/combos')}
+                id="nav-gifting"
+                onClick={() => navigate('/gifting')}
                 className={`py-2 transition-colors relative flex items-center gap-1.5 ${
-                  currentPath.includes('combos')
+                  currentPath.includes('gifting') || currentPath.includes('combos')
                     ? 'text-[#1F3B22] font-extrabold'
                     : 'text-[#4A4A4A] hover:text-[#1F3B22]'
                 }`}
               >
-                <Gift className="w-3.5 h-3.5 text-[#1F3B22]" />
-                Combos &amp; Gifts
-                {currentPath.includes('combos') && (
+                Gifting
+                {(currentPath.includes('gifting') || currentPath.includes('combos')) && (
                   <span className="absolute -bottom-1 left-0 w-full h-[2.5px] bg-[#1F3B22] rounded-full" />
                 )}
               </button>
 
-              {/* Projects */}
+              {/* 5. blog */}
               <button
-                id="nav-projects"
-                onClick={() => navigate('/projects')}
+                id="nav-blog"
+                onClick={() => navigate('/blog')}
                 className={`py-2 transition-colors relative flex items-center gap-1.5 ${
-                  currentPath.startsWith('/projects')
+                  currentPath.startsWith('/blog')
                     ? 'text-[#1F3B22] font-extrabold'
                     : 'text-[#4A4A4A] hover:text-[#1F3B22]'
                 }`}
               >
-                <Sparkles className="w-3.5 h-3.5 text-[#1F3B22]" />
-                Projects
-                {currentPath.startsWith('/projects') && (
+                blog
+                {currentPath.startsWith('/blog') && (
                   <span className="absolute -bottom-1 left-0 w-full h-[2.5px] bg-[#1F3B22] rounded-full" />
                 )}
               </button>
 
-              {/* Track Order */}
+              {/* 6. Garden Services */}
               <button
-                id="nav-track-order"
-                onClick={() => navigate('/track-order')}
+                id="nav-garden-services"
+                onClick={() => navigate('/garden-services')}
                 className={`py-2 transition-colors relative flex items-center gap-1.5 ${
-                  currentPath.startsWith('/track-order')
+                  currentPath.startsWith('/garden-services')
                     ? 'text-[#1F3B22] font-extrabold'
                     : 'text-[#4A4A4A] hover:text-[#1F3B22]'
                 }`}
               >
-                <Truck className="w-3.5 h-3.5 text-[#1F3B22]" />
-                Track Order
-                {currentPath.startsWith('/track-order') && (
+                Garden Services
+                {currentPath.startsWith('/garden-services') && (
+                  <span className="absolute -bottom-1 left-0 w-full h-[2.5px] bg-[#1F3B22] rounded-full" />
+                )}
+              </button>
+
+              {/* 7. About us */}
+              <button
+                id="nav-about-us"
+                onClick={() => navigate('/about')}
+                className={`py-2 transition-colors relative flex items-center gap-1.5 ${
+                  currentPath === '/about'
+                    ? 'text-[#1F3B22] font-extrabold'
+                    : 'text-[#4A4A4A] hover:text-[#1F3B22]'
+                }`}
+              >
+                About us
+                {currentPath === '/about' && (
                   <span className="absolute -bottom-1 left-0 w-full h-[2.5px] bg-[#1F3B22] rounded-full" />
                 )}
               </button>
@@ -383,7 +383,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
                 id="wishlist-btn"
                 type="button"
                 onClick={() => navigate('/wishlist')}
-                className="p-2 text-[#1F341C] hover:text-[#182319] hover:bg-[#EBF3EC] rounded-full relative transition-colors"
+                className="hidden sm:flex p-2 text-[#1F341C] hover:text-[#182319] hover:bg-[#EBF3EC] rounded-full relative transition-colors"
                 aria-label="Wishlist"
               >
                 <Heart className="w-5 h-5" />
@@ -633,22 +633,9 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
                 )}
               </form>
 
-              {/* Navigation Links with Drill-Down */}
+              {/* Navigation Links with Drill-Down - Exact 7 Sections */}
               <div className="space-y-1">
-                <button
-                  onClick={() => {
-                    navigate('/');
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider text-[#1F341C] hover:bg-[#EBF3EC] transition-colors"
-                >
-                  <span className="flex items-center gap-2.5">
-                    <Home className="w-4 h-4 text-[#2D6A4F]" />
-                    Home
-                  </span>
-                </button>
-
-                {/* All Plants Accordion */}
+                {/* 1. Plants Accordion */}
                 <div className="rounded-lg overflow-hidden border border-[#E8E5DC] bg-white">
                   <div
                     onClick={() => setMobileExpandedCat(mobileExpandedCat === 'plants' ? null : 'plants')}
@@ -656,7 +643,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
                   >
                     <span className="flex items-center gap-2.5 text-xs font-bold uppercase tracking-wider text-[#1F341C]">
                       <Grid className="w-4 h-4 text-[#2D6A4F]" />
-                      Plants & Collections
+                      Plants
                     </span>
                     <ChevronDown
                       className={`w-4 h-4 text-[#5A6E55] transition-transform ${
@@ -714,7 +701,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
                         className="w-full text-left px-3 py-1.5 text-xs text-[#4A4A4A] hover:text-[#2D4A27] hover:bg-[#F5F2EB] rounded flex items-center gap-2"
                       >
                         <i className="fa-solid fa-tree text-emerald-700" />
-                        Cacti & Succulents
+                        Cacti &amp; Succulents
                       </button>
                       <button
                         onClick={() => {
@@ -730,6 +717,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
                   )}
                 </div>
 
+                {/* 2. Pots and Planters */}
                 <button
                   onClick={() => {
                     navigate('/plants/pots-planters');
@@ -739,68 +727,98 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
                 >
                   <span className="flex items-center gap-2.5">
                     <i className="fa-solid fa-layer-group text-[#2D4A27]" />
-                    Pots & Planters
+                    Pots and Planters
                   </span>
                 </button>
 
+                {/* 3. Plant care */}
                 <button
                   onClick={() => {
-                    navigate('/plants/plant-care');
+                    navigate('/care-guide');
                     setIsMobileMenuOpen(false);
                   }}
                   className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider text-[#1F341C] hover:bg-[#EBF3EC] transition-colors"
                 >
                   <span className="flex items-center gap-2.5">
                     <i className="fa-solid fa-flask text-[#2D4A27]" />
-                    Organic Plant Care
+                    Plant care
                   </span>
                 </button>
 
+                {/* 4. Gifting */}
                 <button
                   onClick={() => {
-                    navigate('/plants/combos');
+                    navigate('/gifting');
                     setIsMobileMenuOpen(false);
                   }}
                   className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider text-[#2D6A4F] bg-[#EAF5EC] hover:bg-[#D8EEDB] transition-colors"
                 >
                   <span className="flex items-center gap-2.5">
                     <Gift className="w-4 h-4 text-[#2D6A4F]" />
-                    Combos & Gift Packs
+                    Gifting
                   </span>
                   <span className="text-[9px] bg-[#2D6A4F] text-white px-1.5 py-0.5 rounded font-bold">HOT</span>
                 </button>
 
-                <button
-                  id="mobile-nav-projects"
-                  onClick={() => {
-                    navigate('/projects');
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors ${
-                    currentPath === '/projects'
-                      ? 'bg-[#EBF3EC] text-[#1F3B22] font-extrabold border-l-2 border-[#1F3B22]'
-                      : 'text-[#1F341C] hover:bg-[#EBF3EC]'
-                  }`}
-                >
-                  <span className="flex items-center gap-2.5">
-                    <span className="text-base">🌿</span>
-                    Projects &amp; Transformations
-                  </span>
-                  <span className="text-[9px] bg-[#1F3B22] text-white px-2 py-0.5 rounded-full font-bold">
-                    Portfolio
-                  </span>
-                </button>
-
+                {/* 5. blog */}
                 <button
                   onClick={() => {
-                    navigate('/track-order');
+                    navigate('/blog');
                     setIsMobileMenuOpen(false);
                   }}
                   className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider text-[#1F341C] hover:bg-[#EBF3EC] transition-colors"
                 >
                   <span className="flex items-center gap-2.5">
-                    <Truck className="w-4 h-4 text-[#5A6E55]" />
-                    Live Order Tracker
+                    <i className="fa-solid fa-book-open text-[#2D4A27]" />
+                    blog
+                  </span>
+                </button>
+
+                {/* 6. Garden Services */}
+                <button
+                  onClick={() => {
+                    navigate('/garden-services');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider text-[#1F341C] hover:bg-[#EBF3EC] transition-colors"
+                >
+                  <span className="flex items-center gap-2.5">
+                    <span className="text-base">🌿</span>
+                    Garden Services
+                  </span>
+                  <span className="text-[9px] bg-[#1F3B22] text-white px-2 py-0.5 rounded-full font-bold">
+                    Turnkey
+                  </span>
+                </button>
+
+                {/* 7. About us */}
+                <button
+                  onClick={() => {
+                    navigate('/about');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider text-[#1F341C] hover:bg-[#EBF3EC] transition-colors"
+                >
+                  <span className="flex items-center gap-2.5">
+                    <i className="fa-solid fa-circle-info text-[#2D4A27]" />
+                    About us
+                  </span>
+                </button>
+
+                {/* Track Order shifted into My Profile section */}
+                <button
+                  onClick={() => {
+                    navigate('/profile?tab=track-order');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider text-[#2D4A27] bg-[#F2F7F2] hover:bg-[#E2ECE0] border border-[#C5DAC3] transition-colors mt-2"
+                >
+                  <span className="flex items-center gap-2.5">
+                    <Truck className="w-4 h-4 text-[#2D4A27]" />
+                    Track Order &amp; Shipments
+                  </span>
+                  <span className="text-[9px] bg-[#2D4A27] text-white px-2 py-0.5 rounded-full font-bold">
+                    My Profile
                   </span>
                 </button>
               </div>

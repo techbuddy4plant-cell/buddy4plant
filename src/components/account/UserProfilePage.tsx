@@ -15,26 +15,43 @@ import {
   X,
   Sparkles,
   ArrowRight,
-  ShoppingBag
+  ShoppingBag,
+  Truck,
+  Search
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useWishlist } from '../../context/WishlistContext';
-import { Address, Product } from '../../types';
+import { Address, Product, Order } from '../../types';
 import { getCustomerOrders } from '../../services/orderService';
 import { getProducts } from '../../services/productService';
 import { ProductCard } from '../common/ProductCard';
+import { OrderTrackingPage } from '../order/OrderTrackingPage';
 
 interface UserProfilePageProps {
   navigate: (path: string) => void;
   onQuickView: (product: Product) => void;
+  initialTab?: 'profile' | 'track-order' | 'addresses' | 'wishlist' | 'settings';
 }
 
-export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQuickView }) => {
+export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQuickView, initialTab }) => {
   const { user, profile, promptSignOut, saveAddress, removeAddress, setDefaultAddress, updateProfileDetails, resetPassword, openAuthModal } = useAuth();
   const { wishlistIds } = useWishlist();
 
-  const [activeTab, setActiveTab] = useState<'profile' | 'addresses' | 'wishlist' | 'settings'>('profile');
+  const getInitialTab = (): 'profile' | 'track-order' | 'addresses' | 'wishlist' | 'settings' => {
+    if (initialTab) return initialTab;
+    const searchParams = new URLSearchParams(window.location.search);
+    const tabParam = searchParams.get('tab');
+    if (tabParam === 'track-order' || tabParam === 'track' || tabParam === 'orders') return 'track-order';
+    if (tabParam === 'addresses') return 'addresses';
+    if (tabParam === 'wishlist') return 'wishlist';
+    if (tabParam === 'settings') return 'settings';
+    return 'profile';
+  };
+
+  const [activeTab, setActiveTab] = useState<'profile' | 'track-order' | 'addresses' | 'wishlist' | 'settings'>(getInitialTab);
   const [ordersCount, setOrdersCount] = useState(0);
+  const [customerOrders, setCustomerOrders] = useState<Order[]>([]);
+  const [selectedOrderToTrack, setSelectedOrderToTrack] = useState<string>('');
   const [wishlistProducts, setWishlistProducts] = useState<Product[]>([]);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -80,7 +97,10 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
     if (user?.uid || profile?.uid) {
       const uid = user?.uid || profile?.uid || '';
       const email = user?.email || profile?.email || undefined;
-      getCustomerOrders(uid, email).then((res) => setOrdersCount(res.length));
+      getCustomerOrders(uid, email).then((res) => {
+        setCustomerOrders(res);
+        setOrdersCount(res.length);
+      });
     }
   }, [user, profile]);
 
@@ -95,6 +115,36 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
   }, [wishlistIds]);
 
   if (!user && !profile) {
+    if (activeTab === 'track-order') {
+      return (
+        <div className="min-h-screen bg-[#FDFCF9] py-10 sm:py-14 font-sans text-[#141414]">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-[#E2ECE0] shadow-xs">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#2D4A27]/10 text-[#2D4A27] flex items-center justify-center">
+                  <Truck className="w-5 h-5" />
+                </div>
+                <div>
+                  <h1 className="font-serif font-bold text-lg text-[#182319]">Guest Order Tracking</h1>
+                  <p className="text-xs text-[#6B856B]">Track any shipment using your Order ID or phone number</p>
+                </div>
+              </div>
+              <button
+                onClick={() => openAuthModal('login')}
+                className="px-4 py-2 border border-[#2D4A27] text-[#2D4A27] hover:bg-[#2D4A27] hover:text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-colors self-start sm:self-auto cursor-pointer"
+              >
+                Sign In to Account &rarr;
+              </button>
+            </div>
+
+            <div className="bg-white rounded-2xl border border-[#E2ECE0] p-6 sm:p-8 shadow-xs">
+              <OrderTrackingPage embedded={true} />
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="max-w-xl mx-auto px-4 py-20 text-center font-sans">
         <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-900 flex items-center justify-center mx-auto text-2xl mb-4 shadow-xs">
@@ -104,12 +154,21 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
         <p className="text-xs text-stone-500 mt-2 max-w-md mx-auto">
           Manage your personal account details, shipping addresses, security preferences, and saved items.
         </p>
-        <button
-          onClick={() => openAuthModal('login')}
-          className="mt-6 px-6 py-3 bg-[#2D4A27] hover:bg-[#1F341C] text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-md transition-all cursor-pointer"
-        >
-          Sign In Now &rr;
-        </button>
+        <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+          <button
+            onClick={() => openAuthModal('login')}
+            className="w-full sm:w-auto px-6 py-3 bg-[#2D4A27] hover:bg-[#1F341C] text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-md transition-all cursor-pointer"
+          >
+            Sign In Now &rarr;
+          </button>
+          <button
+            onClick={() => setActiveTab('track-order')}
+            className="w-full sm:w-auto px-6 py-3 bg-white border border-[#2D4A27] text-[#2D4A27] hover:bg-[#EBF5EC] rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2"
+          >
+            <Truck className="w-4 h-4" />
+            Track an Order
+          </button>
+        </div>
       </div>
     );
   }
@@ -269,16 +328,16 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
           {/* Amazon-Style Quick Shortcuts Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8 pt-6 border-t border-[#E8F0E7]">
             <div
-              onClick={() => navigate('/orders')}
+              onClick={() => setActiveTab('track-order')}
               className="bg-[#F8FCF9] hover:bg-[#EBF5EC] p-4 rounded-xl border border-[#E2ECE0] cursor-pointer transition-all flex items-center justify-between group"
             >
               <div className="flex items-center gap-3">
                 <div className="p-2.5 bg-[#2D4A27]/10 rounded-lg text-[#2D4A27]">
-                  <Package className="w-5 h-5" />
+                  <Truck className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-xs text-[#182319] group-hover:text-[#2D4A27]">Your Orders</h4>
-                  <p className="text-[11px] text-[#6B856B]">{ordersCount} total orders placed</p>
+                  <h4 className="font-bold text-xs text-[#182319] group-hover:text-[#2D4A27]">Track Order &amp; History</h4>
+                  <p className="text-[11px] text-[#6B856B]">{ordersCount} orders • Live tracking status</p>
                 </div>
               </div>
               <ArrowRight className="w-4 h-4 text-[#6B856B] group-hover:translate-x-1 transition-transform" />
@@ -396,7 +455,7 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
         )}
 
         {/* Tab Navigation Menu */}
-        <div className="flex border-b border-[#E2ECE0] gap-4 sm:gap-8 text-xs font-bold uppercase tracking-wider overflow-x-auto">
+        <div className="flex border-b border-[#E2ECE0] gap-4 sm:gap-8 text-xs font-bold uppercase tracking-wider overflow-x-auto pb-1 scrollbar-none">
           <button
             onClick={() => setActiveTab('profile')}
             className={`pb-4.5 flex items-center gap-2 transition-all shrink-0 cursor-pointer ${
@@ -407,6 +466,18 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
           >
             <User className="w-4 h-4" />
             My Profile Information
+          </button>
+
+          <button
+            onClick={() => setActiveTab('track-order')}
+            className={`pb-4.5 flex items-center gap-2 transition-all shrink-0 cursor-pointer ${
+              activeTab === 'track-order'
+                ? 'border-b-2 border-[#2D4A27] text-[#2D4A27] font-extrabold'
+                : 'text-[#6B856B] hover:text-[#182319]'
+            }`}
+          >
+            <Truck className="w-4 h-4" />
+            Track Order &amp; Shipments {ordersCount > 0 && `(${ordersCount})`}
           </button>
 
           <button
@@ -442,7 +513,7 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
             }`}
           >
             <Key className="w-4 h-4" />
-            Account Security & Preferences
+            Account Security &amp; Preferences
           </button>
         </div>
 
@@ -485,6 +556,89 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
                   <ShieldCheck className="w-4 h-4 text-[#2D6A4F]" /> Active Verified Customer
                 </p>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB: TRACK ORDER & SHIPMENTS */}
+        {activeTab === 'track-order' && (
+          <div className="space-y-6">
+            <div className="bg-white rounded-2xl border border-[#E2ECE0] p-6 sm:p-8 space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#E8F0E7]">
+                <div>
+                  <h3 className="font-serif font-bold text-lg text-[#182319] flex items-center gap-2">
+                    <Truck className="w-5 h-5 text-[#2D4A27]" />
+                    Live Shipment &amp; Order Tracker
+                  </h3>
+                  <p className="text-xs text-[#556955] mt-0.5">
+                    Monitor real-time dispatch, transit milestones, courier AWB, and doorstep delivery for all your plant orders.
+                  </p>
+                </div>
+                {customerOrders.length > 0 && (
+                  <span className="px-3 py-1 bg-[#EBF5EC] border border-[#C5E1C9] text-[#2D6A4F] text-xs font-bold rounded-full self-start sm:self-auto">
+                    {customerOrders.length} Recorded Shipments
+                  </span>
+                )}
+              </div>
+
+              {/* Embedded Live Order Tracker Module */}
+              <OrderTrackingPage embedded={true} initialOrderNumber={selectedOrderToTrack} />
+
+              {/* If customer has past orders, show order cards with 1-click track button */}
+              {customerOrders.length > 0 && (
+                <div className="pt-6 border-t border-[#E8F0E7] space-y-4">
+                  <h4 className="font-bold text-xs uppercase tracking-wider text-[#6B856B]">
+                    Your Recent Orders
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {customerOrders.map((ord) => (
+                      <div
+                        key={ord.id}
+                        className="p-4 bg-[#F8FCF9] rounded-xl border border-[#E2ECE0] flex flex-col justify-between space-y-3 hover:border-[#2D4A27]/40 transition-colors"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <span className="font-bold text-xs text-[#182319] block">{ord.orderNumber}</span>
+                            <span className="text-[11px] text-[#7A7A7A]">
+                              {new Date(ord.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                            </span>
+                          </div>
+                          <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
+                            ord.orderStatus === 'Delivered'
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : ord.orderStatus === 'Shipped' || ord.orderStatus === 'Out for Delivery'
+                              ? 'bg-blue-100 text-blue-800'
+                              : 'bg-amber-100 text-amber-800'
+                          }`}>
+                            {ord.orderStatus}
+                          </span>
+                        </div>
+
+                        <div className="text-xs text-[#5A5A5A] space-y-1">
+                          <p className="font-medium text-[#1A1A1A]">
+                            ₹{ord.totalAmount.toLocaleString('en-IN')} • {ord.items.length} item{ord.items.length > 1 ? 's' : ''}
+                          </p>
+                          <p className="text-[11px] text-[#768C76] truncate">
+                            Shipping to: {ord.shippingAddress.city}, {ord.shippingAddress.state}
+                          </p>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedOrderToTrack(ord.orderNumber);
+                            window.scrollTo({ top: 380, behavior: 'smooth' });
+                          }}
+                          className="w-full py-2 bg-[#2D4A27] hover:bg-[#1F341C] text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                        >
+                          <Truck className="w-3.5 h-3.5" />
+                          <span>Track This Package Live</span>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}

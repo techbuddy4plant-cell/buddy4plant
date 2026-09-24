@@ -25,15 +25,28 @@ import { submitReview } from '../../services/reviewService';
 import { useStoreSettings } from '../../context/StoreSettingsContext';
 import { PlantImage } from '../../utils/imageFallback';
 
-export const OrderTrackingPage: React.FC = () => {
-  const [query, setQuery] = useState('');
-  const [activeTrackingNumber, setActiveTrackingNumber] = useState('');
+export interface OrderTrackingPageProps {
+  initialOrderNumber?: string;
+  embedded?: boolean;
+}
+
+export const OrderTrackingPage: React.FC<OrderTrackingPageProps> = ({ initialOrderNumber, embedded = false }) => {
+  const [query, setQuery] = useState(initialOrderNumber || '');
+  const [activeTrackingNumber, setActiveTrackingNumber] = useState(initialOrderNumber || '');
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copiedAWB, setCopiedAWB] = useState(false);
   const [lastRefreshed, setLastRefreshed] = useState<Date>(new Date());
   const { settings } = useStoreSettings();
+
+  // Update if initialOrderNumber changes
+  useEffect(() => {
+    if (initialOrderNumber) {
+      setQuery(initialOrderNumber);
+      setActiveTrackingNumber(initialOrderNumber);
+    }
+  }, [initialOrderNumber]);
 
   // Review modal state
   const [reviewModalItem, setReviewModalItem] = useState<{ id: string; name: string; image: string; slug?: string } | null>(null);
@@ -45,12 +58,12 @@ export const OrderTrackingPage: React.FC = () => {
   // Auto-search if url has ?id=
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const idParam = urlParams.get('id');
-    if (idParam) {
+    const idParam = urlParams.get('id') || urlParams.get('orderNumber');
+    if (idParam && !initialOrderNumber) {
       setQuery(idParam);
       setActiveTrackingNumber(idParam);
     }
-  }, []);
+  }, [initialOrderNumber]);
 
   // Real-time live subscription whenever activeTrackingNumber changes
   useEffect(() => {
@@ -111,20 +124,22 @@ export const OrderTrackingPage: React.FC = () => {
   });
 
   return (
-    <div className="bg-[#FDFCF9] min-h-screen py-10 sm:py-14">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-xl mx-auto mb-8">
-          <div className="inline-flex items-center gap-2 bg-[#2D4A27]/10 text-[#2D4A27] text-[10px] font-bold uppercase tracking-[0.25em] px-3.5 py-1 mb-3">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping inline-block" />
-            Live Real-Time Transit Tracking
+    <div className={embedded ? "space-y-6" : "bg-[#FDFCF9] min-h-screen py-10 sm:py-14"}>
+      <div className={embedded ? "w-full" : "max-w-4xl mx-auto px-4 sm:px-6 lg:px-8"}>
+        {!embedded && (
+          <div className="text-center max-w-xl mx-auto mb-8">
+            <div className="inline-flex items-center gap-2 bg-[#2D4A27]/10 text-[#2D4A27] text-[10px] font-bold uppercase tracking-[0.25em] px-3.5 py-1 mb-3">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping inline-block" />
+              Live Real-Time Transit Tracking
+            </div>
+            <h1 className="font-serif text-3xl sm:text-4xl font-normal text-[#1A1A1A]">
+              Track Your Botanical Delivery
+            </h1>
+            <p className="text-xs text-[#5A5A5A] mt-2 font-light">
+              Monitor real-time nursery dispatch, courier AWB tracking, and live doorstep delivery updates.
+            </p>
           </div>
-          <h1 className="font-serif text-3xl sm:text-4xl font-normal text-[#1A1A1A]">
-            Track Your Botanical Delivery
-          </h1>
-          <p className="text-xs text-[#5A5A5A] mt-2 font-light">
-            Monitor real-time nursery dispatch, courier AWB tracking, and live doorstep delivery updates.
-          </p>
-        </div>
+        )}
 
         {/* Search Input Box */}
         <div className="bg-white p-4 sm:p-6 border border-[#E5E2D9] max-w-2xl mx-auto">

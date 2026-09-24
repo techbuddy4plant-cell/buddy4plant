@@ -29,6 +29,8 @@ import {
   ShippingPolicyPage
 } from './components/pages/StaticPages';
 import { ProjectsPage } from './components/pages/ProjectsPage';
+import { BlogPage } from './components/pages/BlogPage';
+import { GardenServicesPage } from './components/pages/GardenServicesPage';
 import { AdminDashboard } from './components/admin/AdminDashboard';
 import { AdminLoginPage } from './components/admin/AdminLoginPage';
 import { Product } from './types';
@@ -130,11 +132,29 @@ export default function App() {
     }
 
     if (path.startsWith('/track-order')) {
-      return <OrderTrackingPage />;
+      return <UserProfilePage initialTab="track-order" navigate={navigate} onQuickView={setQuickViewProduct} />;
     }
 
     if (path === '/orders' || path.startsWith('/orders') || path.startsWith('/account/orders') || path === '/my-orders') {
-      return <UserOrdersPage navigate={navigate} />;
+      return <UserProfilePage initialTab="track-order" navigate={navigate} onQuickView={setQuickViewProduct} />;
+    }
+
+    if (path === '/blog' || path.startsWith('/blog')) {
+      return <BlogPage navigate={navigate} />;
+    }
+
+    if (path === '/garden-services' || path.startsWith('/garden-services')) {
+      return <GardenServicesPage navigate={navigate} />;
+    }
+
+    if (path === '/gifting' || path.startsWith('/gifting')) {
+      return (
+        <ProductListingPage
+          initialCategorySlug="combos"
+          navigate={navigate}
+          onQuickView={setQuickViewProduct}
+        />
+      );
     }
 
     if (path === '/profile' || path.startsWith('/profile') || path === '/account' || path.startsWith('/account') || path === '/my-profile') {
