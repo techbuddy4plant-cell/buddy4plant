@@ -141,9 +141,19 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
           unitRate: opt.toLowerCase().includes('kg') ? `(₹${Math.round(price / (i === 0 ? 1 : i === 1 ? 5 : 10))}/kg)` : undefined,
         };
       })
+    : (product.availableSizes && product.availableSizes.length > 0)
+    ? product.availableSizes.map((sz, i) => {
+        const ratio = i === 0 ? 0.75 : i === 1 ? 1 : 1.6;
+        const price = Math.round(product.price * ratio);
+        return {
+          size: sz,
+          price: price,
+          compareAtPrice: product.compareAtPrice ? Math.round(product.compareAtPrice * ratio) : Math.round(price * 1.4),
+        };
+      })
     : [
         {
-          size: product.weightVolume || product.plantSize || '1 KG',
+          size: product.weightVolume || product.plantSize || (isPlantCare ? '1 KG' : 'Medium'),
           price: product.price,
           compareAtPrice: product.compareAtPrice,
           unitRate: product.weightVolume?.toLowerCase().includes('kg') ? `₹${product.price}/kg` : undefined,

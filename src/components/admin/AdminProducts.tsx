@@ -112,9 +112,13 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
       else if (size === '3 KG') { price = 299; rate = '(₹100/kg)'; }
       else if (size === '5 KG') { price = 349; rate = '(₹70/kg)'; }
       else if (size === '10 KG') { price = 649; rate = '(₹65/kg)'; }
+      else if (size === '500 GM') { price = 149; rate = ''; }
       else if (size === '250 ML') { price = 199; rate = ''; }
       else if (size === '500 ML') { price = 349; rate = ''; }
       else if (size === '1 L') { price = 599; rate = ''; }
+      else if (size.includes('Small')) { price = Math.round((Number(formData.price) || 499) * 0.75); }
+      else if (size.includes('Medium')) { price = Number(formData.price) || 499; }
+      else if (size.includes('Large')) { price = Math.round((Number(formData.price) || 499) * 1.6); }
       return [...prev, { size, price, compareAtPrice: Math.round(price * 1.4), unitRate: rate }];
     });
   };
@@ -249,10 +253,22 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
           unitRate: opt.toLowerCase().includes('kg') ? `(₹${Math.round(price / (i === 0 ? 1 : i === 1 ? 5 : 10))}/kg)` : undefined,
         };
       }));
+    } else if (p.availableSizes && p.availableSizes.length > 0) {
+      setFormVariants(p.availableSizes.map((sz, i) => {
+        const ratio = i === 0 ? 0.75 : i === 1 ? 1 : 1.6;
+        const price = Math.round(p.price * ratio);
+        return {
+          size: sz,
+          price,
+          compareAtPrice: p.compareAtPrice ? Math.round(p.compareAtPrice * ratio) : Math.round(price * 1.4),
+        };
+      }));
     } else if (p.weightVolume) {
-      setFormVariants([{ size: p.weightVolume, price: p.price, compareAtPrice: p.compareAtPrice }]);
+      setFormVariants([{ size: p.weightVolume, price: p.price, compareAtPrice: p.compareAtPrice, unitRate: p.weightVolume.toLowerCase().includes('kg') ? `₹${p.price}/kg` : '' }]);
+    } else if (p.plantSize) {
+      setFormVariants([{ size: p.plantSize, price: p.price, compareAtPrice: p.compareAtPrice }]);
     } else {
-      setFormVariants([]);
+      setFormVariants([{ size: '1 KG', price: p.price, compareAtPrice: p.compareAtPrice }]);
     }
     setIsModalOpen(true);
   };
@@ -304,7 +320,8 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
         plantType: formData.plantType || (sectionFilter === 'plant-care' ? 'Plant Care & Nutrition' : 'Indoor Plants'),
         plantSize: primarySize,
         weightVolume: validVariants.length > 0 ? validVariants[0].size : formData.weightVolume,
-        weightOptions: validVariants.map(v => v.size),
+        weightOptions: validVariants.map((v) => v.size),
+        availableSizes: validVariants.map((v) => v.size),
         variants: validVariants,
         lightRequirement: (formData.lightRequirement as any) || 'Bright Indirect Light',
         wateringFrequency: (formData.wateringFrequency as any) || 'Once a week',
@@ -848,7 +865,7 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
                   {/* Fast One-Click Preset Chips */}
                   <div className="flex flex-wrap items-center gap-1.5 pt-1">
                     <span className="text-[10px] font-bold text-[#3D7142] uppercase mr-1">One-Click Presets:</span>
-                    {['1 KG', '3 KG', '5 KG', '10 KG', '500 GM', '250 ML', '500 ML', '1 L'].map((preset) => (
+                    {['1 KG', '3 KG', '5 KG', '10 KG', '500 GM', '250 ML', '500 ML', '1 L', 'Small (4-8")', 'Medium (9-15")', 'Large (16-28")'].map((preset) => (
                       <button
                         key={preset}
                         type="button"

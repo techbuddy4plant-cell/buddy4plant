@@ -539,6 +539,11 @@ export const INITIAL_PRODUCTS: Product[] = [
     plantSize: '1 kg Kit',
     weightVolume: '1 kg Kit',
     weightOptions: ['500 gm Kit', '1 kg Kit', '2 kg Kit'],
+    variants: [
+      { size: '500 gm Kit', price: 299, compareAtPrice: 399, unitRate: '' },
+      { size: '1 kg Kit', price: 499, compareAtPrice: 699, unitRate: '' },
+      { size: '2 kg Kit', price: 899, compareAtPrice: 1199, unitRate: '' }
+    ],
     lightRequirement: 'Medium Light',
     wateringFrequency: 'Once a week',
     maintenanceLevel: 'Easy',
@@ -580,6 +585,12 @@ export const INITIAL_PRODUCTS: Product[] = [
     plantSize: '1 kg',
     weightVolume: '1 kg',
     weightOptions: ['250 gm', '500 gm', '1 kg', '5 kg'],
+    variants: [
+      { size: '250 gm', price: 179, compareAtPrice: 249, unitRate: '' },
+      { size: '500 gm', price: 249, compareAtPrice: 349, unitRate: '' },
+      { size: '1 kg', price: 349, compareAtPrice: 499, unitRate: '₹349/kg' },
+      { size: '5 kg', price: 1199, compareAtPrice: 1699, unitRate: '(₹240/kg)' }
+    ],
     lightRequirement: 'Bright Indirect Light',
     wateringFrequency: 'Every 10-14 days',
     maintenanceLevel: 'Easy',
@@ -621,6 +632,12 @@ export const INITIAL_PRODUCTS: Product[] = [
     plantSize: '250 ml',
     weightVolume: '250 ml',
     weightOptions: ['100 ml', '250 ml', '500 ml', '1 L'],
+    variants: [
+      { size: '100 ml', price: 169, compareAtPrice: 249, unitRate: '' },
+      { size: '250 ml', price: 299, compareAtPrice: 399, unitRate: '' },
+      { size: '500 ml', price: 499, compareAtPrice: 699, unitRate: '' },
+      { size: '1 L', price: 899, compareAtPrice: 1199, unitRate: '' }
+    ],
     lightRequirement: 'Medium Light',
     wateringFrequency: 'Once a week',
     maintenanceLevel: 'Easy',
@@ -662,6 +679,12 @@ export const INITIAL_PRODUCTS: Product[] = [
     plantSize: '1 kg',
     weightVolume: '1 kg',
     weightOptions: ['1 kg', '2 kg', '5 kg', '10 kg'],
+    variants: [
+      { size: '1 kg', price: 249, compareAtPrice: 350, unitRate: '₹249/kg' },
+      { size: '2 kg', price: 399, compareAtPrice: 550, unitRate: '(₹200/kg)' },
+      { size: '5 kg', price: 749, compareAtPrice: 1050, unitRate: '(₹150/kg)' },
+      { size: '10 kg', price: 1299, compareAtPrice: 1850, unitRate: '(₹130/kg)' }
+    ],
     lightRequirement: 'Bright Indirect Light',
     wateringFrequency: 'When topsoil is dry',
     maintenanceLevel: 'Easy',

@@ -161,15 +161,19 @@ export async function getAllProducts(): Promise<Product[]> {
         if (local.length === 0 && isSeeded) {
           return [];
         }
-        // Merge without resurrected deleted items
+        // Merge without resurrected deleted items and deduplicate by both ID and slug
         const localIds = new Set(local.map((p) => p.id));
+        const localSlugs = new Set(local.map((p) => (p.slug || '').toLowerCase()));
         const combined = [...local];
         for (const rp of remoteProducts) {
-          if (!localIds.has(rp.id) && !deletedIds.has(rp.id)) {
+          if (!localIds.has(rp.id) && !localSlugs.has((rp.slug || '').toLowerCase()) && !deletedIds.has(rp.id)) {
             combined.push(rp);
           }
         }
-        setLocalProducts(combined);
+        // Only update local store if new items were actually added from remote
+        if (combined.length !== local.length) {
+          setLocalProducts(combined);
+        }
         return combined;
       }
 
@@ -197,12 +201,15 @@ export async function getProducts(category?: string): Promise<Product[]> {
 export async function getProductBySlug(slug: string): Promise<Product | null> {
   const all = await getAllProducts();
   const normalized = (slug || '').toLowerCase().trim();
-  const found = all.find((p) => 
+  const matches = all.filter((p) => 
     (p.slug && p.slug.toLowerCase().trim() === normalized) || 
     (p.id && p.id.toLowerCase().trim() === normalized) ||
     (p.name && p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') === normalized)
   );
-  return found ? sanitizeProduct(found) : null;
+  if (!matches.length) return null;
+  // Sort by updatedAt descending so newly saved variants take precedence
+  matches.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+  return sanitizeProduct(matches[0]);
 }
 
 export async function getProductById(id: string): Promise<Product | null> {
@@ -263,9 +270,9 @@ export async function saveProduct(product: Partial<Product> & { name: string; pr
   // 1. Unmark from deleted IDs if re-created
   unmarkProductDeleted(id);
 
-  // 2. Update localStorage instantly
+  // 2. Update localStorage instantly matching by ID OR slug
   const current = getLocalProducts();
-  const existingIdx = current.findIndex((p) => p.id === id);
+  const existingIdx = current.findIndex((p) => p.id === id || (p.slug && p.slug.toLowerCase() === slug.toLowerCase()));
   let updatedList: Product[];
   if (existingIdx >= 0) {
     updatedList = [...current];
