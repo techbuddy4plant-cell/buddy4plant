@@ -31,6 +31,7 @@ import { getProducts } from '../../services/productService';
 import { getCategories } from '../../services/categoryService';
 import { getCoupons } from '../../services/couponService';
 import { useAuth } from '../../context/AuthContext';
+import { INITIAL_CATEGORIES } from '../../data/initialCategories';
 import { useStoreSettings } from '../../context/StoreSettingsContext';
 import { AdminOverview } from './AdminOverview';
 import { AdminProducts } from './AdminProducts';
@@ -87,7 +88,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
       ]);
       setOrders(ordList);
       setProducts(prodList);
-      setCategories(catList);
+      setCategories(catList && catList.length > 0 ? catList : INITIAL_CATEGORIES);
       setCoupons(cpnList);
     } catch (err) {
       console.error('Error fetching admin data:', err);

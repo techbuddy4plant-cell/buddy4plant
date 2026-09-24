@@ -13,6 +13,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { Product, Category } from '../../types';
+import { INITIAL_CATEGORIES } from '../../data/initialCategories';
 import { saveProduct, deleteProduct, deleteAllProducts } from '../../services/productService';
 import { PlantImage } from '../../utils/imageFallback';
 import { PlantImageUploader } from './PlantImageUploader';
@@ -80,6 +81,78 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
 
   const [formData, setFormData] = useState<Partial<Product>>(initialFormState);
   const [productImages, setProductImages] = useState<string[]>([]);
+  // Guarantee available categories for every section (Plants, Pots, Care, Gifting)
+  const availableCategories = React.useMemo(() => {
+    const baseList = (categories && categories.length > 0) ? categories : INITIAL_CATEGORIES;
+    
+    // Tailored default categories based on section
+    let sectionDefaults: { slug: string; name: string }[] = [];
+    if (sectionFilter === 'plants') {
+      sectionDefaults = [
+        { slug: 'indoor-plants', name: 'Indoor Foliage Plants' },
+        { slug: 'air-purifying', name: 'Air Purifying (NASA Detox)' },
+        { slug: 'low-maintenance', name: 'Low Maintenance & Hardy' },
+        { slug: 'cacti-succulents', name: 'Cacti & Succulents' },
+        { slug: 'flowering-plants', name: 'Flowering Houseplants' },
+        { slug: 'hanging-plants', name: 'Hanging & Trailing Vines' },
+        { slug: 'pet-friendly', name: 'Pet Friendly Houseplants' },
+      ];
+    } else if (sectionFilter === 'pots-planters') {
+      sectionDefaults = [
+        { slug: 'pots-planters', name: 'Pots & Planters (General)' },
+        { slug: 'self-watering', name: 'Self-Watering Sub-Irrigation' },
+        { slug: 'ceramic-pots', name: 'Artisanal Glazed Ceramic Pots' },
+        { slug: 'terracotta-pots', name: 'Natural Clay Terracotta Pots' },
+        { slug: 'metal-planters', name: 'Metal Planters & Heavy Stands' },
+      ];
+    } else if (sectionFilter === 'plant-care') {
+      sectionDefaults = [
+        { slug: 'plant-care', name: 'Plant Care & Soil (General)' },
+        { slug: 'fertilizers', name: 'Organic Bio-Fertilizers & Kelp Feed' },
+        { slug: 'pest-control', name: 'Golden Neem Oil Pest Shields' },
+        { slug: 'potting-soil', name: 'Aged Bark & Microbiome Soil' },
+      ];
+    } else if (sectionFilter === 'combos') {
+      sectionDefaults = [
+        { slug: 'combos', name: 'Curated Combos & Value Packs' },
+        { slug: 'gifting', name: 'Botanical Gifts & Starter Sets' },
+        { slug: 'purifier-trio', name: 'Air Purifying Detox Trio' },
+      ];
+    } else {
+      sectionDefaults = [
+        { slug: 'indoor-plants', name: 'Indoor Foliage Plants' },
+        { slug: 'air-purifying', name: 'Air Purifying Plants' },
+        { slug: 'low-maintenance', name: 'Low Maintenance' },
+        { slug: 'cacti-succulents', name: 'Cacti & Succulents' },
+        { slug: 'flowering-plants', name: 'Flowering Houseplants' },
+        { slug: 'pots-planters', name: 'Pots & Planters' },
+        { slug: 'plant-care', name: 'Plant Care & Soil' },
+        { slug: 'combos', name: 'Combos & Gift Packs' },
+      ];
+    }
+
+    const seenSlugs = new Set<string>();
+    const result: { slug: string; name: string }[] = [];
+
+    // Add section defaults first
+    for (const item of sectionDefaults) {
+      if (!seenSlugs.has(item.slug)) {
+        seenSlugs.add(item.slug);
+        result.push(item);
+      }
+    }
+
+    // Add any database categories
+    for (const c of baseList) {
+      if (!seenSlugs.has(c.slug)) {
+        seenSlugs.add(c.slug);
+        result.push({ slug: c.slug, name: c.name });
+      }
+    }
+
+    return result;
+  }, [categories, sectionFilter]);
+
 
   const openAddModal = () => {
     let defaultCat = 'indoor-plants';
@@ -480,7 +553,7 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
             onClick={() => setIsModalOpen(false)}
           />
 
-          <div className="relative bg-white border border-[#E5E2D9] max-w-3xl w-full z-10 max-h-[90vh] sm:max-h-[85vh] flex flex-col rounded-2xl shadow-2xl overflow-hidden">
+          <div className="relative bg-white text-[#1A1A1A] border border-[#E5E2D9] max-w-3xl w-full z-10 max-h-[90vh] sm:max-h-[85vh] flex flex-col rounded-2xl shadow-2xl overflow-hidden" style={{ color: '#1A1A1A' }}>
             {/* Modal Sticky Header */}
             <div className="px-6 py-4 border-b border-[#E5E2D9] flex items-center justify-between shrink-0 bg-white sticky top-0 z-20">
               <div>

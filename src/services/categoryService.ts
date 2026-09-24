@@ -56,19 +56,16 @@ const getLocalCategories = (): Category[] => {
     const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (saved !== null) {
       const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed)) {
-        return parsed.filter((c) => c && c.id && !deletedIds.has(c.id));
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        const filtered = parsed.filter((c) => c && c.id && !deletedIds.has(c.id));
+        if (filtered.length > 0) return filtered;
       }
     }
   } catch (err) {
     console.warn('Error reading categories from localStorage:', err);
   }
 
-  const isSeeded = typeof window !== 'undefined' ? localStorage.getItem(SEEDED_FLAG_KEY) : null;
-  if (isSeeded === 'true') {
-    return [];
-  }
-
+  // Always fallback to INITIAL_CATEGORIES so categories never disappear
   return INITIAL_CATEGORIES.filter((c) => !deletedIds.has(c.id));
 };
 
@@ -251,4 +248,14 @@ export async function deleteAllCategories(): Promise<void> {
   } catch (err) {
     console.warn('Firestore deleteAllCategories warning:', err);
   }
+}
+
+export async function restoreInitialCategories(): Promise<Category[]> {
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem(DELETED_IDS_KEY);
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(INITIAL_CATEGORIES));
+    localStorage.setItem(SEEDED_FLAG_KEY, 'true');
+    emitStoreDataChanged();
+  }
+  return INITIAL_CATEGORIES;
 }

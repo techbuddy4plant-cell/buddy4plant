@@ -1,7 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { Plus, Edit2, Trash2, Check, X, Image as ImageIcon, Upload, Sparkles } from 'lucide-react';
 import { Category } from '../../types';
-import { saveCategory, deleteCategory, deleteAllCategories } from '../../services/categoryService';
+import { saveCategory, deleteCategory, deleteAllCategories, restoreInitialCategories } from '../../services/categoryService';
+import { RotateCcw } from 'lucide-react';
 import { PlantImage, PLANT_FALLBACK_IMAGES } from '../../utils/imageFallback';
 
 interface AdminCategoriesProps {
