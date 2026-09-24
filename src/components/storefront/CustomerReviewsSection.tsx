@@ -1,3 +1,4 @@
+import { useStoreSettings } from '../../context/StoreSettingsContext';
 import React from 'react';
 import { Star, CheckCircle } from 'lucide-react';
 import { Review } from '../../types';
@@ -7,6 +8,7 @@ interface CustomerReviewsSectionProps {
 }
 
 export const CustomerReviewsSection: React.FC<CustomerReviewsSectionProps> = ({ reviews }) => {
+  const { homepageCMS } = useStoreSettings();
   const displayReviews = reviews.slice(0, 3);
 
   return (
@@ -17,10 +19,10 @@ export const CustomerReviewsSection: React.FC<CustomerReviewsSectionProps> = ({ 
             Botanical Testimonials
           </span>
           <h2 className="font-editorial text-3xl sm:text-4xl lg:text-5xl font-bold text-[#141414] mt-2 tracking-tight">
-            Loved in 50,000+ Homes
+            {homepageCMS.reviewsTitle || 'Loved in 50,000+ Homes'}
           </h2>
           <p className="text-xs sm:text-sm text-[#666666] mt-3 font-normal leading-relaxed">
-            Authentic reflections from plant parents experiencing living serene spaces.
+            {homepageCMS.reviewsSubtitle || 'Authentic reflections from plant parents experiencing living serene spaces.'}
           </p>
         </div>
 

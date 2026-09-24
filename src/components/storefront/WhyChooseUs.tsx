@@ -86,10 +86,10 @@ export const WhyChooseUs: React.FC = () => {
             The Botanical Promise
           </span>
           <h2 className="font-editorial text-3xl sm:text-4xl lg:text-5xl font-bold text-[#141414] mt-2 tracking-tight">
-            Cultivated with Patience &amp; Precision
+            {homepageCMS.whyChooseUsTitle || 'Cultivated with Patience & Precision'}
           </h2>
           <p className="text-xs sm:text-sm text-[#616161] mt-3 font-normal leading-relaxed">
-            Every green specimen is acclimatized in our bio-controlled sanctuary before finding a home in your living space.
+            {homepageCMS.whyChooseUsSubtitle || 'Every green specimen is acclimatized in our bio-controlled sanctuary before finding a home in your living space.'}
           </p>
         </div>
 

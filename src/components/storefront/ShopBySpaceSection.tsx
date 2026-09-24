@@ -1,3 +1,4 @@
+import { useStoreSettings } from '../../context/StoreSettingsContext';
 import React from 'react';
 import { ArrowUpRight } from 'lucide-react';
 import { PlantImage } from '../../utils/imageFallback';
@@ -7,6 +8,7 @@ interface ShopBySpaceProps {
 }
 
 export const ShopBySpaceSection: React.FC<ShopBySpaceProps> = ({ navigate }) => {
+  const { homepageCMS } = useStoreSettings();
   const spaces = [
     {
       title: 'Living Room Sanctuary',
@@ -42,10 +44,10 @@ export const ShopBySpaceSection: React.FC<ShopBySpaceProps> = ({ navigate }) => 
             Space-Specific Botanical Curation
           </span>
           <h2 className="font-editorial text-3xl sm:text-4xl lg:text-5xl font-bold text-[#141414] mt-2 tracking-tight">
-            Shop by Living Space
+            {homepageCMS.livingSpacesTitle || 'Shop by Living Space'}
           </h2>
           <p className="text-xs sm:text-sm text-[#666666] mt-3 font-normal leading-relaxed">
-            Every room possesses its own natural light and humidity rhythm. Select flora calibrated to thrive.
+            {homepageCMS.livingSpacesSubtitle || 'Every room possesses its own natural light and humidity rhythm. Select flora calibrated to thrive.'}
           </p>
         </div>
 

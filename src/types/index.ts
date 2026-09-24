@@ -243,6 +243,20 @@ export interface HomepageCMS {
   trustBadge2?: string;
   trustBadge3?: string;
   trustBadge4?: string;
+  livingSpacesTitle?: string;
+  livingSpacesSubtitle?: string;
+  projectsTitle?: string;
+  projectsSubtitle?: string;
+  whyChooseUsTitle?: string;
+  whyChooseUsSubtitle?: string;
+  reviewsTitle?: string;
+  reviewsSubtitle?: string;
+  consultationTitle?: string;
+  consultationSubtitle?: string;
+  consultationButtonText?: string;
+  footerTagline?: string;
+  newsletterTitle?: string;
+  newsletterSubtitle?: string;
 }
 
 export interface UserProfile {

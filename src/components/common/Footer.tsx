@@ -19,7 +19,7 @@ interface FooterProps {
 }
 
 export const Footer: React.FC<FooterProps> = ({ navigate }) => {
-  const { settings } = useStoreSettings();
+  const { settings, homepageCMS } = useStoreSettings();
   const [emailInput, setEmailInput] = useState('');
   const [isSubscribed, setIsSubscribed] = useState(false);
 
@@ -57,10 +57,10 @@ export const Footer: React.FC<FooterProps> = ({ navigate }) => {
           <div className="lg:col-span-5">
             <div className="bg-[#F2EFE8] p-5 sm:p-6 rounded-3xl border border-[#E2DED4]">
               <span className="text-[10px] font-bold text-[#5B6E58] uppercase tracking-[0.22em] block mb-1.5">
-                The Botanical Journal
+                {homepageCMS.newsletterTitle || 'The Botanical Journal'}
               </span>
               <p className="text-xs text-[#525252] mb-3">
-                Subscribe for seasonal watering rhythms, rare specimen drops, and indoor styling guides.
+                {homepageCMS.newsletterSubtitle || 'Subscribe for seasonal watering rhythms, rare specimen drops, and indoor styling guides.'}
               </p>
 
               {isSubscribed ? (

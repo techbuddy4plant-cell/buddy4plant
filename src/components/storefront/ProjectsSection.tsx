@@ -1,3 +1,4 @@
+import { useStoreSettings } from '../../context/StoreSettingsContext';
 import React from 'react';
 import { ArrowUpRight, Sparkles, MapPin, CheckCircle, ArrowRight } from 'lucide-react';
 import { PlantImage } from '../../utils/imageFallback';
@@ -48,6 +49,7 @@ export const BOTANICAL_PROJECTS = [
 import { getProjects } from '../../services/projectService';
 
 export const ProjectsSection: React.FC<ProjectsSectionProps> = ({ navigate }) => {
+  const { homepageCMS } = useStoreSettings();
   const [projects, setProjects] = React.useState<any[]>(BOTANICAL_PROJECTS);
 
   React.useEffect(() => {
@@ -82,10 +84,10 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({ navigate }) =>
               Botanical Architecture &amp; Styling
             </span>
             <h2 className="font-editorial text-3xl sm:text-4xl lg:text-5xl font-bold text-[#141414] tracking-tight">
-              Curated Botanical Projects
+              {homepageCMS.projectsTitle || 'Curated Botanical Projects'}
             </h2>
             <p className="mt-3 text-xs sm:text-sm text-[#5C5C5C] max-w-xl">
-              From compact urban balconies to full corporate atriums, explore living spaces thoughtfully greenscaped with our nurtured flora.
+              {homepageCMS.projectsSubtitle || 'From compact urban balconies to full corporate atriums, explore living spaces thoughtfully greenscaped with our nurtured flora.'}
             </p>
           </div>
 
