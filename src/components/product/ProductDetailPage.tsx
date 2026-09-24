@@ -68,8 +68,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
     getProductReviews(p.id, p.slug, p.name).then(setProductReviews);
   };
 
-  useEffect(() => {
-    setLoading(true);
+  const loadProductData = () => {
     getProductBySlug(slug).then((p) => {
       setProduct(p);
       setLoading(false);
@@ -78,38 +77,22 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
         getProducts(p.category).then((all) => {
           setRelatedProducts(all.filter((item) => item.id !== p.id).slice(0, 4));
         });
-
-        // Initialize variant
-        if (p.variants && p.variants.length > 0) {
-          setSelectedVariant(p.variants[0]);
-        } else if (p.weightOptions && p.weightOptions.length > 0) {
-          const generated: ProductVariant[] = p.weightOptions.map((opt, i) => {
-            const ratio = i === 0 ? 1 : i === 1 ? 1.75 : i === 2 ? 3.25 : 5.5;
-            const price = Math.round(p.price * ratio);
-            return {
-              size: opt,
-              price: price,
-              compareAtPrice: p.compareAtPrice ? Math.round(p.compareAtPrice * ratio) : Math.round(price * 1.4),
-              unitRate: opt.toLowerCase().includes('kg') ? `(₹${Math.round(price / (i === 0 ? 1 : i === 1 ? 5 : 10))}/kg)` : undefined,
-            };
-          });
-          setSelectedVariant(generated[0]);
-        } else if (p.weightVolume) {
-          setSelectedVariant({
-            size: p.weightVolume,
-            price: p.price,
-            compareAtPrice: p.compareAtPrice,
-            unitRate: p.weightVolume.toLowerCase().includes('kg') ? `₹${p.price}/kg` : undefined,
-          });
-        } else if (p.plantSize) {
-          setSelectedVariant({
-            size: p.plantSize,
-            price: p.price,
-            compareAtPrice: p.compareAtPrice,
-          });
-        }
       }
     });
+  };
+
+  useEffect(() => {
+    setLoading(true);
+    loadProductData();
+
+    const handleStoreChange = () => {
+      loadProductData();
+    };
+
+    window.addEventListener('b4p_store_data_changed', handleStoreChange);
+    return () => {
+      window.removeEventListener('b4p_store_data_changed', handleStoreChange);
+    };
   }, [slug]);
 
   if (loading) {
@@ -144,7 +127,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
     Boolean(product.weightVolume) ||
     Boolean(product.variants && product.variants.length > 0);
 
-  // Compute active variants
+  // Compute active variants reactively
   const activeVariants: ProductVariant[] = (product.variants && product.variants.length > 0)
     ? product.variants
     : (product.weightOptions && product.weightOptions.length > 0)
@@ -167,7 +150,14 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
         },
       ];
 
-  const currentVariant = selectedVariant || activeVariants[0];
+  const currentVariant: ProductVariant = (() => {
+    if (selectedVariant) {
+      const match = activeVariants.find((v) => v.size.toLowerCase() === selectedVariant.size.toLowerCase());
+      if (match) return match;
+    }
+    return activeVariants[0];
+  })();
+
   const activePrice = currentVariant.price;
   const activeComparePrice = currentVariant.compareAtPrice || product.compareAtPrice;
 

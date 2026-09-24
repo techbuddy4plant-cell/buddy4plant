@@ -137,7 +137,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ navigate }) => {
               <div className="space-y-4">
                 {items.map((item) => (
                   <div
-                    key={item.product.id}
+                    key={`${item.product.id}_${item.selectedWeight || ''}_${item.selectedSize || ''}_${item.selectedPotColor || ''}`}
                     className="p-4 bg-white rounded-2xl border border-[#E5E2D9] flex gap-4 items-center transition-all hover:border-[#1F3B22]/30"
                   >
                     <PlantImage
@@ -181,7 +181,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ navigate }) => {
                           </div>
                         </div>
                         <button
-                          onClick={() => removeFromCart(item.product.id)}
+                          onClick={() => removeFromCart(item.product.id, item.selectedSize, item.selectedWeight)}
                           className="text-[#999999] hover:text-rose-600 p-1 transition-colors"
                           aria-label="Remove item"
                         >
@@ -193,7 +193,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ navigate }) => {
                         {/* Quantity Pill */}
                         <div className="flex items-center border border-[#DDD9CF] bg-[#FAF9F5] rounded-full px-2 py-0.5 text-xs">
                           <button
-                            onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                            onClick={() => updateQuantity(item.product.id, item.quantity - 1, item.selectedSize, item.selectedWeight)}
                             className="w-5 h-5 flex items-center justify-center text-[#141414] hover:text-[#1F3B22] font-bold"
                           >
                             -
@@ -202,7 +202,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ navigate }) => {
                             {item.quantity}
                           </span>
                           <button
-                            onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                            onClick={() => updateQuantity(item.product.id, item.quantity + 1, item.selectedSize, item.selectedWeight)}
                             disabled={item.quantity >= item.product.stock}
                             className="w-5 h-5 flex items-center justify-center text-[#141414] hover:text-[#1F3B22] font-bold disabled:opacity-30"
                           >

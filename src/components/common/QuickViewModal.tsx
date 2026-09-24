@@ -35,29 +35,37 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose
     product.category === 'plant-care' ||
     ['fertilizers', 'pest-control', 'potting-soil', 'growth-boosters'].includes(product.category) ||
     Boolean(product.weightVolume) ||
+    Boolean(product.variants && product.variants.length > 0) ||
     Boolean(product.weightOptions && product.weightOptions.length > 0);
 
-  const weightList = product.weightOptions && product.weightOptions.length > 0
-    ? product.weightOptions
-    : (product.weightVolume ? [product.weightVolume] : ['250 gm', '500 gm', '1 kg', '5 kg']);
+  const activeVariants = (product.variants && product.variants.length > 0)
+    ? product.variants
+    : (product.weightOptions && product.weightOptions.length > 0)
+    ? product.weightOptions.map((opt, i) => {
+        const ratio = i === 0 ? 1 : i === 1 ? 1.75 : i === 2 ? 3.25 : 5.5;
+        const price = Math.round(product.price * ratio);
+        return {
+          size: opt,
+          price,
+          compareAtPrice: product.compareAtPrice ? Math.round(product.compareAtPrice * ratio) : Math.round(price * 1.4),
+        };
+      })
+    : [
+        {
+          size: product.weightVolume || product.plantSize || '1 KG',
+          price: product.price,
+          compareAtPrice: product.compareAtPrice,
+        },
+      ];
+
+  const currentVariant = activeVariants.find((v) => v.size.toLowerCase() === selectedWeight.toLowerCase()) || activeVariants[0];
+  const currentUnitPrice = isPlantCare ? currentVariant.price : product.price;
+  const currentComparePrice = isPlantCare ? (currentVariant.compareAtPrice || product.compareAtPrice) : product.compareAtPrice;
+  const weightList = activeVariants.map((v) => v.size);
 
   const sizeList = product.availableSizes && product.availableSizes.length > 0
     ? product.availableSizes
     : (product.plantSize ? [product.plantSize] : ['Small (4-8")', 'Medium (9-15")', 'Large (16-28")']);
-
-  const computeUnitPrice = () => {
-    if (!isPlantCare) return product.price;
-    const base = product.price;
-    const wt = selectedWeight.toLowerCase();
-    if (wt.includes('250') || wt.includes('200')) return Math.round(base * 0.45);
-    if (wt.includes('500') || wt.includes('400')) return Math.round(base * 0.65);
-    if (wt.includes('1 kg') || wt.includes('1kg') || wt.includes('1 l') || wt.includes('1l')) return base;
-    if (wt.includes('2 kg') || wt.includes('2kg') || wt.includes('2 l')) return Math.round(base * 1.85);
-    if (wt.includes('5 kg') || wt.includes('5kg') || wt.includes('5 l')) return Math.round(base * 4.2);
-    return base;
-  };
-
-  const currentUnitPrice = computeUnitPrice();
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -263,7 +271,7 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose
               {/* Add to cart */}
               <button
                 onClick={() => {
-                  addToCart(product, quantity, isPlantCare ? undefined : selectedPotColor, isPlantCare ? undefined : selectedSize, isPlantCare ? selectedWeight : undefined, currentUnitPrice);
+                  addToCart(product, quantity, isPlantCare ? undefined : selectedPotColor, isPlantCare ? undefined : selectedSize, isPlantCare ? currentVariant.size : undefined, currentUnitPrice);
                   onClose();
                 }}
                 disabled={product.stock <= 0}

@@ -108,9 +108,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, navigate, onQ
         <div>
           {/* Botanical tags / Light hint OR Fertilizer Weight */}
           <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] uppercase tracking-wider text-[#787878] mb-1">
-            {product.category === 'plant-care' || ['fertilizers', 'pest-control', 'potting-soil'].includes(product.category) || product.weightVolume ? (
+            {product.category === 'plant-care' || ['fertilizers', 'pest-control', 'potting-soil'].includes(product.category) || product.weightVolume || (product.variants && product.variants.length > 0) ? (
               <span className="truncate flex items-center gap-1 font-bold text-[#1F4522] bg-[#EBF7EE] border border-[#BDE8C6] px-1.5 py-0.5 rounded">
-                Pack: {product.weightVolume || product.plantSize || '1 kg'}
+                Pack: {product.variants && product.variants.length > 1
+                  ? `${product.variants[0].size} (+${product.variants.length - 1} sizes)`
+                  : (product.weightVolume || (product.variants && product.variants[0]?.size) || product.plantSize || '1 KG')}
               </span>
             ) : (
               <>
@@ -151,7 +153,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, navigate, onQ
           <div>
             <div className="flex items-baseline gap-1 sm:gap-2">
               <span className="text-xs sm:text-base font-bold text-[#141414]">
-                ₹{product.price.toLocaleString('en-IN')}
+                {product.variants && product.variants.length > 1 ? 'From ' : ''}₹{product.price.toLocaleString('en-IN')}
               </span>
               {product.compareAtPrice && product.compareAtPrice > product.price && (
                 <span className="text-[10px] sm:text-xs text-[#8A8A8A] line-through">

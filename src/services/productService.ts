@@ -196,7 +196,12 @@ export async function getProducts(category?: string): Promise<Product[]> {
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
   const all = await getAllProducts();
-  const found = all.find((p) => p.slug === slug || p.id === slug);
+  const normalized = (slug || '').toLowerCase().trim();
+  const found = all.find((p) => 
+    (p.slug && p.slug.toLowerCase().trim() === normalized) || 
+    (p.id && p.id.toLowerCase().trim() === normalized) ||
+    (p.name && p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') === normalized)
+  );
   return found ? sanitizeProduct(found) : null;
 }
 
@@ -228,7 +233,11 @@ export async function saveProduct(product: Partial<Product> & { name: string; pr
     rating: product.rating || 5.0,
     reviewCount: product.reviewCount || 0,
     plantType: product.plantType || 'Indoor Plants',
-    plantSize: (product.plantSize as any) || 'Medium (9-15")',
+    plantSize: product.plantSize || (product.weightVolume || 'Medium (9-15")'),
+    availableSizes: product.availableSizes || [],
+    weightVolume: product.weightVolume || '',
+    weightOptions: product.weightOptions || [],
+    variants: product.variants || [],
     lightRequirement: (product.lightRequirement as any) || 'Bright Indirect Light',
     wateringFrequency: (product.wateringFrequency as any) || 'Once a week',
     maintenanceLevel: (product.maintenanceLevel as any) || 'Easy',
@@ -266,10 +275,11 @@ export async function saveProduct(product: Partial<Product> & { name: string; pr
   }
   setLocalProducts(updatedList);
 
-  // 3. Sync to Firestore in background
+  // 3. Sync to Firestore in background safely (strip undefined values so setDoc never throws)
   try {
+    const cleanData = JSON.parse(JSON.stringify(productData, (_k, v) => (v === undefined ? null : v)));
     const docRef = doc(db, PRODUCTS_COLLECTION, id);
-    await setDoc(docRef, productData, { merge: true });
+    await setDoc(docRef, cleanData, { merge: true });
   } catch (err) {
     console.warn('Firestore sync failed, saved locally:', err);
   }

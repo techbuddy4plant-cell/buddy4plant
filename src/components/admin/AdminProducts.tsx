@@ -278,7 +278,15 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
       else if (sectionFilter === 'combos') fallbackCat = 'combos';
 
       const finalCategory = formData.category || fallbackCat;
-      const validVariants = formVariants.filter(v => v.size && v.size.trim());
+      const validVariants = formVariants
+        .filter((v) => v.size && v.size.trim())
+        .map((v) => ({
+          size: v.size.trim(),
+          price: Number(v.price) || 0,
+          compareAtPrice: v.compareAtPrice ? Number(v.compareAtPrice) : undefined,
+          unitRate: v.unitRate ? v.unitRate.trim() : undefined,
+          inStock: v.inStock !== undefined ? v.inStock : true,
+        }));
       const primaryPrice = validVariants.length > 0 ? validVariants[0].price : Number(formData.price);
       const primaryCompare = validVariants.length > 0 ? validVariants[0].compareAtPrice : (formData.compareAtPrice ? Number(formData.compareAtPrice) : undefined);
       const primarySize = validVariants.length > 0 ? validVariants[0].size : (formData.plantSize || (sectionFilter === 'plant-care' ? '1 KG' : 'Medium (9-15")'));
