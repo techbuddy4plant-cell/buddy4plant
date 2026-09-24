@@ -15,6 +15,7 @@ export const BotanicaSection: React.FC<BotanicaSectionProps> = ({ navigate }) =>
     'Organic plant food and microbiome fertilizers crafted from what takes nature years to form.';
   const image = homepageCMS.botanicaImage || '/editorial/botanica-stone-slab.jpg';
   const buttonLink = homepageCMS.botanicaButtonLink || '/plants/plant-care';
+  const buttonText = homepageCMS.botanicaButtonText || 'Shop Organic Plant Food';
 
   return (
     <section className="py-20 lg:py-32 bg-transparent border-b border-black/10 overflow-hidden">
@@ -44,7 +45,7 @@ export const BotanicaSection: React.FC<BotanicaSectionProps> = ({ navigate }) =>
                 onClick={() => navigate(buttonLink)}
                 className="pill-btn-dark px-8 py-3.5 text-xs uppercase tracking-widest font-bold shadow-md hover:shadow-lg"
               >
-                Shop Organic Plant Food
+                {buttonText}
               </button>
             </div>
           </div>

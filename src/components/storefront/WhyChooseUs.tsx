@@ -2,29 +2,79 @@ import React from 'react';
 import { Truck, ShieldCheck, Leaf, Sparkles } from 'lucide-react';
 import { useStoreSettings } from '../../context/StoreSettingsContext';
 
+const parseBadge = (
+  rawBadge: string | undefined,
+  defaultTitle: string,
+  defaultDesc: string,
+  titleOverride?: string,
+  descOverride?: string
+) => {
+  if (titleOverride && descOverride) {
+    return { title: titleOverride, desc: descOverride };
+  }
+  if (!rawBadge) return { title: defaultTitle, desc: defaultDesc };
+  const parts = rawBadge.split(/—|–|-/);
+  if (parts.length >= 2) {
+    return { title: parts[0].trim(), desc: parts.slice(1).join('—').trim() };
+  }
+  return { title: rawBadge.trim(), desc: defaultDesc };
+};
+
 export const WhyChooseUs: React.FC = () => {
   const { homepageCMS } = useStoreSettings();
+
+  const b1 = parseBadge(
+    homepageCMS.trustBadge1,
+    'Botanical Safe-Transit System',
+    'Our bespoke shock-absorbing ventilated chambers secure organic roots and lock moisture so plants arrive lush, hydrated, and intact.',
+    (homepageCMS as any).trustBadge1Title,
+    (homepageCMS as any).trustBadge1Desc
+  );
+
+  const b2 = parseBadge(
+    homepageCMS.trustBadge2,
+    '14-Day Vitality Guarantee',
+    'Should your living botanical show transit distress or soil imbalance, our horticulturist team replaces or nurtures it immediately.',
+    (homepageCMS as any).trustBadge2Title,
+    (homepageCMS as any).trustBadge2Desc
+  );
+
+  const b3 = parseBadge(
+    homepageCMS.trustBadge3,
+    'Microbiome-Enriched Organic Soil',
+    'Formulated with organic composted bark, perlite, and cold-pressed bio-actives rather than heavy compacted field clay.',
+    (homepageCMS as any).trustBadge3Title,
+    (homepageCMS as any).trustBadge3Desc
+  );
+
+  const b4 = parseBadge(
+    homepageCMS.trustBadge4,
+    'Lifetime Botanical Support',
+    'Receive personalized watering rhythms, lighting guidance, and seasonal diagnosis direct from certified botanists.',
+    (homepageCMS as any).trustBadge4Title,
+    (homepageCMS as any).trustBadge4Desc
+  );
 
   const features = [
     {
       icon: <Truck className="w-5 h-5 text-[#1F3B22]" />,
-      title: homepageCMS.trustBadge1Title || 'Botanical Safe-Transit System',
-      desc: homepageCMS.trustBadge1Desc || 'Our bespoke shock-absorbing ventilated chambers secure organic roots and lock moisture so plants arrive lush, hydrated, and intact.',
+      title: b1.title,
+      desc: b1.desc,
     },
     {
       icon: <ShieldCheck className="w-5 h-5 text-[#1F3B22]" />,
-      title: homepageCMS.trustBadge2Title || '14-Day Vitality Guarantee',
-      desc: homepageCMS.trustBadge2Desc || 'Should your living botanical show transit distress or soil imbalance, our horticulturist team replaces or nurtures it immediately.',
+      title: b2.title,
+      desc: b2.desc,
     },
     {
       icon: <Leaf className="w-5 h-5 text-[#1F3B22]" />,
-      title: homepageCMS.trustBadge3Title || 'Microbiome-Enriched Organic Soil',
-      desc: homepageCMS.trustBadge3Desc || 'Formulated with organic composted bark, perlite, and cold-pressed bio-actives rather than heavy compacted field clay.',
+      title: b3.title,
+      desc: b3.desc,
     },
     {
       icon: <Sparkles className="w-5 h-5 text-[#1F3B22]" />,
-      title: homepageCMS.trustBadge4Title || 'Lifetime Botanical Support',
-      desc: homepageCMS.trustBadge4Desc || 'Receive personalized watering rhythms, lighting guidance, and seasonal diagnosis direct from certified botanists.',
+      title: b4.title,
+      desc: b4.desc,
     },
   ];
 

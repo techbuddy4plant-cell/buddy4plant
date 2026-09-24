@@ -14,7 +14,11 @@ export const BestSellersSection: React.FC<BestSellersSectionProps> = ({
   navigate,
   onQuickView,
 }) => {
-  const bestsellers = products.filter((p) => p.bestseller && p.active).slice(0, 4);
+  const activeProducts = products.filter((p) => p.active !== false);
+  const explicitBestsellers = activeProducts.filter((p) => p.bestseller);
+  const bestsellers = explicitBestsellers.length > 0
+    ? explicitBestsellers.slice(0, 4)
+    : activeProducts.slice(0, 4);
 
   if (bestsellers.length === 0) return null;
 
@@ -40,7 +44,7 @@ export const BestSellersSection: React.FC<BestSellersSectionProps> = ({
           </button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 lg:gap-8">
           {bestsellers.map((product) => (
             <ProductCard
               key={product.id}

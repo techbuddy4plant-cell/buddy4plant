@@ -194,6 +194,15 @@ export const Footer: React.FC<FooterProps> = ({ navigate }) => {
             </h4>
             <ul className="space-y-2.5 text-xs text-[#5C5C5C]">
               <li>
+                <button
+                  onClick={() => navigate('/b4padmin')}
+                  className="hover:text-[#1F3B22] transition-colors flex items-center gap-1.5 font-bold text-[#2D4A27]"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#2D4A27]" />
+                  Admin Portal &amp; CMS
+                </button>
+              </li>
+              <li>
                 <button onClick={() => navigate('/my-orders')} className="hover:text-[#1F3B22] transition-colors">
                   Track Live Orders
                 </button>
@@ -271,6 +280,9 @@ export const Footer: React.FC<FooterProps> = ({ navigate }) => {
             </button>
             <button onClick={() => navigate('/shipping-policy')} className="hover:text-[#141414] transition-colors">
               Shipping &amp; Returns
+            </button>
+            <button onClick={() => navigate('/b4padmin')} className="hover:text-[#141414] transition-colors font-medium text-[#2D4A27]">
+              Admin Console
             </button>
           </div>
         </div>

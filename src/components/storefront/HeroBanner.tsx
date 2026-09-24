@@ -129,6 +129,16 @@ const QUICK_CATEGORIES = [
   { label: '🌿 Projects', icon: '✨', path: '/projects' }
 ];
 
+
+const parsePillar = (rawBadge: string | undefined, defaultTitle: string, defaultDesc: string) => {
+  if (!rawBadge) return { title: defaultTitle, desc: defaultDesc };
+  const parts = rawBadge.split(/—|–|-/);
+  if (parts.length >= 2) {
+    return { title: parts[0].trim(), desc: parts.slice(1).join('—').trim() };
+  }
+  return { title: rawBadge.trim(), desc: defaultDesc };
+};
+
 export const HeroBanner: React.FC<HeroBannerProps> = ({ navigate }) => {
   const { homepageCMS } = useStoreSettings();
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
@@ -144,18 +154,36 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ navigate }) => {
     return () => clearInterval(timer);
   }, [isHovered]);
 
-  const slide = HERO_SLIDES[currentSlideIndex];
+  const baseSlide = HERO_SLIDES[currentSlideIndex];
+  // Dynamically merge settings configured in the Admin CMS Panel
+  const slide = currentSlideIndex === 0 ? {
+    ...baseSlide,
+    tag: homepageCMS.heroBadge || baseSlide.tag,
+    headline: homepageCMS.heroTitle || baseSlide.headline,
+    subtitle: homepageCMS.heroSubtitle || baseSlide.subtitle,
+    primaryCtaText: homepageCMS.heroPrimaryButtonText || baseSlide.primaryCtaText,
+    primaryCtaPath: homepageCMS.heroPrimaryButtonLink || baseSlide.primaryCtaPath,
+    secondaryCtaText: homepageCMS.heroSecondaryButtonText || baseSlide.secondaryCtaText,
+    secondaryCtaPath: homepageCMS.heroSecondaryButtonLink || baseSlide.secondaryCtaPath,
+    image: homepageCMS.heroImage || baseSlide.image,
+    badge: homepageCMS.heroBadge || baseSlide.badge,
+  } : baseSlide;
+
+  const pillar1 = parsePillar(homepageCMS.trustBadge1, 'Safe Pan-India Transit', 'Engineered ventilated packaging for guaranteed zero leaf breakage.');
+  const pillar2 = parsePillar(homepageCMS.trustBadge2, 'Self-Watering Planters', 'Sub-irrigation reservoirs keep roots hydrated for 10–14 days.');
+  const pillar3 = parsePillar(homepageCMS.trustBadge3, '100% Organic Nutrition', 'Cold-pressed kelp & mycorrhizae for lush leaf chlorophyll.');
+  const pillar4 = parsePillar(homepageCMS.trustBadge4, 'Free Plant Doctor Help', 'Direct WhatsApp guidance from certified horticulturists anytime.');
 
   return (
     <div className="bg-transparent text-[#1D3A24] overflow-hidden">
       {/* Kyari-Style Hero Announcement Strip */}
       <div className="bg-[#1F3B22] text-[#E8F0E7] py-2 px-4 text-center text-[11px] sm:text-xs font-semibold tracking-wide flex items-center justify-center gap-2 border-b border-[#2C5230]">
         <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-        <span>India&apos;s #1 Nursery &amp; Organic Plant Food Destination</span>
+        <span>{homepageCMS.announcementText || "India's #1 Nursery & Organic Plant Food Destination"}</span>
         <span className="hidden md:inline text-white/50">&bull;</span>
         <span className="hidden md:inline text-[#CBE3CA]">Free Safe Pan-India Delivery on Orders ₹499+</span>
         <button
-          onClick={() => navigate('/plants')}
+          onClick={() => navigate(homepageCMS.announcementLink || '/plants')}
           className="underline font-bold text-white ml-2 hover:text-[#A8E6CF] transition-colors"
         >
           Shop Now &rarr;
@@ -381,10 +409,10 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ navigate }) => {
               </div>
               <div>
                 <h4 className="text-xs sm:text-sm font-bold text-[#142B1A] leading-snug">
-                  Safe Pan-India Transit
+                  {pillar1.title}
                 </h4>
                 <p className="text-[11px] text-[#617665] mt-1 leading-relaxed">
-                  Engineered ventilated packaging for guaranteed zero leaf breakage.
+                  {pillar1.desc}
                 </p>
               </div>
             </div>
@@ -396,10 +424,10 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ navigate }) => {
               </div>
               <div>
                 <h4 className="text-xs sm:text-sm font-bold text-[#142B1A] leading-snug">
-                  Self-Watering Planters
+                  {pillar2.title}
                 </h4>
                 <p className="text-[11px] text-[#617665] mt-1 leading-relaxed">
-                  Sub-irrigation reservoirs keep roots hydrated for 10–14 days.
+                  {pillar2.desc}
                 </p>
               </div>
             </div>
@@ -411,10 +439,10 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ navigate }) => {
               </div>
               <div>
                 <h4 className="text-xs sm:text-sm font-bold text-[#142B1A] leading-snug">
-                  100% Organic Nutrition
+                  {pillar3.title}
                 </h4>
                 <p className="text-[11px] text-[#617665] mt-1 leading-relaxed">
-                  Cold-pressed kelp & mycorrhizae for lush leaf chlorophyll.
+                  {pillar3.desc}
                 </p>
               </div>
             </div>
@@ -426,10 +454,10 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ navigate }) => {
               </div>
               <div>
                 <h4 className="text-xs sm:text-sm font-bold text-[#142B1A] leading-snug">
-                  Free Plant Doctor Help
+                  {pillar4.title}
                 </h4>
                 <p className="text-[11px] text-[#617665] mt-1 leading-relaxed">
-                  Direct WhatsApp guidance from certified horticulturists anytime.
+                  {pillar4.desc}
                 </p>
               </div>
             </div>

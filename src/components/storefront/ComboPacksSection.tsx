@@ -14,7 +14,18 @@ export const ComboPacksSection: React.FC<ComboPacksSectionProps> = ({
   navigate,
   onQuickView,
 }) => {
-  const combos = products.filter((p) => p.category === 'combos' || p.tags.includes('combo pack')).slice(0, 3);
+  const combos = products.filter((p) => {
+    if (p.active === false) return false;
+    const cat = (p.category || '').toLowerCase();
+    const tags = (p.tags || []).map((t) => t.toLowerCase());
+    return (
+      cat.includes('combo') ||
+      cat.includes('gift') ||
+      tags.includes('combo pack') ||
+      tags.includes('combo') ||
+      tags.includes('bundle')
+    );
+  }).slice(0, 3);
 
   if (combos.length === 0) return null;
 
@@ -25,7 +36,7 @@ export const ComboPacksSection: React.FC<ComboPacksSectionProps> = ({
           <div>
             <div className="flex items-center gap-1.5 text-[10px] font-bold text-[#A3B899] uppercase tracking-[0.25em]">
               <Gift className="w-3.5 h-3.5" />
-              Gift Boxes & Turnkey Value Duos
+              Gift Boxes &amp; Turnkey Value Duos
             </div>
             <h2 className="font-serif text-3xl sm:text-4xl font-normal text-[#FDFCF9] mt-1">
               Curated Plant Combos
@@ -39,7 +50,7 @@ export const ComboPacksSection: React.FC<ComboPacksSectionProps> = ({
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
           {combos.map((product) => (
             <div key={product.id} className="text-[#1A1A1A]">
               <ProductCard

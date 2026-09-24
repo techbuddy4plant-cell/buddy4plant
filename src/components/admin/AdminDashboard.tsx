@@ -251,6 +251,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
+            {/* Direct Link to Storefront */}
+            <button
+              id="header-visit-storefront"
+              onClick={() => navigate('/')}
+              className="px-3.5 py-1.5 bg-[#2D4A27] hover:bg-[#1F341C] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 shadow-xs transition-all"
+              title="Visit live storefront in customer view"
+            >
+              <ExternalLink className="w-3.5 h-3.5 text-emerald-300" />
+              <span className="hidden sm:inline">Visit Live Storefront</span>
+              <span className="sm:hidden">Store</span>
+            </button>
             {/* Theme Toggle (Dark / Light) */}
             <button
               onClick={toggleAdminDarkMode}

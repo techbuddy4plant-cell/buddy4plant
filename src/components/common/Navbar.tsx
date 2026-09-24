@@ -475,6 +475,18 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
                     </button>
 
                     <button
+                      id="account-admin-portal-btn"
+                      onClick={() => {
+                        setIsAccountMenuOpen(false);
+                        navigate('/b4padmin');
+                      }}
+                      className="w-full text-left px-4 py-2 text-xs text-[#2D4A27] hover:bg-[#EBF3EC] flex items-center gap-2 font-bold"
+                    >
+                      <ShieldCheck className="w-4 h-4 text-[#2D4A27]" />
+                      Admin Portal
+                    </button>
+
+                    <button
                       onClick={() => {
                         setIsAccountMenuOpen(false);
                         navigate('/orders');
@@ -802,6 +814,24 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
                   <span className="flex items-center gap-2.5">
                     <i className="fa-solid fa-circle-info text-[#2D4A27]" />
                     About us
+                  </span>
+                </button>
+
+                {/* Direct Link to Admin Portal */}
+                <button
+                  id="drawer-admin-portal-btn"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    navigate('/b4padmin');
+                  }}
+                  className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider text-[#1F341C] bg-[#EAF2E9] hover:bg-[#DCEDDA] border border-[#B8D8B6] transition-colors"
+                >
+                  <span className="flex items-center gap-2.5">
+                    <ShieldCheck className="w-4 h-4 text-[#2D4A27]" />
+                    Admin Portal Console
+                  </span>
+                  <span className="text-[9px] bg-[#2D4A27] text-white px-2 py-0.5 rounded-full font-bold">
+                    Admin
                   </span>
                 </button>
 

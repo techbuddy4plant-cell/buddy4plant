@@ -23,7 +23,7 @@ interface HomePageProps {
 }
 
 export const HomePage: React.FC<HomePageProps> = ({ navigate, onQuickView }) => {
-  const { homepageCMS } = useStoreSettings();
+  const { homepageCMS, settings } = useStoreSettings();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -121,7 +121,7 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate, onQuickView }) => 
 
             <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
               <a
-                href="https://wa.me/919876543210?text=Hi%20Plant%20Doctor,%20I%20would%20like%20guidance%20for%20my%20plants"
+                href={`https://wa.me/${(settings.whatsappSupportNumber || '919876543210').replace(/[^0-9]/g, '')}?text=Hi%20Plant%20Doctor,%20I%20would%20like%20guidance%20for%20my%20plants`}
                 target="_blank"
                 rel="noreferrer"
                 className="px-6 py-3.5 bg-[#2D4A27] hover:bg-[#1F341C] text-white font-bold text-[11px] uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-xs"
