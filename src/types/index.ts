@@ -14,7 +14,10 @@ export interface Product {
   rating: number;
   reviewCount: number;
   plantType: string;
-  plantSize: 'Small (4-8")' | 'Medium (9-15")' | 'Large (16-28")' | 'Extra Large (29"+)';
+  plantSize?: string;
+  availableSizes?: string[];
+  weightVolume?: string;
+  weightOptions?: string[];
   lightRequirement: 'Low Light' | 'Bright Indirect Light' | 'Direct Sunlight' | 'Medium Light';
   wateringFrequency: 'Once a week' | 'Twice a week' | 'When topsoil is dry' | 'Every 10-14 days';
   maintenanceLevel: 'Easy' | 'Moderate' | 'High';
@@ -71,6 +74,9 @@ export interface CartItem {
   product: Product;
   quantity: number;
   selectedPotColor?: string;
+  selectedSize?: string;
+  selectedWeight?: string;
+  unitPrice?: number;
 }
 
 export interface Address {
@@ -107,6 +113,9 @@ export interface OrderItem {
   price: number;
   quantity: number;
   sku: string;
+  selectedSize?: string;
+  selectedWeight?: string;
+  selectedPotColor?: string;
 }
 
 export interface Order {

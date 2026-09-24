@@ -18,6 +18,8 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose
   const [selectedImage, setSelectedImage] = useState<number>(0);
   const [quantity, setQuantity] = useState<number>(1);
   const [selectedPotColor, setSelectedPotColor] = useState<string>('Ivory White');
+  const [selectedWeight, setSelectedWeight] = useState<string>(product?.weightVolume || '1 kg');
+  const [selectedSize, setSelectedSize] = useState<string>(product?.plantSize || 'Medium (9-15")');
 
   if (!product) return null;
 
@@ -28,6 +30,34 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose
       : null;
 
   const potOptions = ['Ivory White', 'Terracotta Red', 'Sage Green', 'Matte Charcoal'];
+
+  const isPlantCare =
+    product.category === 'plant-care' ||
+    ['fertilizers', 'pest-control', 'potting-soil', 'growth-boosters'].includes(product.category) ||
+    Boolean(product.weightVolume) ||
+    Boolean(product.weightOptions && product.weightOptions.length > 0);
+
+  const weightList = product.weightOptions && product.weightOptions.length > 0
+    ? product.weightOptions
+    : (product.weightVolume ? [product.weightVolume] : ['250 gm', '500 gm', '1 kg', '5 kg']);
+
+  const sizeList = product.availableSizes && product.availableSizes.length > 0
+    ? product.availableSizes
+    : (product.plantSize ? [product.plantSize] : ['Small (4-8")', 'Medium (9-15")', 'Large (16-28")']);
+
+  const computeUnitPrice = () => {
+    if (!isPlantCare) return product.price;
+    const base = product.price;
+    const wt = selectedWeight.toLowerCase();
+    if (wt.includes('250') || wt.includes('200')) return Math.round(base * 0.45);
+    if (wt.includes('500') || wt.includes('400')) return Math.round(base * 0.65);
+    if (wt.includes('1 kg') || wt.includes('1kg') || wt.includes('1 l') || wt.includes('1l')) return base;
+    if (wt.includes('2 kg') || wt.includes('2kg') || wt.includes('2 l')) return Math.round(base * 1.85);
+    if (wt.includes('5 kg') || wt.includes('5kg') || wt.includes('5 l')) return Math.round(base * 4.2);
+    return base;
+  };
+
+  const currentUnitPrice = computeUnitPrice();
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -104,7 +134,7 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose
             {/* Price */}
             <div className="flex items-baseline gap-3 mt-4">
               <span className="text-2xl font-bold text-[#1A1A1A]">
-                ₹{product.price.toLocaleString('en-IN')}
+                ₹{currentUnitPrice.toLocaleString('en-IN')}
               </span>
               {product.compareAtPrice && product.compareAtPrice > product.price && (
                 <span className="text-sm text-[#8A8A8A] line-through">
@@ -122,27 +152,78 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose
               {product.shortDescription}
             </p>
 
-            {/* Pot Option Picker */}
-            <div className="mt-4 pt-4 border-t border-[#E5E2D9]">
-              <label className="text-xs font-semibold text-[#1A1A1A] block mb-2">
-                Planter Finish: <span className="font-normal text-[#5A5A5A]">{selectedPotColor}</span>
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {potOptions.map((color) => (
-                  <button
-                    key={color}
-                    onClick={() => setSelectedPotColor(color)}
-                    className={`px-3 py-1.5 text-xs font-medium border transition-all ${
-                      selectedPotColor === color
-                        ? 'border-[#2D4A27] bg-[#2D4A27] text-white font-semibold'
-                        : 'border-[#E5E2D9] text-[#1A1A1A] hover:border-[#2D4A27]'
-                    }`}
-                  >
-                    {color}
-                  </button>
-                ))}
+            {/* Pack Size / Fertilizer Weight or Plant Size */}
+            {isPlantCare ? (
+              <div className="mt-4 pt-3 border-t border-[#E5E2D9]">
+                <label className="text-xs font-bold text-[#1F4522] block mb-2">
+                  Pack Quantity: <span className="text-[#141414] font-extrabold">{selectedWeight}</span>
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {weightList.map((wt) => (
+                    <button
+                      key={wt}
+                      type="button"
+                      onClick={() => setSelectedWeight(wt)}
+                      className={`px-3 py-1 text-xs font-bold rounded border transition-all flex items-center gap-1 ${
+                        selectedWeight === wt
+                          ? 'border-[#1F4522] bg-[#1F4522] text-white shadow-xs'
+                          : 'border-[#DDD9CF] bg-white text-[#1A1A1A] hover:border-[#1F4522]'
+                      }`}
+                    >
+                      {selectedWeight === wt && <Check className="w-3 h-3 text-white" />}
+                      {wt}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            ) : (
+              <>
+                <div className="mt-4 pt-3 border-t border-[#E5E2D9]">
+                  <label className="text-xs font-bold text-[#1A1A1A] block mb-2">
+                    Plant Size: <span className="text-[#1F3B22] font-semibold">{selectedSize}</span>
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {sizeList.map((sz) => (
+                      <button
+                        key={sz}
+                        type="button"
+                        onClick={() => setSelectedSize(sz)}
+                        className={`px-2.5 py-1 text-xs font-semibold rounded border transition-all flex items-center gap-1 ${
+                          selectedSize === sz
+                            ? 'border-[#1F3B22] bg-[#1F3B22] text-white shadow-xs'
+                            : 'border-[#DDD9CF] bg-white text-[#1A1A1A] hover:border-[#1F3B22]'
+                        }`}
+                      >
+                        {selectedSize === sz && <Check className="w-3 h-3 text-white" />}
+                        {sz}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-3 pt-3 border-t border-[#E5E2D9]">
+                  <label className="text-xs font-semibold text-[#1A1A1A] block mb-2">
+                    Planter Finish: <span className="font-normal text-[#5A5A5A]">{selectedPotColor}</span>
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {potOptions.map((color) => (
+                      <button
+                        key={color}
+                        type="button"
+                        onClick={() => setSelectedPotColor(color)}
+                        className={`px-3 py-1.5 text-xs font-medium border transition-all ${
+                          selectedPotColor === color
+                            ? 'border-[#2D4A27] bg-[#2D4A27] text-white font-semibold'
+                            : 'border-[#E5E2D9] text-[#1A1A1A] hover:border-[#2D4A27]'
+                        }`}
+                      >
+                        {color}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
 
             {/* Quick Specs */}
             <div className="grid grid-cols-2 gap-3 mt-4 p-3 bg-[#F5F2EB] border border-[#E5E2D9] text-xs text-[#5A5A5A]">
@@ -182,7 +263,7 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose
               {/* Add to cart */}
               <button
                 onClick={() => {
-                  addToCart(product, quantity, selectedPotColor);
+                  addToCart(product, quantity, isPlantCare ? undefined : selectedPotColor, isPlantCare ? undefined : selectedSize, isPlantCare ? selectedWeight : undefined, currentUnitPrice);
                   onClose();
                 }}
                 disabled={product.stock <= 0}

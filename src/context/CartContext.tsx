@@ -15,9 +15,16 @@ interface CartContextType {
   couponMessage: string | null;
   isCartDrawerOpen: boolean;
   setIsCartDrawerOpen: (open: boolean) => void;
-  addToCart: (product: Product, quantity?: number, selectedPotColor?: string) => void;
-  removeFromCart: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  addToCart: (
+    product: Product,
+    quantity?: number,
+    selectedPotColor?: string,
+    selectedSize?: string,
+    selectedWeight?: string,
+    unitPrice?: number
+  ) => void;
+  removeFromCart: (productId: string, selectedSize?: string, selectedWeight?: string) => void;
+  updateQuantity: (productId: string, quantity: number, selectedSize?: string, selectedWeight?: string) => void;
   clearCart: () => void;
   applyCouponCode: (code: string) => Promise<{ success: boolean; message: string }>;
   removeCoupon: () => void;
@@ -27,6 +34,10 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 const CART_STORAGE_KEY = 'vb_cart_items';
 const COUPON_STORAGE_KEY = 'vb_applied_coupon';
+
+const getItemKey = (item: { product: { id: string }; selectedPotColor?: string; selectedSize?: string; selectedWeight?: string }) => {
+  return `${item.product.id}_${item.selectedPotColor || ''}_${item.selectedSize || ''}_${item.selectedWeight || ''}`;
+};
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { settings } = useStoreSettings();
@@ -71,9 +82,18 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [appliedCoupon]);
 
-  const addToCart = (product: Product, quantity: number = 1, selectedPotColor?: string) => {
+  const addToCart = (
+    product: Product,
+    quantity: number = 1,
+    selectedPotColor?: string,
+    selectedSize?: string,
+    selectedWeight?: string,
+    unitPrice?: number
+  ) => {
+    const effectivePrice = unitPrice ?? product.price;
     setItems((prev) => {
-      const existingIndex = prev.findIndex((item) => item.product.id === product.id);
+      const targetKey = `${product.id}_${selectedPotColor || ''}_${selectedSize || ''}_${selectedWeight || ''}`;
+      const existingIndex = prev.findIndex((item) => getItemKey(item) === targetKey);
       if (existingIndex > -1) {
         const updated = [...prev];
         const newQty = Math.min(product.stock, updated[existingIndex].quantity + quantity);
@@ -81,27 +101,50 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
           ...updated[existingIndex],
           quantity: newQty,
           selectedPotColor: selectedPotColor || updated[existingIndex].selectedPotColor,
+          selectedSize: selectedSize || updated[existingIndex].selectedSize,
+          selectedWeight: selectedWeight || updated[existingIndex].selectedWeight,
+          unitPrice: effectivePrice,
         };
         return updated;
       } else {
-        return [...prev, { product, quantity: Math.min(product.stock, quantity), selectedPotColor }];
+        return [
+          ...prev,
+          {
+            product,
+            quantity: Math.min(product.stock, quantity),
+            selectedPotColor,
+            selectedSize,
+            selectedWeight,
+            unitPrice: effectivePrice,
+          },
+        ];
       }
     });
     setIsCartDrawerOpen(true);
   };
 
-  const removeFromCart = (productId: string) => {
-    setItems((prev) => prev.filter((item) => item.product.id !== productId));
+  const removeFromCart = (productId: string, selectedSize?: string, selectedWeight?: string) => {
+    setItems((prev) =>
+      prev.filter((item) => {
+        if (item.product.id !== productId) return true;
+        if (selectedSize !== undefined && item.selectedSize !== selectedSize) return true;
+        if (selectedWeight !== undefined && item.selectedWeight !== selectedWeight) return true;
+        return false;
+      })
+    );
   };
 
-  const updateQuantity = (productId: string, quantity: number) => {
+  const updateQuantity = (productId: string, quantity: number, selectedSize?: string, selectedWeight?: string) => {
     if (quantity <= 0) {
-      removeFromCart(productId);
+      removeFromCart(productId, selectedSize, selectedWeight);
       return;
     }
     setItems((prev) =>
       prev.map((item) => {
-        if (item.product.id === productId) {
+        const matchesId = item.product.id === productId;
+        const matchesSize = selectedSize === undefined || item.selectedSize === selectedSize;
+        const matchesWeight = selectedWeight === undefined || item.selectedWeight === selectedWeight;
+        if (matchesId && matchesSize && matchesWeight) {
           const validQty = Math.min(item.product.stock, quantity);
           return { ...item, quantity: validQty };
         }
@@ -120,7 +163,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Calculations
   const itemCount = items.reduce((acc, curr) => acc + curr.quantity, 0);
-  const subtotal = items.reduce((acc, curr) => acc + curr.product.price * curr.quantity, 0);
+  const subtotal = items.reduce((acc, curr) => acc + (curr.unitPrice ?? curr.product.price) * curr.quantity, 0);
 
   let discount = 0;
   if (appliedCoupon && subtotal > 0) {

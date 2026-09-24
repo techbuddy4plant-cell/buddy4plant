@@ -111,6 +111,27 @@ export default function App() {
       );
     }
 
+    if (path === '/collections' || path === '/collections/') {
+      return (
+        <ProductListingPage
+          initialCategorySlug="all"
+          navigate={navigate}
+          onQuickView={setQuickViewProduct}
+        />
+      );
+    }
+
+    if (path.startsWith('/collections/')) {
+      const categorySlug = path.replace('/collections/', '').split('/')[0].split('?')[0];
+      return (
+        <ProductListingPage
+          initialCategorySlug={categorySlug}
+          navigate={navigate}
+          onQuickView={setQuickViewProduct}
+        />
+      );
+    }
+
     if (path.startsWith('/product/')) {
       const productSlug = path.replace('/product/', '').split('/')[0].split('?')[0];
       return (

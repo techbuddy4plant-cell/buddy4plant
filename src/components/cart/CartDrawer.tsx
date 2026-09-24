@@ -162,11 +162,23 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ navigate }) => {
                           >
                             {item.product.name}
                           </h4>
-                          {item.selectedPotColor && (
-                            <p className="text-[10px] text-[#7A7A7A] mt-0.5">
-                              Planter: {item.selectedPotColor}
-                            </p>
-                          )}
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {item.selectedWeight && (
+                              <span className="text-[10px] font-bold bg-[#EBF7EE] text-[#1F4522] border border-[#BDE8C6] px-1.5 py-0.5 rounded">
+                                Pack: {item.selectedWeight}
+                              </span>
+                            )}
+                            {item.selectedSize && (
+                              <span className="text-[10px] font-semibold bg-[#F5F2EB] text-[#1A1A1A] border border-[#E5E2D9] px-1.5 py-0.5 rounded">
+                                Size: {item.selectedSize}
+                              </span>
+                            )}
+                            {item.selectedPotColor && (
+                              <span className="text-[10px] text-[#7A7A7A] bg-[#FAF8F5] px-1.5 py-0.5 rounded border border-[#EAE7DF]">
+                                Planter: {item.selectedPotColor}
+                              </span>
+                            )}
+                          </div>
                         </div>
                         <button
                           onClick={() => removeFromCart(item.product.id)}

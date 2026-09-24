@@ -18,9 +18,31 @@ const QUICK_FILTERS = [
   { label: 'Air-Purifying', slug: 'air-purifying' },
   { label: 'Low Maintenance', slug: 'low-maintenance' },
   { label: 'Cacti & Succulents', slug: 'cacti-succulents' },
+  { label: 'Flowering Plants', slug: 'flowering-plants' },
   { label: 'Curated Combos', slug: 'combos' },
-  { label: 'Artisanal Pots', slug: 'pots-planters' },
 ];
+
+const PLANT_CARE_FILTERS = [
+  { label: 'All Plant Care', slug: 'plant-care' },
+  { label: 'Organic Fertilizers', slug: 'fertilizers' },
+  { label: 'Pest Shields & Neem', slug: 'pest-control' },
+  { label: 'Potting Soil & Media', slug: 'potting-soil' },
+  { label: 'Growth Boosters', slug: 'growth-boosters' },
+];
+
+const POTS_FILTERS = [
+  { label: 'All Pots & Planters', slug: 'pots-planters' },
+  { label: 'Self-Watering', slug: 'self-watering' },
+  { label: 'Ceramic Pots', slug: 'ceramic-pots' },
+  { label: 'Terracotta Pots', slug: 'terracotta-pots' },
+  { label: 'Metal Planters', slug: 'metal-planters' },
+];
+
+const isPlantCareCategory = (cat?: string) =>
+  ['plant-care', 'fertilizers', 'pest-control', 'potting-soil', 'growth-boosters'].includes(cat || '');
+
+const isPotsCategory = (cat?: string) =>
+  ['pots-planters', 'ceramic-pots', 'terracotta-pots', 'self-watering', 'metal-planters'].includes(cat || '');
 
 export const ProductListingPage: React.FC<ProductListingPageProps> = ({
   initialCategorySlug = 'all',
@@ -78,23 +100,54 @@ export const ProductListingPage: React.FC<ProductListingPageProps> = ({
     setFilters(initialFilters);
   };
 
+  const isPlantCareSection = isPlantCareCategory(filters.category);
+  const isPotsSection = isPotsCategory(filters.category);
+
   // Filter & Sort Logic
   const filteredProducts = useMemo(() => {
     return products
       .filter((p) => {
-        if (filters.category && filters.category !== 'all' && p.category !== filters.category) {
-          return false;
+        // Section isolation
+        if (isPlantCareSection) {
+          if (filters.category === 'plant-care') {
+            if (!isPlantCareCategory(p.category) && !p.tags?.some(t => ['plant-care', 'fertilizer', 'soil', 'neem', 'tonic'].includes(t.toLowerCase()))) {
+              return false;
+            }
+          } else {
+            if (p.category !== filters.category && !p.subCategory?.toLowerCase().includes(filters.category.replace('-', ' '))) {
+              return false;
+            }
+          }
+        } else if (isPotsSection) {
+          if (filters.category === 'pots-planters') {
+            if (!isPotsCategory(p.category)) return false;
+          } else {
+            if (p.category !== filters.category) return false;
+          }
+        } else {
+          // Live Plants section
+          if (filters.category === 'all' || filters.category === 'plants') {
+            // Strictly exclude plant-care and pots from the main plants catalogue!
+            if (isPlantCareCategory(p.category) || isPotsCategory(p.category)) {
+              return false;
+            }
+          } else {
+            if (p.category !== filters.category) {
+              return false;
+            }
+          }
         }
+
         if (p.price < filters.minPrice || p.price > filters.maxPrice) {
           return false;
         }
-        if (filters.light.length > 0 && !filters.light.some((l) => p.lightRequirement.includes(l))) {
+        if (filters.light.length > 0 && !filters.light.some((l) => p.lightRequirement?.includes(l))) {
           return false;
         }
         if (filters.maintenance.length > 0 && !filters.maintenance.includes(p.maintenanceLevel)) {
           return false;
         }
-        if (filters.location.length > 0 && !filters.location.some((loc) => p.location.includes(loc))) {
+        if (filters.location.length > 0 && !filters.location.some((loc) => p.location?.includes(loc))) {
           return false;
         }
         if (filters.petFriendly === true && !p.petFriendly) {
@@ -106,7 +159,7 @@ export const ProductListingPage: React.FC<ProductListingPageProps> = ({
         if (filters.searchQuery) {
           const q = filters.searchQuery.toLowerCase();
           const matchesName = p.name.toLowerCase().includes(q);
-          const matchesDesc = p.shortDescription.toLowerCase().includes(q);
+          const matchesDesc = p.shortDescription?.toLowerCase().includes(q) || false;
           if (!matchesName && !matchesDesc) return false;
         }
         return true;
@@ -115,12 +168,13 @@ export const ProductListingPage: React.FC<ProductListingPageProps> = ({
         if (filters.sortBy === 'price-asc') return a.price - b.price;
         if (filters.sortBy === 'price-desc') return b.price - a.price;
         if (filters.sortBy === 'rating') return b.rating - a.rating;
-        if (filters.sortBy === 'newest') return b.createdAt - a.createdAt;
+        if (filters.sortBy === 'newest') return (b.createdAt || 0) - (a.createdAt || 0);
         return 0;
       });
-  }, [products, filters]);
+  }, [products, filters, isPlantCareSection, isPotsSection]);
 
   const currentCategory = categories.find((c) => c.slug === filters.category);
+  const activeChips = isPlantCareSection ? PLANT_CARE_FILTERS : isPotsSection ? POTS_FILTERS : QUICK_FILTERS;
 
   return (
     <div className="bg-[#FDFCF9] min-h-screen py-10 text-[#141414]">
@@ -131,7 +185,9 @@ export const ProductListingPage: React.FC<ProductListingPageProps> = ({
             Home
           </button>
           <span>/</span>
-          <span className="text-[#141414] font-medium">Nursery Catalogue</span>
+          <span className="text-[#141414] font-medium">
+            {isPlantCareSection ? 'Plant Care Collection' : isPotsSection ? 'Pots & Planters' : 'Nursery Catalogue'}
+          </span>
           {currentCategory && (
             <>
               <span>/</span>
@@ -144,20 +200,28 @@ export const ProductListingPage: React.FC<ProductListingPageProps> = ({
         <div className="mb-10">
           <div className="max-w-2xl">
             <span className="text-[10px] font-bold text-[#5B6E58] uppercase tracking-[0.24em] block mb-1.5">
-              Botanical Sanctuary
+              {isPlantCareSection ? 'Plant Nutrition & Doctor Care' : isPotsSection ? 'Artisanal Planters' : 'Botanical Sanctuary'}
             </span>
             <h1 className="font-editorial text-4xl sm:text-5xl lg:text-6xl font-bold text-[#141414] tracking-tight">
-              {currentCategory ? currentCategory.name : 'Living Botanical Collection'}
+              {isPlantCareSection
+                ? (currentCategory ? currentCategory.name : 'Plant Care, Organic Fertilizers & Soils')
+                : isPotsSection
+                ? (currentCategory ? currentCategory.name : 'Pots, Planters & Drainage Systems')
+                : (currentCategory ? currentCategory.name : 'Living Botanical Collection')}
             </h1>
             <p className="mt-3 text-xs sm:text-sm text-[#5C5C5C] leading-relaxed">
-              {currentCategory?.description ||
-                'Ethically acclimatized houseplants, rare succulents, and cold-pressed organic botanical care, hand-nurtured to thrive in living spaces.'}
+              {isPlantCareSection
+                ? 'Cold-pressed neem shields, bio-active organic plant foods, vermicompost, and microbiome-rich potting mixes engineered for lush leaf growth and disease immunity.'
+                : isPotsSection
+                ? 'Handcrafted terracotta, artisanal glazed ceramics, and smart self-watering containers designed to let root systems breathe.'
+                : (currentCategory?.description ||
+                  'Ethically acclimatized houseplants and rare specimens, hand-nurtured to thrive effortlessly in contemporary living spaces.')}
             </p>
           </div>
 
           {/* Quick Filter Pill Chips */}
           <div className="flex items-center gap-2 mt-6 overflow-x-auto pb-2 scrollbar-none">
-            {QUICK_FILTERS.map((chip) => {
+            {activeChips.map((chip) => {
               const isActive = filters.category === chip.slug;
               return (
                 <button

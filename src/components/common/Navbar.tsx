@@ -284,15 +284,15 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
               {/* 3. Plant care */}
               <button
                 id="nav-care"
-                onClick={() => navigate('/care-guide')}
+                onClick={() => navigate('/collections/plant-care')}
                 className={`py-2 transition-colors relative flex items-center ${
-                  currentPath.includes('plant-care') || currentPath.includes('care-guide')
+                  currentPath.includes('plant-care')
                     ? 'text-[#1F3B22] font-extrabold'
                     : 'text-[#4A4A4A] hover:text-[#1F3B22]'
                 }`}
               >
                 Plant care
-                {(currentPath.includes('plant-care') || currentPath.includes('care-guide')) && (
+                {currentPath.includes('plant-care') && (
                   <span className="absolute -bottom-1 left-0 w-full h-[2.5px] bg-[#1F3B22] rounded-full" />
                 )}
               </button>
@@ -746,7 +746,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
                 {/* 3. Plant care */}
                 <button
                   onClick={() => {
-                    navigate('/care-guide');
+                    navigate('/collections/plant-care');
                     setIsMobileMenuOpen(false);
                   }}
                   className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider text-[#1F341C] hover:bg-[#EBF3EC] transition-colors"

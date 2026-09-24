@@ -106,14 +106,22 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, navigate, onQ
       {/* Product Info */}
       <div className="p-3 sm:p-5 flex-1 flex flex-col justify-between">
         <div>
-          {/* Botanical tags / Light hint */}
+          {/* Botanical tags / Light hint OR Fertilizer Weight */}
           <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] uppercase tracking-wider text-[#787878] mb-1">
-            <span className="truncate flex items-center gap-0.5">
-              <Sun className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#1F3B22]" />
-              {product.lightRequirement}
-            </span>
-            <span>•</span>
-            <span className="truncate">{product.plantSize}</span>
+            {product.category === 'plant-care' || ['fertilizers', 'pest-control', 'potting-soil'].includes(product.category) || product.weightVolume ? (
+              <span className="truncate flex items-center gap-1 font-bold text-[#1F4522] bg-[#EBF7EE] border border-[#BDE8C6] px-1.5 py-0.5 rounded">
+                Pack: {product.weightVolume || product.plantSize || '1 kg'}
+              </span>
+            ) : (
+              <>
+                <span className="truncate flex items-center gap-0.5">
+                  <Sun className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#1F3B22]" />
+                  {product.lightRequirement}
+                </span>
+                <span>•</span>
+                <span className="truncate">{product.plantSize || 'Medium'}</span>
+              </>
+            )}
           </div>
 
           {/* Product Title */}

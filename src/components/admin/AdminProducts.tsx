@@ -435,7 +435,7 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
           <table className="w-full text-left text-xs">
             <thead className="bg-[#F5F2EB] text-[#5A5A5A] font-semibold border-b border-[#E5E2D9] uppercase tracking-wider text-[10px]">
               <tr>
-                <th className="py-3.5 px-4">Plant</th>
+                <th className="py-3.5 px-4">{sectionFilter === 'plant-care' ? 'Plant Care Item' : sectionFilter === 'pots-planters' ? 'Planter' : 'Plant'}</th>
                 <th className="py-3.5 px-4">SKU</th>
                 <th className="py-3.5 px-4">Category</th>
                 <th className="py-3.5 px-4">Price</th>
@@ -463,7 +463,7 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
                       />
                       <div>
                         <span className="font-semibold text-[#1A1A1A] block">{p.name}</span>
-                        <span className="text-[11px] text-[#7A7A7A]">{p.plantSize}</span>
+                        <span className="text-[11px] text-[#7A7A7A]">{p.weightVolume || p.plantSize || 'Standard'}</span>
                       </div>
                     </td>
 
