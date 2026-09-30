@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { realShipping, COURIER_PENDING_TEXT } from '../../utils/shipping';
 import {
   Package,
   Truck,
@@ -561,9 +562,11 @@ export const UserOrdersPage: React.FC<UserOrdersPageProps> = ({ navigate }) => {
                       </h3>
                     </div>
 
-                    <span className="text-xs text-[#6B856B] font-mono">
-                      Logistics Carrier: <strong>{ord.deliveryCourier || 'BlueDart Botanical Express'}</strong>
-                    </span>
+                    {realShipping(ord).courier && (
+                      <span className="text-xs text-[#6B856B] font-mono">
+                        Logistics Carrier: <strong>{realShipping(ord).courier}</strong>
+                      </span>
+                    )}
                   </div>
 
                   {/* Order Items */}
@@ -892,9 +895,17 @@ export const UserOrdersPage: React.FC<UserOrdersPageProps> = ({ navigate }) => {
             </div>
 
             <div className="bg-[#F8FCF9] p-4 rounded-xl border border-[#E2ECE0] text-xs space-y-1">
-              <p className="text-[#556955]">Courier Partner: <strong className="text-[#182319]">{trackingModalOrder.deliveryCourier || 'BlueDart Express Eco'}</strong></p>
-              <p className="text-[#556955]">AWB Tracking Code: <strong className="text-[#2D4A27] font-mono">{trackingModalOrder.trackingNumber || 'B4P-EXP-84729'}</strong></p>
-              <p className="text-[#556955]">Current Transit Hub: <strong className="text-[#182319]">{trackingModalOrder.currentLocation || 'Buddy4Plant Nursery, Lucknow'}</strong></p>
+              {realShipping(trackingModalOrder).courier || realShipping(trackingModalOrder).awb ? (
+                <>
+                  <p className="text-[#556955]">Courier Partner: <strong className="text-[#182319]">{realShipping(trackingModalOrder).courier || '-'}</strong></p>
+                  {realShipping(trackingModalOrder).awb && (
+                    <p className="text-[#556955]">AWB Tracking Code: <strong className="text-[#2D4A27] font-mono">{realShipping(trackingModalOrder).awb}</strong></p>
+                  )}
+                </>
+              ) : (
+                <p className="text-[#556955]">{COURIER_PENDING_TEXT}</p>
+              )}
+              <p className="text-[#556955]">Current Location: <strong className="text-[#182319]">{realShipping(trackingModalOrder).location || 'Buddy4Plant Nursery, Lucknow'}</strong></p>
             </div>
 
             <div className="space-y-4 relative pl-4 border-l-2 border-[#2D4A27]">

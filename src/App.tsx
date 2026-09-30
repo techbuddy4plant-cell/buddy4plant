@@ -24,7 +24,6 @@ import { UserOrdersPage } from './components/account/UserOrdersPage';
 import { WishlistPage } from './components/pages/WishlistPage';
 import {
   AboutUsPage,
-  PlantDoctorPage,
   ContactUsPage,
   ReviewsPage,
   CareGuidePage,
@@ -204,8 +203,9 @@ export default function App() {
       return <AboutUsPage />;
     }
 
+    // The Plant Doctor page was removed - old links go to the Plant Care Guide
     if (path === '/plant-doctor') {
-      return <PlantDoctorPage />;
+      return <CareGuidePage navigate={navigate} />;
     }
 
     if (path === '/store-locator' || path === '/locate-store') {

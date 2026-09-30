@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { realShipping, COURIER_PENDING_TEXT } from '../../utils/shipping';
 import {
   Search,
   Truck,
@@ -251,38 +252,44 @@ export const OrderTrackingPage: React.FC<OrderTrackingPageProps> = ({ initialOrd
                   <Truck className="w-4 h-4 text-[#2D4A27]" />
                   Logistics & Courier Information
                 </span>
-                <div>
-                  <span className="text-[#7A7A7A] text-[11px] block">Courier Partner</span>
-                  <p className="font-semibold text-[#1A1A1A]">{order.deliveryCourier || 'BlueDart Express Eco'}</p>
-                </div>
-                <div>
-                  <span className="text-[#7A7A7A] text-[11px] block">AWB Tracking Number</span>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <span className="font-mono font-bold text-[#2D4A27] bg-white px-2 py-0.5 border border-[#E5E2D9]">
-                      {order.trackingNumber || `VB-EXP-${order.orderNumber.slice(-4)}`}
-                    </span>
-                    <button
-                      onClick={() => handleCopyAWB(order.trackingNumber || `VB-EXP-${order.orderNumber.slice(-4)}`)}
-                      className="text-[#7A7A7A] hover:text-[#1A1A1A] text-[11px] flex items-center gap-1 border border-[#E5E2D9] px-2 py-0.5 bg-white"
-                      title="Copy AWB"
-                    >
-                      {copiedAWB ? (
-                        <>
-                          <Check className="w-3 h-3 text-[#2D4A27]" /> Copied
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-3 h-3" /> Copy
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
+                {realShipping(order).courier || realShipping(order).awb ? (
+                  <>
+                    <div>
+                      <span className="text-[#7A7A7A] text-[11px] block">Courier Partner</span>
+                      <p className="font-semibold text-[#1A1A1A]">{realShipping(order).courier || '-'}</p>
+                    </div>
+                    {realShipping(order).awb && (
+                      <div>
+                        <span className="text-[#7A7A7A] text-[11px] block">AWB Tracking Number</span>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="font-mono font-bold text-[#2D4A27] bg-white px-2 py-0.5 border border-[#E5E2D9]">{realShipping(order).awb}</span>
+                          <button
+                            onClick={() => handleCopyAWB(realShipping(order).awb)}
+                            className="text-[#7A7A7A] hover:text-[#1A1A1A] text-[11px] flex items-center gap-1 border border-[#E5E2D9] px-2 py-0.5 bg-white"
+                            title="Copy AWB"
+                          >
+                            {copiedAWB ? (
+                              <>
+                                <Check className="w-3 h-3 text-[#2D4A27]" /> Copied
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="w-3 h-3" /> Copy
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-[#5A5A5A]">{COURIER_PENDING_TEXT}</p>
+                )}
                 <div>
                   <span className="text-[#7A7A7A] text-[11px] block">Current Location / Status</span>
                   <p className="font-medium text-[#1A1A1A] flex items-center gap-1">
                     <MapPin className="w-3 h-3 text-[#2D4A27]" />
-                    {order.currentLocation || 'Buddy4Plant Nursery, Lucknow'}
+                    {realShipping(order).location || 'Buddy4Plant Nursery, Lucknow'}
                   </p>
                 </div>
               </div>

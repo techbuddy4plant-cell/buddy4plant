@@ -44,8 +44,8 @@ export async function createOrder(
     orderNumber,
     createdAt: timestamp,
     updatedAt: timestamp,
-    deliveryCourier: orderData.deliveryCourier || 'BlueDart Express Eco',
-    trackingNumber: orderData.trackingNumber || `B4P-EXP-${orderNumber.replace(/[^0-9]/g, '')}`,
+    deliveryCourier: orderData.deliveryCourier || '',
+    trackingNumber: orderData.trackingNumber || '',
     currentLocation: orderData.currentLocation || 'Buddy4Plant Nursery, Lucknow',
     statusHistory: [
       {

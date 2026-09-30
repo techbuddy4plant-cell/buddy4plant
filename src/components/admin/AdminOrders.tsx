@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { realShipping } from '../../utils/shipping';
 import {
   Search,
   Filter,
@@ -96,9 +97,10 @@ export const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, onRefresh }) =
   const openTrackingModal = (ord: Order) => {
     setTrackingModalOrder(ord);
     setEditStatus(ord.orderStatus);
-    setDeliveryCourier(ord.deliveryCourier || 'BlueDart Express Eco');
-    setTrackingNumber(ord.trackingNumber || `B4P-EXP-${ord.orderNumber.replace(/[^0-9]/g, '')}`);
-    setCurrentLocation(ord.currentLocation || 'Buddy4Plant Nursery, Lucknow');
+    const ship = realShipping(ord);
+    setDeliveryCourier(ship.courier);
+    setTrackingNumber(ship.awb);
+    setCurrentLocation(ship.location || 'Buddy4Plant Nursery, Lucknow');
     setEstimatedDeliveryDate(
       ord.estimatedDeliveryDate ||
         new Date(Date.now() + 3 * 86400000).toLocaleDateString('en-IN', {
@@ -485,7 +487,7 @@ export const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, onRefresh }) =
                     required
                     value={trackingNumber}
                     onChange={(e) => setTrackingNumber(e.target.value)}
-                    placeholder="e.g. VB-EXP-9842"
+                    placeholder="AWB / tracking number from the courier"
                     className="w-full p-2.5 bg-white border border-[#E5E2D9] text-[#1A1A1A] font-mono focus:outline-none focus:border-[#2D4A27]"
                   />
                 </div>

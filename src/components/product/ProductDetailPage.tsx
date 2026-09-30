@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { estimateDelivery } from '../../utils/shipping';
 import {
   Star,
   Heart,
@@ -59,8 +60,8 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
 
   // Delivery Estimate State
-  const [deliveryPincode, setDeliveryPincode] = useState('282010');
-  const [isPincodeChecked, setIsPincodeChecked] = useState(true);
+  const [deliveryPincode, setDeliveryPincode] = useState('');
+  const [isPincodeChecked, setIsPincodeChecked] = useState(false);
 
   // Gift note state
   const [isGiftNote, setIsGiftNote] = useState(false);
@@ -211,14 +212,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
     ? productReviews.reduce((sum, r) => sum + r.rating, 0) / productReviews.length
     : 0;
 
-  // Calculate dynamic delivery date (3 days from now)
-  const deliveryDateObj = new Date();
-  deliveryDateObj.setDate(deliveryDateObj.getDate() + 3);
-  const formattedDeliveryDate = deliveryDateObj.toLocaleDateString('en-IN', {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-  });
 
   const handleAddToCart = () => {
     addToCart(
@@ -387,7 +380,12 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                   <input
                     type="text"
                     value={deliveryPincode}
-                    onChange={(e) => setDeliveryPincode(e.target.value)}
+                    onChange={(e) => {
+                      setDeliveryPincode(e.target.value.replace(/\D/g, '').slice(0, 6));
+                      setIsPincodeChecked(false);
+                    }}
+                    onKeyDown={(e) => e.key === 'Enter' && setIsPincodeChecked(true)}
+                    inputMode="numeric"
                     placeholder="Enter pincode"
                     className="w-full rounded-full border border-[#E0D9CB] bg-white px-4 py-2.5 text-sm font-medium text-[#141414] focus:outline-none focus:border-[#1E9E57]"
                   />
@@ -399,11 +397,19 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                     Check
                   </button>
                 </div>
-                {isPincodeChecked && (
-                  <div className="flex items-center gap-2 mt-2 text-xs font-medium text-[#222222]">
-                    <span><i className="fa-solid fa-truck-fast mr-1.5 text-[#2D4A27]" aria-hidden="true" />Delivered by: <strong className="text-[#141414]">{formattedDeliveryDate}</strong></span>
-                  </div>
-                )}
+                {isPincodeChecked && (() => {
+                  const est = estimateDelivery(deliveryPincode);
+                  return est ? (
+                    <div className="flex items-center gap-2 mt-2 text-xs font-medium text-[#222222]">
+                      <span>
+                        <i className="fa-solid fa-truck-fast mr-1.5 text-[#2D4A27]" aria-hidden="true" />
+                        Delivery to {est.zone}: <strong className="text-[#141414]">{est.from} - {est.to}</strong>
+                      </span>
+                    </div>
+                  ) : (
+                    <p className="mt-2 text-xs font-medium text-[#B42318]">Please enter a valid 6-digit pincode.</p>
+                  );
+                })()}
               </div>
 
               {/* Gift Note Checkbox */}

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { realShipping, COURIER_PENDING_TEXT } from '../../utils/shipping';
 import {
   CheckCircle2,
   Truck,
@@ -165,21 +166,27 @@ export const OrderSuccess: React.FC<OrderSuccessProps> = ({ orderNumber, navigat
                   <span className="text-[#7A7A7A] block mb-1 text-[10px] uppercase font-bold tracking-wider">
                     Courier & AWB Tracking
                   </span>
-                  <p className="font-bold text-[#1A1A1A]">{order.deliveryCourier || 'BlueDart Express Eco'}</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="font-mono text-[11px] text-[#2D4A27] bg-[#2D4A27]/10 px-2 py-0.5">
-                      {order.trackingNumber || `VB-EXP-${order.orderNumber.slice(-4)}`}
-                    </span>
-                    <button
-                      onClick={() => handleCopyAWB(order.trackingNumber || `VB-EXP-${order.orderNumber.slice(-4)}`)}
-                      className="text-[#7A7A7A] hover:text-[#1A1A1A] p-0.5"
-                      title="Copy AWB Tracking Number"
-                    >
-                      {copiedAWB ? <Check className="w-3.5 h-3.5 text-[#2D4A27]" /> : <Copy className="w-3.5 h-3.5" />}
-                    </button>
-                  </div>
+                  {realShipping(order).courier || realShipping(order).awb ? (
+                    <>
+                      <p className="font-bold text-[#1A1A1A]">{realShipping(order).courier || 'Courier'}</p>
+                      {realShipping(order).awb && (
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="font-mono text-[11px] text-[#2D4A27] bg-[#2D4A27]/10 px-2 py-0.5">{realShipping(order).awb}</span>
+                          <button
+                            onClick={() => handleCopyAWB(realShipping(order).awb)}
+                            className="text-[#7A7A7A] hover:text-[#1A1A1A] p-0.5"
+                            title="Copy AWB Tracking Number"
+                          >
+                            {copiedAWB ? <Check className="w-3.5 h-3.5 text-[#2D4A27]" /> : <Copy className="w-3.5 h-3.5" />}
+                          </button>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <p className="text-[#5A5A5A]">{COURIER_PENDING_TEXT}</p>
+                  )}
                   <p className="text-[11px] text-[#7A7A7A] mt-1.5 font-light">
-                    Current Location: <strong className="text-[#1A1A1A]">{order.currentLocation || 'Buddy4Plant Nursery, Lucknow'}</strong>
+                    Current Location: <strong className="text-[#1A1A1A]">{realShipping(order).location || 'Buddy4Plant Nursery, Lucknow'}</strong>
                   </p>
                 </div>
 
