@@ -15,53 +15,78 @@ const COLUMNS: { title: string; links: LinkItem[] }[] = [
       { label: 'Indoor Plants', path: '/plants/indoor-plants' },
       { label: 'Pots & Planters', path: '/plants/pots-planters' },
       { label: 'Plant Care & Soil', path: '/plants/plant-care' },
-      { label: 'Gifting', path: '/gifting' },
+      { label: 'Gifting Plants', path: '/gifting' },
     ],
   },
   {
-    title: 'Services',
+    title: 'Services & Care',
     links: [
       { label: 'Gardening Services', path: '/garden-services' },
-      { label: 'Our Projects', path: '/projects' },
-      { label: 'Plant Care Guide', path: '/care-guide' },
-      { label: 'Blog', path: '/blog' },
+      { label: 'Landscaping Projects', path: '/projects' },
+      { label: 'Plant Doctor Guide', path: '/care-guide' },
+      { label: 'Botanical Blog', path: '/blog' },
+      { label: 'Customer Reviews', path: '/reviews' },
     ],
   },
   {
-    title: 'Company',
+    title: 'Legal & Policies',
     links: [
+      { label: 'Privacy Policy', path: '/privacy-policy' },
+      { label: 'Terms & Conditions', path: '/terms-and-conditions' },
+      { label: 'Refund & Cancellation', path: '/refund-policy' },
+      { label: 'Shipping & Delivery', path: '/shipping-policy' },
       { label: 'About Us', path: '/about' },
-      { label: 'Contact Us', path: '/contact' },
-      { label: 'Locate Our Store', path: '/store-locator' },
-      { label: 'Track Your Order', path: '/track-order' },
-      { label: 'Shipping & Returns', path: '/shipping-policy' },
     ],
   },
 ];
 
 export const Footer: React.FC<FooterProps> = ({ navigate }) => {
   const { settings } = useStoreSettings();
-  const phone = settings.contactPhone || settings.whatsappSupportNumber || '';
+  const phone = settings.contactPhone || settings.whatsappSupportNumber || '+91 80048 81668';
   const phoneDigits = phone.replace(/\D/g, '');
-  const wa = (settings.whatsappSupportNumber || phone).replace(/\D/g, '');
-  const email = settings.contactEmail || '';
-  const address = settings.storeAddress || 'Lucknow, Uttar Pradesh, India';
+  const wa = (settings.whatsappSupportNumber || phone).replace(/\D/g, '') || '918004881668';
+  const email = settings.contactEmail || 'contact@buddy4plant.com';
+  const address = settings.storeAddress || 'Buddy4Plant Nursery, Lucknow, Uttar Pradesh, India';
 
-  // Social icons appear only once real profile links are saved in Admin > Settings
-  const PLACEHOLDER = /^https?:\/\/(www\.)?(instagram|facebook|pinterest|youtube)\.com\/buddy4plant\/?$/i;
+  // Social & contact channels with reliable fallbacks
+  const rawSocials = (settings.socialLinks as unknown as Record<string, string>) || {};
   const socials = [
-    { key: 'instagram', icon: 'fa-instagram', label: 'Instagram' },
-    { key: 'facebook', icon: 'fa-facebook-f', label: 'Facebook' },
-    { key: 'youtube', icon: 'fa-youtube', label: 'YouTube' },
-    { key: 'pinterest', icon: 'fa-pinterest-p', label: 'Pinterest' },
-  ]
-    .map((x) => ({ ...x, url: ((settings.socialLinks as unknown as Record<string, string>) || {})[x.key] || '' }))
-    .filter((x) => x.url && !PLACEHOLDER.test(x.url.trim()));
+    {
+      key: 'instagram',
+      icon: 'fa-brands fa-instagram',
+      label: 'Instagram',
+      url: rawSocials.instagram || 'https://instagram.com/buddy4plant',
+    },
+    {
+      key: 'x',
+      icon: 'fa-brands fa-x-twitter',
+      label: 'X (Twitter)',
+      url: rawSocials.twitter || rawSocials.x || 'https://x.com/buddy4plant',
+    },
+    {
+      key: 'mail',
+      icon: 'fa-regular fa-envelope',
+      label: 'Email Us',
+      url: `mailto:${email}`,
+    },
+    {
+      key: 'facebook',
+      icon: 'fa-brands fa-facebook-f',
+      label: 'Facebook',
+      url: rawSocials.facebook || 'https://facebook.com/buddy4plant',
+    },
+    {
+      key: 'youtube',
+      icon: 'fa-brands fa-youtube',
+      label: 'YouTube',
+      url: rawSocials.youtube || 'https://youtube.com/@buddy4plant',
+    },
+  ];
 
   const go = (path: string) => (e: React.MouseEvent) => {
     e.preventDefault();
     navigate(path);
-    window.scrollTo({ top: 0 });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -80,45 +105,36 @@ export const Footer: React.FC<FooterProps> = ({ navigate }) => {
               </span>
             </a>
             <p className="mt-7 max-w-md text-base leading-relaxed text-[#B9CBB3]">
-              A Lucknow nursery and landscaping company - plants, pots and organic plant care, plus gardening and
-              landscaping services across Uttar Pradesh and Delhi.
+              A Lucknow nursery and landscaping company - healthy living plants, pots, organic nutrition, and turnkey garden landscaping across Uttar Pradesh and Delhi.
             </p>
-            <div className="mt-8 flex flex-wrap items-center gap-3">
-              {wa && (
-                <a
-                  href={`https://wa.me/${wa}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-2.5 rounded-full bg-[#F4EFE3] px-6 py-3.5 text-base font-semibold text-[#13301B] transition-colors hover:bg-white"
-                >
-                  <i className="fa-brands fa-whatsapp text-xl text-[#1F9D55]" aria-hidden="true" />
-                  Chat on WhatsApp
-                </a>
-              )}
+
+            {/* Social & Contact Icons in a single line */}
+            <div className="mt-8 flex items-center gap-3">
               {socials.map((x) => (
                 <a
                   key={x.key}
                   href={x.url}
-                  target="_blank"
+                  target={x.url.startsWith('mailto:') ? undefined : '_blank'}
                   rel="noreferrer"
                   aria-label={x.label}
-                  className="flex h-12 w-12 items-center justify-center rounded-full border border-white/20 text-lg text-white transition-colors hover:bg-white hover:text-[#13301B]"
+                  title={x.label}
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/20 text-base text-white transition-all hover:bg-white hover:text-[#13301B] hover:scale-105"
                 >
-                  <i className={`fa-brands ${x.icon}`} aria-hidden="true" />
+                  <i className={x.icon} aria-hidden="true" />
                 </a>
               ))}
             </div>
           </div>
 
           {/* Link columns */}
-          <nav className="grid grid-cols-2 gap-10 sm:grid-cols-3 lg:col-span-5" aria-label="Footer">
+          <nav className="grid grid-cols-2 gap-10 sm:grid-cols-3 lg:col-span-5" aria-label="Footer Navigation">
             {COLUMNS.map((col) => (
               <div key={col.title}>
                 <h4 className="mb-5 text-sm font-semibold uppercase tracking-[0.18em] text-[#9CCB8F]">{col.title}</h4>
                 <ul className="space-y-3.5">
                   {col.links.map((l) => (
                     <li key={l.path}>
-                      <a href={l.path} onClick={go(l.path)} className="text-base text-[#D5E2D0] transition-colors hover:text-white">
+                      <a href={l.path} onClick={go(l.path)} className="text-sm sm:text-base text-[#D5E2D0] transition-colors hover:text-white">
                         {l.label}
                       </a>
                     </li>
@@ -131,11 +147,13 @@ export const Footer: React.FC<FooterProps> = ({ navigate }) => {
           {/* Contact */}
           <div className="lg:col-span-3">
             <h4 className="mb-5 text-sm font-semibold uppercase tracking-[0.18em] text-[#9CCB8F]">Get in touch</h4>
-            <ul className="space-y-4 text-base">
+            <ul className="space-y-4 text-sm sm:text-base">
               {phone && (
                 <li>
                   <a href={`tel:+${phoneDigits}`} className="flex items-start gap-3.5 transition-colors hover:text-white">
-                    <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-[#9CCB8F]"><i className="fa-solid fa-phone text-sm" aria-hidden="true" /></span>
+                    <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-[#9CCB8F]">
+                      <i className="fa-solid fa-phone text-sm" aria-hidden="true" />
+                    </span>
                     <span className="pt-1.5">{phone}</span>
                   </a>
                 </li>
@@ -143,20 +161,26 @@ export const Footer: React.FC<FooterProps> = ({ navigate }) => {
               {email && (
                 <li>
                   <a href={`mailto:${email}`} className="flex items-start gap-3.5 break-all transition-colors hover:text-white">
-                    <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-[#9CCB8F]"><i className="fa-regular fa-envelope text-sm" aria-hidden="true" /></span>
+                    <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-[#9CCB8F]">
+                      <i className="fa-regular fa-envelope text-sm" aria-hidden="true" />
+                    </span>
                     <span className="pt-1.5">{email}</span>
                   </a>
                 </li>
               )}
               <li>
                 <a href="/store-locator" onClick={go('/store-locator')} className="flex items-start gap-3.5 transition-colors hover:text-white">
-                  <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-[#9CCB8F]"><i className="fa-solid fa-location-dot text-sm" aria-hidden="true" /></span>
+                  <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-[#9CCB8F]">
+                    <i className="fa-solid fa-location-dot text-sm" aria-hidden="true" />
+                  </span>
                   <span className="whitespace-pre-line pt-1.5">{address}</span>
                 </a>
               </li>
               {settings.storeHours && (
                 <li className="flex items-start gap-3.5">
-                  <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-[#9CCB8F]"><i className="fa-regular fa-clock text-sm" aria-hidden="true" /></span>
+                  <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-[#9CCB8F]">
+                    <i className="fa-regular fa-clock text-sm" aria-hidden="true" />
+                  </span>
                   <span className="whitespace-pre-line pt-1.5">{settings.storeHours}</span>
                 </li>
               )}
@@ -176,11 +200,14 @@ export const Footer: React.FC<FooterProps> = ({ navigate }) => {
           <p className="text-sm text-[#A9BFA3]">
             &copy; {new Date().getFullYear()} Buddy4Plant, Lucknow. All rights reserved.
           </p>
-          <ul className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
+          <ul className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs sm:text-sm">
             {[
-              { label: 'Shipping & Returns', path: '/shipping-policy' },
+              { label: 'Privacy Policy', path: '/privacy-policy' },
+              { label: 'Terms & Conditions', path: '/terms-and-conditions' },
+              { label: 'Refund Policy', path: '/refund-policy' },
+              { label: 'Shipping & Delivery', path: '/shipping-policy' },
               { label: 'Contact Us', path: '/contact' },
-              { label: 'Locate Our Store', path: '/store-locator' },
+              { label: 'Locate Store', path: '/store-locator' },
               { label: 'Track Order', path: '/track-order' },
             ].map((l) => (
               <li key={l.path}>
@@ -191,15 +218,15 @@ export const Footer: React.FC<FooterProps> = ({ navigate }) => {
             ))}
           </ul>
           <div className="flex items-center gap-4">
-            <span className="inline-flex items-center gap-2 rounded-full bg-white/[0.07] px-4 py-2 text-sm text-[#D5E2D0]">
-              <i className="fa-solid fa-map-location-dot text-[#9CCB8F]" aria-hidden="true" />
-              Serving Uttar Pradesh &amp; Delhi
+            <span className="inline-flex items-center gap-2 rounded-full bg-white/[0.07] px-4 py-2 text-xs text-[#D5E2D0]">
+              <i className="fa-solid fa-shield-check text-[#9CCB8F]" aria-hidden="true" />
+              Stripe &amp; 256-Bit SSL Encrypted
             </span>
             <button
               type="button"
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
               aria-label="Back to top"
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#F4EFE3] text-[#13301B] transition-transform hover:-translate-y-0.5"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F4EFE3] text-[#13301B] transition-transform hover:-translate-y-0.5 cursor-pointer"
             >
               <i className="fa-solid fa-arrow-up" aria-hidden="true" />
             </button>

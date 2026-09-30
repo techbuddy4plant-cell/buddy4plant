@@ -240,12 +240,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         /* kept locally */
       }
     }
+    window.dispatchEvent(new CustomEvent('b4p_user_addresses_changed'));
   };
 
   const saveAddress = async (address: Address): Promise<Address[]> => {
     if (!user && !profile) {
       // Guest local address storage
-      const guestAddresses: Address[] = JSON.parse(localStorage.getItem('vb_guest_addresses') || '[]');
+      const guestAddresses: Address[] = JSON.parse(localStorage.getItem('b4p_guest_addresses') || localStorage.getItem('vb_guest_addresses') || '[]');
       if (!address.id) address.id = `guest-${Date.now()}`;
       const idx = guestAddresses.findIndex((a) => a.id === address.id);
       if (idx !== -1) {
@@ -253,7 +254,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else {
         guestAddresses.push(address);
       }
-      localStorage.setItem('vb_guest_addresses', JSON.stringify(guestAddresses));
+      localStorage.setItem('b4p_guest_addresses', JSON.stringify(guestAddresses));
+      window.dispatchEvent(new CustomEvent('b4p_user_addresses_changed'));
       return guestAddresses;
     }
 
@@ -272,14 +274,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const removeAddress = async (addressIdOrIndex: string | number): Promise<Address[]> => {
     if (!user && !profile) {
-      const guestAddresses: Address[] = JSON.parse(localStorage.getItem('vb_guest_addresses') || '[]');
+      const guestAddresses: Address[] = JSON.parse(localStorage.getItem('b4p_guest_addresses') || localStorage.getItem('vb_guest_addresses') || '[]');
       let updated: Address[] = [];
       if (typeof addressIdOrIndex === 'number') {
         updated = guestAddresses.filter((_, i) => i !== addressIdOrIndex);
       } else {
         updated = guestAddresses.filter((a) => a.id !== addressIdOrIndex);
       }
-      localStorage.setItem('vb_guest_addresses', JSON.stringify(updated));
+      localStorage.setItem('b4p_guest_addresses', JSON.stringify(updated));
+      window.dispatchEvent(new CustomEvent('b4p_user_addresses_changed'));
       return updated;
     }
 
@@ -300,12 +303,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const setDefaultAddress = async (addressId: string): Promise<Address[]> => {
     if (!user && !profile) {
-      const guestAddresses: Address[] = JSON.parse(localStorage.getItem('vb_guest_addresses') || '[]');
+      const guestAddresses: Address[] = JSON.parse(localStorage.getItem('b4p_guest_addresses') || localStorage.getItem('vb_guest_addresses') || '[]');
       const updated = guestAddresses.map((a) => ({
         ...a,
         isDefault: a.id === addressId,
       }));
-      localStorage.setItem('vb_guest_addresses', JSON.stringify(updated));
+      localStorage.setItem('b4p_guest_addresses', JSON.stringify(updated));
+      window.dispatchEvent(new CustomEvent('b4p_user_addresses_changed'));
       return updated;
     }
 

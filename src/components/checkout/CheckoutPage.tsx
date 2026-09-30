@@ -49,6 +49,8 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ navigate }) => {
   const [state, setState] = useState('');
   const [pinLookup, setPinLookup] = useState<'idle' | 'loading' | 'done' | 'fail'>('idle');
   const [pincode, setPincode] = useState('');
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+  const [isCustomAddress, setIsCustomAddress] = useState<boolean>(false);
   const [saveAddressForFuture, setSaveAddressForFuture] = useState(true);
 
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('razorpay');
@@ -60,18 +62,41 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ navigate }) => {
   useEffect(() => {
     if (profile?.addresses && profile.addresses.length > 0) {
       const defaultAddr = profile.addresses.find((a) => a.isDefault) || profile.addresses[0];
-      if (defaultAddr) {
+      if (defaultAddr && !selectedAddressId && !isCustomAddress) {
+        setSelectedAddressId(defaultAddr.id || 'default');
         if (!fullName) setFullName(defaultAddr.fullName);
         if (!phone) setPhone(defaultAddr.phone);
-        if (!email) setEmail(defaultAddr.email);
+        if (!email) setEmail(defaultAddr.email || user?.email || '');
         setStreet(defaultAddr.street);
         setLandmark(defaultAddr.landmark || '');
         setCity(defaultAddr.city);
-        setState(defaultAddr.state);
+        setState(defaultAddr.state || 'Uttar Pradesh');
         setPincode(defaultAddr.pincode);
       }
     }
-  }, [profile]);
+  }, [profile, user]);
+
+  const handleSelectSavedAddress = (addr: Address) => {
+    setSelectedAddressId(addr.id || 'addr');
+    setIsCustomAddress(false);
+    setFullName(addr.fullName);
+    setPhone(addr.phone);
+    if (addr.email) setEmail(addr.email);
+    setStreet(addr.street);
+    setLandmark(addr.landmark || '');
+    setCity(addr.city);
+    setState(addr.state || 'Uttar Pradesh');
+    setPincode(addr.pincode);
+  };
+
+  const handleAddNewAddress = () => {
+    setSelectedAddressId(null);
+    setIsCustomAddress(true);
+    setStreet('');
+    setLandmark('');
+    setCity('');
+    setPincode('');
+  };
 
   // MANDATORY SIGN-IN GATE — user must be authenticated to place an order
   if (!user) {
@@ -174,7 +199,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ navigate }) => {
         return;
       }
       if (total > paymentSettings.maxCodAmount) {
-        setErrorMsg(`Cash on Delivery is limited to orders up to ₹${paymentSettings.maxCodAmount}. Please pay online via Razorpay.`);
+        setErrorMsg(`Cash on Delivery is limited to orders up to ₹${paymentSettings.maxCodAmount}. Please pay online.`);
         return;
       }
     }
@@ -182,21 +207,24 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ navigate }) => {
     setIsProcessing(true);
 
     const shippingAddress: Address = {
-      fullName,
-      phone,
-      email,
-      street,
-      landmark,
-      city,
+      id: selectedAddressId || `addr-${Date.now()}`,
+      fullName: fullName.trim(),
+      phone: phone.trim(),
+      email: email.trim(),
+      street: street.trim(),
+      landmark: landmark.trim(),
+      city: city.trim(),
       state,
-      pincode,
+      pincode: pincode.trim(),
+      isDefault: profile?.addresses?.length === 0,
     };
 
-    if (saveAddressForFuture) {
+    // Always persist address to user profile/storage if checkbox is enabled or user is signed in
+    if (saveAddressForFuture || user) {
       try {
         await saveAddress(shippingAddress);
       } catch (e) {
-        // ignore
+        console.warn('Address save warning:', e);
       }
     }
 
@@ -276,6 +304,10 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ navigate }) => {
           customerPhone: phone,
           onSuccess: async (paymentId, orderId) => {
             await updatePaymentStatus(preliminaryOrder.id, 'paid', paymentId);
+            // Re-ensure address saved upon successful payment
+            try {
+              await saveAddress(shippingAddress);
+            } catch (e) {}
             confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
             clearCart();
             navigate(`/order-success/${preliminaryOrder.orderNumber}`);
@@ -359,9 +391,57 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ navigate }) => {
 
               {/* Shipping Address */}
               <div className="bg-white p-6 sm:p-8 border border-[#E5E2D9]">
-                <h3 className="font-serif font-bold text-lg text-[#1A1A1A] mb-4">
-                  2. Shipping Address
-                </h3>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-serif font-bold text-lg text-[#1A1A1A]">
+                    2. Shipping Address
+                  </h3>
+                  {profile?.addresses && profile.addresses.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={handleAddNewAddress}
+                      className="text-[11px] font-bold text-[#2D4A27] hover:underline flex items-center gap-1"
+                    >
+                      <i className="fa-solid fa-plus text-[10px]" /> Add New Address
+                    </button>
+                  )}
+                </div>
+
+                {profile?.addresses && profile.addresses.length > 0 && (
+                  <div className="mb-6 space-y-2.5">
+                    <p className="text-[11px] font-semibold text-[#666] uppercase tracking-wider">
+                      Saved Delivery Addresses:
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {profile.addresses.map((addr) => {
+                        const isSelected = selectedAddressId === addr.id && !isCustomAddress;
+                        return (
+                          <div
+                            key={addr.id || addr.street}
+                            onClick={() => handleSelectSavedAddress(addr)}
+                            className={`p-3.5 border rounded-lg cursor-pointer transition-all text-xs relative ${
+                              isSelected
+                                ? 'border-[#2D4A27] bg-[#EBF5EC]/40 ring-1 ring-[#2D4A27]'
+                                : 'border-[#E5E2D9] hover:border-[#2D4A27]/60 bg-white'
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-2 mb-1">
+                              <span className="font-bold text-[#1A1A1A]">{addr.fullName}</span>
+                              {addr.isDefault && (
+                                <span className="text-[9px] font-bold uppercase tracking-wider bg-[#2D4A27] text-white px-1.5 py-0.5 rounded">
+                                  Default
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[#555] line-clamp-2 leading-relaxed">
+                              {addr.street}{addr.landmark ? `, ${addr.landmark}` : ''}, {addr.city}, {addr.state} - {addr.pincode}
+                            </p>
+                            <p className="text-[#777] mt-1 text-[11px]">Phone: {addr.phone}</p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                   <div className="sm:col-span-2">

@@ -13,10 +13,10 @@
   right: 0;
   height: 64px;
   padding: 0;
-  background-color: #fdfcf9;
-  border: 1px solid #e3ded1;
+  background-color: #FAF5EE;
+  border: 1px solid #E5DDD0;
   border-radius: 1rem;
-  box-shadow: 0 6px 24px -12px rgba(19, 48, 27, 0.28);
+  box-shadow: 0 6px 24px -12px rgba(19, 48, 27, 0.22);
   overflow: hidden;
   will-change: height;
 }

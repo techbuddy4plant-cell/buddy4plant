@@ -25,7 +25,7 @@ export const WishlistPage: React.FC<WishlistPageProps> = ({ navigate, onQuickVie
   const wishlistedProducts = allProducts.filter((p) => wishlistIds.includes(p.id));
 
   return (
-    <div className="bg-[#FDFCF9] min-h-screen py-16 text-[#141414]">
+    <div className="bg-[#FAF5EE] min-h-screen py-16 text-[#141414]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Editorial Header */}
         <div className="text-center max-w-xl mx-auto mb-14">
@@ -47,8 +47,8 @@ export const WishlistPage: React.FC<WishlistPageProps> = ({ navigate, onQuickVie
           </div>
         ) : wishlistedProducts.length === 0 ? (
           /* Empty State */
-          <div className="max-w-md mx-auto bg-[#FAF9F5] border border-[#E5E2D9] rounded-3xl p-12 text-center shadow-sm animate-fadeIn">
-            <div className="w-16 h-16 bg-[#F0EDE4] border border-[#DDD9CF] text-[#1F3B22] rounded-full flex items-center justify-center mx-auto mb-5 shadow-xs">
+          <div className="max-w-md mx-auto bg-white border border-[#E8DFD3] rounded-3xl p-12 text-center shadow-sm animate-fadeIn">
+            <div className="w-16 h-16 bg-[#F5EEE4] border border-[#E0D7C9] text-[#1F3B22] rounded-full flex items-center justify-center mx-auto mb-5 shadow-xs">
               <Heart className="w-7 h-7 text-[#1F3B22]" />
             </div>
             <h2 className="font-editorial font-bold text-2xl text-[#141414]">Your Wishlist is Empty</h2>

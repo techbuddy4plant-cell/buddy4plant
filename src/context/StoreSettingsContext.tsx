@@ -42,8 +42,8 @@ export function calculateLuminance(hexOrColor?: string): number {
  */
 export function storefrontBackground(saved?: string): string {
   const v = (saved || '').trim();
-  if (!v || !v.startsWith('#')) return '#FDFCF9';
-  return calculateLuminance(v) >= 200 ? v : '#FDFCF9';
+  if (!v || !v.startsWith('#')) return '#FAF5EE';
+  return calculateLuminance(v) >= 200 ? v : '#FAF5EE';
 }
 
 export function getAutoTextColor(backgroundColor?: string): string {

@@ -41,7 +41,7 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({ navigate }) => {
   }, []);
 
   return (
-    <div className="bg-[#FDFCF9] min-h-screen py-12 text-[#141414]">
+    <div className="bg-[#FAF5EE] min-h-screen py-12 text-[#141414]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-xs text-[#7A7A7A] mb-8">
@@ -72,14 +72,14 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({ navigate }) => {
           {projects.map((project, idx) => (
             <React.Fragment key={project.id}>
             {project.segment === 'private' && projects.findIndex((p) => p.segment === 'private') === idx && (
-              <div className="pt-4 border-t border-[#E5E2D9]">
+              <div className="pt-4 border-t border-[#E8DFD3]">
                 <span className="text-[10px] font-bold text-[#C4661F] uppercase tracking-[0.24em] block mb-2">Homes &amp; Private Spaces</span>
                 <h2 className="font-serif text-3xl sm:text-4xl font-extrabold text-[#141414]">Private Projects</h2>
                 <p className="text-sm text-[#5C5C5C] mt-2 max-w-2xl">Home gardens, terraces, balconies and villas designed, planted and maintained by Buddy4Plant.</p>
               </div>
             )}
             <div
-              className={`grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center bg-[#FAF9F5] p-6 sm:p-10 rounded-4xl border border-[#E5E2D9] ${
+              className={`grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center bg-white p-6 sm:p-10 rounded-4xl border border-[#E8DFD3] shadow-sm ${
                 idx % 2 === 1 ? 'lg:flex-row-reverse' : ''
               }`}
             >

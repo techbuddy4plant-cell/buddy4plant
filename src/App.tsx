@@ -27,7 +27,10 @@ import {
   ContactUsPage,
   ReviewsPage,
   CareGuidePage,
-  ShippingPolicyPage
+  ShippingPolicyPage,
+  TermsAndConditionsPage,
+  PrivacyPolicyPage,
+  RefundPolicyPage
 } from './components/pages/StaticPages';
 import { ProjectsPage } from './components/pages/ProjectsPage';
 import { BlogPage } from './components/pages/BlogPage';
@@ -224,8 +227,20 @@ export default function App() {
       return <CareGuidePage navigate={navigate} />;
     }
 
-    if (path === '/shipping-policy' || path.startsWith('/shipping-policy')) {
+    if (path === '/shipping-policy' || path.startsWith('/shipping-policy') || path === '/shipping') {
       return <ShippingPolicyPage navigate={navigate} />;
+    }
+
+    if (path === '/terms' || path === '/terms-and-conditions' || path.startsWith('/terms') || path === '/terms-of-service') {
+      return <TermsAndConditionsPage navigate={navigate} />;
+    }
+
+    if (path === '/privacy' || path === '/privacy-policy' || path.startsWith('/privacy')) {
+      return <PrivacyPolicyPage navigate={navigate} />;
+    }
+
+    if (path === '/refund-policy' || path === '/cancellation-policy' || path === '/returns' || path === '/refunds' || path.startsWith('/refund')) {
+      return <RefundPolicyPage navigate={navigate} />;
     }
 
     // Default fallback
@@ -284,10 +299,10 @@ const AppShell: React.FC<{
         <AnimatePresence mode="wait">
           <motion.div
             key={currentPath}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.22, ease: 'easeOut' }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18, ease: 'easeOut' }}
           >
             {renderCurrentView()}
           </motion.div>

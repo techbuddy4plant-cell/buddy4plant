@@ -516,13 +516,15 @@ export const UserOrdersPage: React.FC<UserOrdersPageProps> = ({ navigate }) => {
                     <span className="text-[10px] font-bold uppercase tracking-wider text-[#6B856B]">SHIP TO</span>
                     <div className="group relative inline-block">
                       <p className="font-bold text-[#2D6A4F] hover:underline cursor-pointer mt-0.5 truncate">
-                        {ord.shippingAddress.fullName} ▾
+                        {ord.shippingAddress?.fullName || ord.customerName || 'Customer'} ▾
                       </p>
                       <div className="hidden group-hover:block absolute left-0 top-full mt-1 w-64 bg-white p-3 border border-stone-200 shadow-xl rounded-xl z-20 text-[11px] text-stone-700">
-                        <p className="font-bold text-stone-900">{ord.shippingAddress.fullName}</p>
-                        <p>{ord.shippingAddress.street}</p>
-                        <p>{ord.shippingAddress.city}, {ord.shippingAddress.state} - {ord.shippingAddress.pincode}</p>
-                        <p className="mt-1 text-stone-500"><i className="fa-solid fa-phone mr-1.5 text-[10px]" aria-hidden="true" />{ord.shippingAddress.phone}</p>
+                        <p className="font-bold text-stone-900">{ord.shippingAddress?.fullName || ord.customerName || 'Customer'}</p>
+                        <p>{ord.shippingAddress?.street || ''}</p>
+                        <p>{ord.shippingAddress?.city ? `${ord.shippingAddress.city}, ` : ''}{ord.shippingAddress?.state || ''}{ord.shippingAddress?.pincode ? ` - ${ord.shippingAddress.pincode}` : ''}</p>
+                        {(ord.shippingAddress?.phone || ord.customerPhone) && (
+                          <p className="mt-1 text-stone-500"><i className="fa-solid fa-phone mr-1.5 text-[10px]" aria-hidden="true" />{ord.shippingAddress?.phone || ord.customerPhone}</p>
+                        )}
                       </div>
                     </div>
                   </div>

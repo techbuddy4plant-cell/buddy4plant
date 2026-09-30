@@ -245,7 +245,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
 
   return (
     <>
-      <header id="navbar-main" className="b4p-fixed-theme sticky top-0 z-40 bg-[#FDFCF9]/90 backdrop-blur-md transition-all">
+      <header id="navbar-main" className="b4p-fixed-theme sticky top-0 z-40 bg-[#FAF5EE]/95 backdrop-blur-md transition-all">
         {/* Dynamic News Motion Announcement Ticker */}
         <AnnouncementTicker />
 
@@ -258,7 +258,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
               onLogoClick={() => navigate('/')}
               logo={<Buddy4PlantLogo size={39} showText={false} />}
               center={searchBox}
-              baseColor="#FDFCF9"
+              baseColor="#FAF5EE"
               menuColor="#1F341C"
               buttonBgColor="#13301B"
               buttonTextColor="#F4EFE3"

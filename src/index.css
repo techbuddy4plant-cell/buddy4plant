@@ -2,22 +2,25 @@
 
 @layer base {
   :root {
-    --bg-primary: #FDFCF9;
-    --text-primary: #1A1A1A;
-    --text-muted: #5A5A5A;
-    --accent-green: #2D4A27;
-    --accent-dark-green: #1F341C;
-    --border-subtle: #E5E2D9;
-    --border-light: #E8EAE0;
-    --card-sand: #F5F2EB;
-    --card-beige: #EAE8E4;
-    --card-sage: #E0E5E2;
-    --card-warm: #F2EDE4;
+    --bg-primary: #FAF5EE;
+    --bg-secondary: #F3EAE0;
+    --bg-card: #FFFFFF;
+    --text-primary: #182018;
+    --text-muted: #5C5850;
+    --accent-green: #1F3B22;
+    --accent-dark-green: #142817;
+    --accent-terracotta: #D46A38;
+    --border-subtle: #E8E0D4;
+    --border-light: #ECE5DA;
+    --card-sand: #F5EEE4;
+    --card-beige: #EFE8DC;
+    --card-sage: #E2E8E2;
+    --card-warm: #FAF2E8;
   }
 
   body {
-    background-color: #FDFCF9;
-    color: #1A1F1A;
+    background-color: #FAF5EE;
+    color: #182018;
     font-family: 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
     font-size: 15px;
     line-height: 1.6;
@@ -456,3 +459,24 @@ body[data-buybar='1'] .b4p-wa-float { bottom: 156px; }
   .b4p-wa-float { bottom: 24px; }
   body[data-buybar='1'] .b4p-wa-float { bottom: 96px; }
 }
+
+/* Elegant Slim Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #DDD5C7;
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #B5ACA0;
+}
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #DDD5C7 transparent;
+}
+

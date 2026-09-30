@@ -282,32 +282,58 @@ export const ProductListingPage: React.FC<ProductListingPageProps> = ({
   const activeChips = isGiftingSection ? GIFTING_FILTERS : isPlantCareSection ? PLANT_CARE_FILTERS : isPotsSection ? POTS_FILTERS : QUICK_FILTERS;
 
   return (
-    <div className="bg-[#FDFCF9] min-h-screen py-10 text-[#141414]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="bg-[#FAF5EE] min-h-screen py-8 sm:py-12 text-[#182018] relative">
+      {/* Decorative Botanical Foliage Framing (Left & Right top corners as in reference design) */}
+      <div className="pointer-events-none absolute -top-8 -left-10 w-48 sm:w-72 lg:w-88 h-64 sm:h-96 opacity-85 z-0 select-none hidden sm:block overflow-hidden">
+        <svg viewBox="0 0 320 380" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+          {/* Palm Fronds & Tropical Leaves */}
+          <path d="M-20 40C40 30 110 90 140 160C110 140 50 120 -20 110" fill="#3D5A42" fillOpacity="0.75" />
+          <path d="M-10 80C60 80 130 150 160 230C130 200 60 170 -10 160" fill="#4B6E52" fillOpacity="0.8" />
+          <path d="M-30 0C50 -10 150 40 200 120C150 90 60 70 -30 60" fill="#2E4833" fillOpacity="0.85" />
+          <path d="M10 140C80 140 150 220 170 310C140 270 80 230 10 210" fill="#5B7E62" fillOpacity="0.75" />
+          <path d="M-40 180C30 190 90 270 100 360C80 320 30 270 -40 250" fill="#3A563F" fillOpacity="0.7" />
+          {/* Subtle warm highlights */}
+          <path d="M20 60C70 60 120 120 140 190C120 160 80 130 20 120" stroke="#8EB093" strokeWidth="1.5" strokeOpacity="0.5" />
+        </svg>
+      </div>
+      <div className="pointer-events-none absolute -top-8 -right-10 w-48 sm:w-72 lg:w-88 h-64 sm:h-96 opacity-85 z-0 select-none hidden sm:block overflow-hidden">
+        <svg viewBox="0 0 320 380" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full scale-x-[-1]">
+          {/* Palm Fronds & Tropical Leaves */}
+          <path d="M-20 40C40 30 110 90 140 160C110 140 50 120 -20 110" fill="#3D5A42" fillOpacity="0.75" />
+          <path d="M-10 80C60 80 130 150 160 230C130 200 60 170 -10 160" fill="#4B6E52" fillOpacity="0.8" />
+          <path d="M-30 0C50 -10 150 40 200 120C150 90 60 70 -30 60" fill="#2E4833" fillOpacity="0.85" />
+          <path d="M10 140C80 140 150 220 170 310C140 270 80 230 10 210" fill="#5B7E62" fillOpacity="0.75" />
+          <path d="M-40 180C30 190 90 270 100 360C80 320 30 270 -40 250" fill="#3A563F" fillOpacity="0.7" />
+          {/* Subtle warm highlights */}
+          <path d="M20 60C70 60 120 120 140 190C120 160 80 130 20 120" stroke="#8EB093" strokeWidth="1.5" strokeOpacity="0.5" />
+        </svg>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-xs text-[#7A7A7A] mb-8">
-          <button onClick={() => navigate('/')} className="hover:text-[#141414] transition-colors">
+        <div className="flex items-center gap-2 text-xs text-[#7A746B] mb-6 sm:mb-8 font-sans">
+          <button onClick={() => navigate('/')} className="hover:text-[#182018] transition-colors">
             Home
           </button>
-          <span>/</span>
-          <span className="text-[#141414] font-medium">
+          <span className="text-[#B5ACA0]">/</span>
+          <span className="text-[#182018] font-medium">
             {isGiftingSection ? 'Gifting' : isPlantCareSection ? 'Plant Care Collection' : isPotsSection ? 'Pots & Planters' : 'Nursery Catalogue'}
           </span>
           {currentCategory && (
             <>
-              <span>/</span>
-              <span className="text-[#1F3B22] font-semibold">{currentCategory.name}</span>
+              <span className="text-[#B5ACA0]">/</span>
+              <span className="text-[#1A3824] font-semibold">{currentCategory.name}</span>
             </>
           )}
         </div>
 
         {/* Editorial Header */}
-        <div className="mb-10">
-          <div className="max-w-2xl">
-            <span className="text-[10px] font-bold text-[#5B6E58] uppercase tracking-[0.24em] block mb-1.5">
-              {isGiftingSection ? 'Gifts That Grow' : isPlantCareSection ? 'Plant Nutrition & Doctor Care' : isPotsSection ? 'Artisanal Planters' : 'Botanical Sanctuary'}
+        <div className="mb-8 sm:mb-12">
+          <div className="max-w-3xl">
+            <span className="text-[11px] font-bold text-[#486B44] uppercase tracking-[0.26em] block mb-2 font-sans">
+              {isGiftingSection ? 'GIFTS THAT GROW' : isPlantCareSection ? 'PLANT NUTRITION & DOCTOR CARE' : isPotsSection ? 'ARTISANAL PLANTERS' : 'BOTANICAL SANCTUARY'}
             </span>
-            <h1 className="font-editorial text-4xl sm:text-5xl lg:text-6xl font-bold text-[#141414] tracking-tight">
+            <h1 className="font-editorial text-4xl sm:text-5xl lg:text-[3.6rem] font-bold text-[#141C14] tracking-tight leading-[1.08]">
               {isGiftingSection
                 ? (currentCategory ? currentCategory.name : 'Plant Gifts for Every Occasion')
                 : isPlantCareSection
@@ -316,7 +342,7 @@ export const ProductListingPage: React.FC<ProductListingPageProps> = ({
                 ? (currentCategory ? currentCategory.name : 'Pots, Planters & Drainage Systems')
                 : (currentCategory ? currentCategory.name : LOCATION_LABELS[filters.category] ? `Plants for ${LOCATION_LABELS[filters.category]}` : 'All Plants')}
             </h1>
-            <p className="mt-3 text-xs sm:text-sm text-[#5C5C5C] leading-relaxed">
+            <p className="mt-3 text-xs sm:text-[15px] text-[#5C554B] leading-relaxed max-w-2xl">
               {isGiftingSection
                 ? (filters.category === 'corporate-gifting'
                   ? 'Plant hampers for employees, clients and festive occasions - custom branding, bulk pricing and pan-India delivery. Enquire on WhatsApp for a quote.'
@@ -333,17 +359,17 @@ export const ProductListingPage: React.FC<ProductListingPageProps> = ({
           </div>
 
           {/* Quick Filter Pill Chips */}
-          <div className="flex items-center gap-2 mt-6 overflow-x-auto pb-2 scrollbar-none">
+          <div className="flex items-center gap-2.5 mt-7 overflow-x-auto pb-2 scrollbar-none">
             {activeChips.map((chip) => {
               const isActive = filters.category === chip.slug;
               return (
                 <button
                   key={chip.slug}
                   onClick={() => setFilters((prev) => ({ ...prev, category: chip.slug }))}
-                  className={`shrink-0 px-4 py-2 rounded-full text-xs font-semibold transition-all ${
+                  className={`shrink-0 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs font-semibold transition-all duration-200 shadow-xs ${
                     isActive
-                      ? 'bg-[#1F3B22] text-white shadow-xs'
-                      : 'bg-[#FAF9F5] border border-[#DDD9CF] text-[#4A4A4A] hover:border-[#1F3B22]'
+                      ? 'bg-[#1A3824] text-white shadow-sm ring-1 ring-[#1A3824]'
+                      : 'bg-white/90 border border-[#DDD5C7] text-[#3D372E] hover:border-[#1A3824] hover:bg-white'
                   }`}
                 >
                   {chip.label}
@@ -354,7 +380,7 @@ export const ProductListingPage: React.FC<ProductListingPageProps> = ({
         </div>
 
         {/* Main Content Layout */}
-        <div className="flex flex-col lg:flex-row gap-8 lg:gap-10">
+        <div className="flex flex-col lg:flex-row items-start gap-8 lg:gap-10">
           {/* Filter Sidebar */}
           <FilterSidebar
             filters={filters}
@@ -370,13 +396,13 @@ export const ProductListingPage: React.FC<ProductListingPageProps> = ({
           {/* Product Grid Area */}
           <div className="flex-1 min-w-0">
             {/* Top Toolbar */}
-            <div className="bg-[#FAF9F5] p-3 sm:p-4 rounded-2xl border border-[#E5E2D9] mb-6 flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
-              <span className="text-xs text-[#5C5C5C]">
+            <div className="bg-[#F5EEE4]/80 backdrop-blur-xs p-3.5 sm:p-4 rounded-2xl border border-[#E5DDD0] mb-6 flex flex-wrap items-center justify-between gap-x-4 gap-y-3 shadow-xs">
+              <span className="text-xs text-[#5C554B]">
                 Showing{' '}
-                <strong className="text-[#141414] font-semibold">
+                <strong className="text-[#141C14] font-semibold">
                   {filteredProducts.length === 0 ? 0 : pageStart + 1}–{Math.min(pageStart + PAGE_SIZE, filteredProducts.length)}
                 </strong>{' '}
-                of <strong className="text-[#141414] font-semibold">{filteredProducts.length}</strong>{' '}
+                of <strong className="text-[#141C14] font-semibold">{filteredProducts.length}</strong>{' '}
                 {isPotsSection || isPlantCareSection || isGiftingSection ? 'products' : 'plants'}
               </span>
 
@@ -400,16 +426,16 @@ export const ProductListingPage: React.FC<ProductListingPageProps> = ({
 
             {/* Grid or Empty */}
             {loading ? (
-              <div className="py-28 text-center text-xs text-[#7A7A7A]">
-                <div className="w-8 h-8 border-2 border-[#1F3B22] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+              <div className="py-28 text-center text-xs text-[#7A746B]">
+                <div className="w-8 h-8 border-2 border-[#1A3824] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
                 Gathering botanical collection...
               </div>
             ) : filteredProducts.length === 0 ? (
-              <div className="bg-[#FAF9F5] rounded-3xl border border-[#E5E2D9] p-12 text-center my-8">
-                <p className="text-sm font-semibold text-[#141414]">
+              <div className="bg-[#F5EEE4]/80 rounded-3xl border border-[#E5DDD0] p-12 text-center my-8 shadow-xs">
+                <p className="text-sm font-semibold text-[#141C14]">
                   No flora matches your current filter criteria.
                 </p>
-                <p className="text-xs text-[#7A7A7A] mt-1">
+                <p className="text-xs text-[#7A746B] mt-1">
                   Try adjusting sunlight, maintenance, or price preferences.
                 </p>
                 <button
@@ -421,7 +447,7 @@ export const ProductListingPage: React.FC<ProductListingPageProps> = ({
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-6">
                   {pagedProducts.map((prod) => (
                     <ProductCard
                       key={prod.id}
@@ -434,27 +460,27 @@ export const ProductListingPage: React.FC<ProductListingPageProps> = ({
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                  <nav aria-label="Pages" className="mt-10 flex flex-col items-center gap-3">
+                  <nav aria-label="Pages" className="mt-12 flex flex-col items-center gap-3">
                     <div className="flex items-center gap-1.5 flex-wrap justify-center">
                       <button
                         onClick={() => goToPage(safePage - 1)}
                         disabled={safePage === 1}
-                        className="h-10 px-3 rounded-full border border-[#DDD9CF] bg-white text-[#1A1A1A] text-xs font-semibold flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed hover:border-[#1F3B22]"
+                        className="h-10 px-4 rounded-full border border-[#DDD5C7] bg-white text-[#182018] text-xs font-semibold flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed hover:border-[#1A3824] shadow-xs transition-colors"
                       >
                         <ChevronLeft className="w-4 h-4" /> Prev
                       </button>
                       {pageNumbers.map((n, idx) =>
                         n === '...' ? (
-                          <span key={`dots-${idx}`} className="px-1 text-xs text-[#7A7A7A]">…</span>
+                          <span key={`dots-${idx}`} className="px-1 text-xs text-[#7A746B]">…</span>
                         ) : (
                           <button
                             key={n}
                             onClick={() => goToPage(n)}
                             aria-current={n === safePage ? 'page' : undefined}
-                            className={`h-10 w-10 rounded-full text-xs font-bold transition-colors ${
+                            className={`h-10 w-10 rounded-full text-xs font-bold transition-all shadow-xs ${
                               n === safePage
-                                ? 'bg-[#1F3B22] text-white'
-                                : 'bg-white border border-[#DDD9CF] text-[#1A1A1A] hover:border-[#1F3B22]'
+                                ? 'bg-[#1A3824] text-white'
+                                : 'bg-white border border-[#DDD5C7] text-[#182018] hover:border-[#1A3824]'
                             }`}
                           >
                             {n}
@@ -464,12 +490,12 @@ export const ProductListingPage: React.FC<ProductListingPageProps> = ({
                       <button
                         onClick={() => goToPage(safePage + 1)}
                         disabled={safePage === totalPages}
-                        className="h-10 px-3 rounded-full border border-[#DDD9CF] bg-white text-[#1A1A1A] text-xs font-semibold flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed hover:border-[#1F3B22]"
+                        className="h-10 px-4 rounded-full border border-[#DDD5C7] bg-white text-[#182018] text-xs font-semibold flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed hover:border-[#1A3824] shadow-xs transition-colors"
                       >
                         Next <ChevronRight className="w-4 h-4" />
                       </button>
                     </div>
-                    <span className="text-[11px] text-[#7A7A7A]">
+                    <span className="text-[11px] text-[#7A746B]">
                       Page {safePage} of {totalPages}
                     </span>
                   </nav>

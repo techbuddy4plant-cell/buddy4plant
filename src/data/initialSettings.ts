@@ -49,7 +49,7 @@ export const INITIAL_HOMEPAGE_CMS: HomepageCMS = {
   bannerPromoImage: 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=1200&q=80',
   featuredCollectionTitle: 'Curated for Conscious Spaces',
   featuredCategoryIds: ['indoor-plants', 'air-purifying', 'low-maintenance', 'combos'],
-  siteBackground: '#FDFCF9',
+  siteBackground: '#FAF5EE',
   siteTextColor: 'auto',
   siteThemeMode: 'cream',
   amazonBadgesEnabled: true,
