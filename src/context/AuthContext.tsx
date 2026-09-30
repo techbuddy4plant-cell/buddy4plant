@@ -40,6 +40,32 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Addresses are also kept on this device, so they are never lost when the online
+// profile can't be read or written (e.g. Firestore permissions).
+const localAddrKey = (uid: string) => `b4p_addresses_${uid}`;
+const readLocalAddresses = (uid: string): Address[] => {
+  try {
+    return JSON.parse(localStorage.getItem(localAddrKey(uid)) || '[]');
+  } catch {
+    return [];
+  }
+};
+const writeLocalAddresses = (uid: string, list: Address[]) => {
+  try {
+    localStorage.setItem(localAddrKey(uid), JSON.stringify(list));
+  } catch {
+    /* storage full / blocked */
+  }
+};
+const withLocalAddresses = (p: UserProfile): UserProfile => {
+  const local = readLocalAddresses(p.uid);
+  if (p.addresses && p.addresses.length) {
+    writeLocalAddresses(p.uid, p.addresses);
+    return p;
+  }
+  return local.length ? { ...p, addresses: local } : p;
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -75,7 +101,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           };
           await saveUserProfile(p);
         }
-        setProfile(p);
+        setProfile(withLocalAddresses(p));
       } else {
         setProfile(null);
         if (demoAdminSession !== 'true') {
@@ -145,7 +171,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
         await saveUserProfile(p);
       }
-      setProfile(p);
+      setProfile(withLocalAddresses(p));
       closeAuthModal();
     } catch (err: any) {
       throw new Error(err.message || 'Google sign-in failed');
@@ -190,16 +216,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('vb_demo_admin', 'true');
     setIsAdmin(true);
     if (!profile) {
-      setProfile({
+      setProfile(withLocalAddresses({
         uid: 'admin-super-01',
         email: 'admin@vanabotanica.com',
         displayName: 'Store Administrator',
         role: 'admin',
         addresses: [],
         createdAt: Date.now(),
-      });
+      }));
     }
     closeAuthModal();
+  };
+
+  // Save the list on this device right away, show it, then try the online profile
+  const commitAddresses = async (uid: string, list: Address[]) => {
+    writeLocalAddresses(uid, list);
+    const next: UserProfile | null = profile ? { ...profile, addresses: list } : null;
+    if (next) setProfile(next);
+    if (next && uid !== 'guest') {
+      try {
+        await saveUserProfile(next);
+      } catch {
+        /* kept locally */
+      }
+    }
   };
 
   const saveAddress = async (address: Address): Promise<Address[]> => {
@@ -218,10 +258,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     const uid = user?.uid || profile?.uid || 'guest';
-    const updated = await saveUserAddress(uid, address);
-    if (profile) {
-      setProfile({ ...profile, addresses: updated });
-    }
+    const current = [...(profile?.addresses || readLocalAddresses(uid))];
+    const saved: Address = { ...address, id: address.id || `addr-${Date.now()}` };
+    const idx = current.findIndex((a) => a.id === saved.id);
+    if (idx !== -1) current[idx] = saved;
+    else current.push(saved);
+    // first address, or one marked default, becomes the only default
+    const defId = saved.isDefault || !current.some((a) => a.isDefault) ? saved.id : undefined;
+    const updated = defId ? current.map((a) => ({ ...a, isDefault: a.id === defId })) : current;
+    await commitAddresses(uid, updated);
     return updated;
   };
 
@@ -246,10 +291,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       addrId = addressIdOrIndex;
     }
 
-    const updated = await deleteUserAddress(uid, addrId);
-    if (profile) {
-      setProfile({ ...profile, addresses: updated });
-    }
+    const current = profile?.addresses || readLocalAddresses(uid);
+    let updated = current.filter((a, i) => (addrId ? a.id !== addrId : i !== addressIdOrIndex));
+    if (updated.length && !updated.some((a) => a.isDefault)) updated = updated.map((a, i) => ({ ...a, isDefault: i === 0 }));
+    await commitAddresses(uid, updated);
     return updated;
   };
 
@@ -265,10 +310,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     const uid = user?.uid || profile?.uid || 'guest';
-    const updated = await setDefaultUserAddress(uid, addressId);
-    if (profile) {
-      setProfile({ ...profile, addresses: updated });
-    }
+    const updated = (profile?.addresses || readLocalAddresses(uid)).map((a) => ({ ...a, isDefault: a.id === addressId }));
+    await commitAddresses(uid, updated);
     return updated;
   };
 

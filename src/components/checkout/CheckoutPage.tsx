@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { lookupPincode } from '../../utils/pincode';
 import {
   ShieldCheck,
   Truck,
@@ -45,7 +46,8 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ navigate }) => {
   const [street, setStreet] = useState('');
   const [landmark, setLandmark] = useState('');
   const [city, setCity] = useState('');
-  const [state, setState] = useState('Karnataka');
+  const [state, setState] = useState('');
+  const [pinLookup, setPinLookup] = useState<'idle' | 'loading' | 'done' | 'fail'>('idle');
   const [pincode, setPincode] = useState('');
   const [saveAddressForFuture, setSaveAddressForFuture] = useState(true);
 
@@ -126,14 +128,36 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ navigate }) => {
     'Andhra Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Delhi', 'Goa', 'Gujarat', 'Haryana',
     'Himachal Pradesh', 'Jammu and Kashmir', 'Jharkhand', 'Karnataka', 'Kerala', 'Madhya Pradesh',
     'Maharashtra', 'Odisha', 'Punjab', 'Rajasthan', 'Tamil Nadu', 'Telangana', 'Uttar Pradesh',
-    'Uttarakhand', 'West Bengal'
-  ];
+    'Uttarakhand', 'West Bengal', 'Arunachal Pradesh', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland',
+    'Sikkim', 'Tripura', 'Chandigarh', 'Puducherry', 'Ladakh', 'Andaman and Nicobar Islands', 'Lakshadweep',
+    'Dadra and Nagar Haveli and Daman and Diu'
+  ].sort();
+  const stateOptions = state && !indianStates.includes(state) ? [state, ...indianStates] : indianStates;
+
+  // Fill city and state from the pincode
+  const handlePincodeChange = async (value: string) => {
+    const pin = value.replace(/\D/g, '').slice(0, 6);
+    setPincode(pin);
+    if (pin.length !== 6) {
+      setPinLookup('idle');
+      return;
+    }
+    setPinLookup('loading');
+    const place = await lookupPincode(pin);
+    if (place) {
+      if (place.city) setCity(place.city);
+      if (place.state) setState(place.state);
+      setPinLookup('done');
+    } else {
+      setPinLookup('fail');
+    }
+  };
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
 
-    if (!fullName.trim() || !phone.trim() || !email.trim() || !street.trim() || !city.trim() || !pincode.trim()) {
+    if (!fullName.trim() || !phone.trim() || !email.trim() || !street.trim() || !city.trim() || !state.trim() || !pincode.trim()) {
       setErrorMsg('Please fill in all required shipping address fields.');
       return;
     }
@@ -382,7 +406,8 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ navigate }) => {
                       onChange={(e) => setState(e.target.value)}
                       className="w-full px-3 py-2.5 bg-white border border-[#E5E2D9] text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27] font-medium"
                     >
-                      {indianStates.map((st) => (
+                      <option value="">Select state</option>
+                      {stateOptions.map((st) => (
                         <option key={st} value={st}>
                           {st}
                         </option>
@@ -396,11 +421,15 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ navigate }) => {
                       type="text"
                       required
                       maxLength={6}
-                      placeholder="560038"
+                      inputMode="numeric"
+                      placeholder="226010"
                       value={pincode}
-                      onChange={(e) => setPincode(e.target.value)}
+                      onChange={(e) => handlePincodeChange(e.target.value)}
                       className="w-full px-3 py-2.5 bg-white border border-[#E5E2D9] text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
                     />
+                    <p className="mt-1 text-[11px] text-[#7A7A7A]">
+                      {pinLookup === 'loading' ? 'Finding your city and state...' : pinLookup === 'done' ? 'City and state filled from the pincode.' : pinLookup === 'fail' ? 'Pincode not found - please check it.' : 'City and state fill in automatically.'}
+                    </p>
                   </div>
 
                   <div className="flex items-center pt-5">

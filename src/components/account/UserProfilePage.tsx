@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { lookupPincode } from '../../utils/pincode';
 import {
   User,
   Package,
@@ -72,10 +73,11 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
     street: '',
     landmark: '',
     city: '',
-    state: 'Karnataka',
+    state: '',
     pincode: '',
     isDefault: false,
   });
+  const [pinStatus, setPinStatus] = useState<'idle' | 'loading' | 'done' | 'fail'>('idle');
 
   // Preferences Toggles
   const [whatsappAlerts, setWhatsappAlerts] = useState(true);
@@ -206,7 +208,7 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
   // Handle Save Address
   const handleSaveAddressForm = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!addrForm.fullName || !addrForm.phone || !addrForm.street || !addrForm.city || !addrForm.pincode) {
+    if (!addrForm.fullName || !addrForm.phone || !addrForm.street || !addrForm.city || !addrForm.state || !addrForm.pincode) {
       showToast('Please fill in all required address fields.');
       return;
     }
@@ -216,7 +218,13 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
       id: editingAddressId || `addr-${Date.now()}`,
     };
 
-    await saveAddress(payload);
+    try {
+      await saveAddress(payload);
+    } catch {
+      showToast('Could not save the address - please try again.');
+      return;
+    }
+    setPinStatus('idle');
     setShowAddressForm(false);
     setEditingAddressId(null);
     setAddrForm({
@@ -226,7 +234,7 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
       street: '',
       landmark: '',
       city: '',
-      state: 'Karnataka',
+      state: '',
       pincode: '',
       isDefault: false,
     });
@@ -662,7 +670,7 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
                     street: '',
                     landmark: '',
                     city: '',
-                    state: 'Karnataka',
+                    state: '',
                     pincode: '',
                     isDefault: false,
                   });
@@ -765,10 +773,25 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
                       type="text"
                       required
                       maxLength={6}
+                      inputMode="numeric"
                       value={addrForm.pincode}
-                      onChange={(e) => setAddrForm({ ...addrForm, pincode: e.target.value })}
+                      onChange={async (e) => {
+                        const pin = e.target.value.replace(/\D/g, '').slice(0, 6);
+                        setAddrForm((f) => ({ ...f, pincode: pin }));
+                        if (pin.length === 6) {
+                          setPinStatus('loading');
+                          const place = await lookupPincode(pin);
+                          if (place) {
+                            setAddrForm((f) => (f.pincode === pin ? { ...f, city: place.city || f.city, state: place.state || f.state } : f));
+                            setPinStatus('done');
+                          } else setPinStatus('fail');
+                        } else setPinStatus('idle');
+                      }}
                       className="w-full px-3.5 py-2.5 border border-stone-300 rounded-xl text-xs focus:ring-1 focus:ring-[#2D4A27] outline-none"
                     />
+                    <p className="mt-1 text-[10px] text-[#7A7A7A]">
+                      {pinStatus === 'loading' ? 'Finding city and state...' : pinStatus === 'done' ? 'City and state filled from the pincode.' : pinStatus === 'fail' ? 'Pincode not found - please check it.' : 'City and state fill in automatically.'}
+                    </p>
                   </div>
 
                   <div className="sm:col-span-2 flex items-center gap-2 pt-2">
