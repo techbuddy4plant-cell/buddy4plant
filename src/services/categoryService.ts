@@ -10,7 +10,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { Category } from '../types';
-import { INITIAL_CATEGORIES } from '../data/initialCategories';
+import { INITIAL_CATEGORIES, REQUIRED_CATEGORY_IDS } from '../data/initialCategories';
 
 const CATEGORIES_COLLECTION = 'categories';
 const LOCAL_STORAGE_KEY = 'b4p_categories_db';
@@ -116,7 +116,7 @@ export async function seedCategoriesIfEmpty(): Promise<void> {
   }
 }
 
-export async function getAllCategories(): Promise<Category[]> {
+async function getAllCategoriesBase(): Promise<Category[]> {
   const deletedIds = getDeletedCategoryIds();
   const saved = typeof window !== 'undefined' ? localStorage.getItem(LOCAL_STORAGE_KEY) : null;
   const isSeeded = typeof window !== 'undefined' ? localStorage.getItem(SEEDED_FLAG_KEY) === 'true' : false;
@@ -168,6 +168,45 @@ export async function getAllCategories(): Promise<Category[]> {
     console.warn('Falling back to local categories:', error);
   }
   return getLocalCategories().map(sanitizeCategory);
+}
+
+const CATEGORY_MERGE_FLAG = 'b4p_categories_merge_v5';
+
+/**
+ * Adds the Plants sub-categories (XL, Bundles, Low Light, Fruit...) to stores that
+ * were seeded before they existed. Runs once per browser; also saves them to Firestore.
+ */
+/** Template collections that have no products - switched off once (admin can switch them back on). */
+const EMPTY_TEMPLATE_IDS = ["air-purifying", "low-maintenance", "flowering-plants", "pet-friendly", "combos", "outdoor-shrubs"];
+const HIDE_EMPTY_FLAG = 'b4p_categories_hide_empty_v1';
+
+export async function getAllCategories(): Promise<Category[]> {
+  let base = await getAllCategoriesBase();
+  if (typeof window !== 'undefined' && localStorage.getItem(HIDE_EMPTY_FLAG) !== 'true') {
+    localStorage.setItem(HIDE_EMPTY_FLAG, 'true');
+    if (localStorage.getItem(LOCAL_STORAGE_KEY) !== null) {
+      base = base.map((c) => (EMPTY_TEMPLATE_IDS.includes(c.id) ? { ...c, active: false } : c));
+      setLocalCategories(base);
+    }
+  }
+  if (typeof window === 'undefined' || localStorage.getItem(CATEGORY_MERGE_FLAG) === 'true') return base;
+  const deletedIds = getDeletedCategoryIds();
+  const have = new Set(base.map((c) => c.id));
+  const missing = INITIAL_CATEGORIES.filter(
+    (c) => REQUIRED_CATEGORY_IDS.includes(c.id) && !have.has(c.id) && !deletedIds.has(c.id)
+  );
+  localStorage.setItem(CATEGORY_MERGE_FLAG, 'true');
+  if (missing.length === 0) return base;
+  const merged = [...base, ...missing].sort((a, b) => (a.order || 0) - (b.order || 0));
+  setLocalCategories(merged);
+  try {
+    const batch = writeBatch(db);
+    for (const cat of missing) batch.set(doc(db, CATEGORIES_COLLECTION, cat.id), cat);
+    await batch.commit();
+  } catch (error) {
+    console.warn('Could not save new categories to Firestore (kept locally):', error);
+  }
+  return merged;
 }
 
 export const getCategories = getAllCategories;

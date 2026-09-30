@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /b4padmin
+Disallow: /checkout
+Disallow: /cart
+Disallow: /profile
+Disallow: /wishlist
+
+Sitemap: https://buddy4plant.in/sitemap.xml

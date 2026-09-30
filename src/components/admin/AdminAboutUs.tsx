@@ -24,27 +24,27 @@ export const AdminAboutUs: React.FC<{ navigate: (path: string) => void }> = ({ n
   );
   const [subtitle, setSubtitle] = useState(
     (homepageCMS as any).aboutSubtitle ||
-      'Founded with a vision to reconnect urban homes with pristine botanical nature, buddy4plant nurtures climate-resilient plants suited for Indian living conditions.'
+      'Buddy4Plant is a Lucknow nursery and landscaping company growing healthy plants and green spaces for homes, offices and campuses.'
   );
   const [storyHeading, setStoryHeading] = useState(
-    (homepageCMS as any).aboutStoryHeading || 'Greenhouse to Doorstep'
+    (homepageCMS as any).aboutStoryHeading || 'From Our Nursery to Your Space'
   );
   const [storyContent, setStoryContent] = useState(
     (homepageCMS as any).aboutStoryContent ||
-      'Unlike traditional roadside nurseries where plants sit in low-grade heavy clay soil and face transplant shock, every buddy4plant specimen is grown in our eco-controlled greenhouses across Western Ghats and Bengaluru. We pot our plants in aerated, sterilized cocopeat enriched with organic vermicompost, perlite, and neem cake.'
+      'We grow and supply healthy plants, pots and organic plant care from Lucknow, and our landscaping team designs, builds and maintains gardens for homes, offices and government campuses across Uttar Pradesh and Delhi.'
   );
 
-  const [metric1Value, setMetric1Value] = useState((homepageCMS as any).aboutMetric1Value || '0%');
-  const [metric1Label, setMetric1Label] = useState((homepageCMS as any).aboutMetric1Label || 'Single-Use Plastics');
-  const [metric1Desc, setMetric1Desc] = useState((homepageCMS as any).aboutMetric1Desc || 'All packaging is 100% recyclable honeycomb board.');
+  const [metric1Value, setMetric1Value] = useState((homepageCMS as any).aboutMetric1Value || '18+');
+  const [metric1Label, setMetric1Label] = useState((homepageCMS as any).aboutMetric1Label || 'Landscaping Projects');
+  const [metric1Desc, setMetric1Desc] = useState((homepageCMS as any).aboutMetric1Desc || 'Government, institutional and private gardens across Uttar Pradesh and Delhi.');
 
-  const [metric2Value, setMetric2Value] = useState((homepageCMS as any).aboutMetric2Value || '7 Days');
-  const [metric2Label, setMetric2Label] = useState((homepageCMS as any).aboutMetric2Label || 'Transit Guarantee');
-  const [metric2Desc, setMetric2Desc] = useState((homepageCMS as any).aboutMetric2Desc || 'Immediate free replacement if damaged in transit.');
+  const [metric2Value, setMetric2Value] = useState((homepageCMS as any).aboutMetric2Value || 'UP & Delhi');
+  const [metric2Label, setMetric2Label] = useState((homepageCMS as any).aboutMetric2Label || 'Service Area');
+  const [metric2Desc, setMetric2Desc] = useState((homepageCMS as any).aboutMetric2Desc || 'Site visits, landscaping and annual maintenance contracts.');
 
-  const [metric3Value, setMetric3Value] = useState((homepageCMS as any).aboutMetric3Value || '24x7');
-  const [metric3Label, setMetric3Label] = useState((homepageCMS as any).aboutMetric3Label || 'Plant Doctor Advice');
-  const [metric3Desc, setMetric3Desc] = useState((homepageCMS as any).aboutMetric3Desc || 'Direct WhatsApp access to certified botanists.');
+  const [metric3Value, setMetric3Value] = useState((homepageCMS as any).aboutMetric3Value || 'WhatsApp');
+  const [metric3Label, setMetric3Label] = useState((homepageCMS as any).aboutMetric3Label || 'Plant Help');
+  const [metric3Desc, setMetric3Desc] = useState((homepageCMS as any).aboutMetric3Desc || 'Send us a photo of your plant and our team will guide you.');
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -139,7 +139,7 @@ export const AdminAboutUs: React.FC<{ navigate: (path: string) => void }> = ({ n
         <div className="space-y-4 pb-6 border-b border-[#E5E2D9]">
           <h3 className="font-serif font-bold text-base text-[#1A1A1A] flex items-center gap-2">
             <Building2 className="w-4 h-4 text-[#2D4A27]" />
-            2. Greenhouse to Doorstep Journey
+            2. Our Story
           </h3>
 
           <div>

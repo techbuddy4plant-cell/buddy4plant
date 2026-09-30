@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { SlidersHorizontal, ArrowLeft, X, Sparkles, RefreshCw } from 'lucide-react';
+import { SlidersHorizontal, ArrowLeft, X, Sparkles, RefreshCw, ChevronLeft, ChevronRight } from '../common/Icons';
 import { Product, Category, FilterState } from '../../types';
 import { getProducts } from '../../services/productService';
 import { getCategories } from '../../services/categoryService';
 import { ProductCard } from '../common/ProductCard';
 import { FilterSidebar } from './FilterSidebar';
 import { SortDropdown } from './SortDropdown';
+import { setSeo, breadcrumbLd } from '../../utils/seo';
 
 interface ProductListingPageProps {
   initialCategorySlug?: string;
@@ -15,34 +16,75 @@ interface ProductListingPageProps {
 
 const QUICK_FILTERS = [
   { label: 'All Plants', slug: 'all' },
-  { label: 'Air-Purifying', slug: 'air-purifying' },
-  { label: 'Low Maintenance', slug: 'low-maintenance' },
+  { label: 'Indoor Plants', slug: 'indoor-plants' },
+  { label: 'XL Plants', slug: 'xl-plants' },
+  { label: 'Bundles', slug: 'plant-bundles' },
+  { label: 'Low Light Plants', slug: 'low-light-plants' },
   { label: 'Cacti & Succulents', slug: 'cacti-succulents' },
-  { label: 'Flowering Plants', slug: 'flowering-plants' },
-  { label: 'Curated Combos', slug: 'combos' },
+  { label: 'Hanging Plants', slug: 'hanging-plants' },
+  { label: 'Fruit Plants', slug: 'fruit-plants' },
+  { label: 'Balcony', slug: 'location-balcony' },
+  { label: 'Workspace', slug: 'location-workspace' },
+  { label: 'Living Room', slug: 'location-living-room' },
+  { label: 'Bedroom', slug: 'location-bedroom' },
 ];
+
+const LOCATION_LABELS: Record<string, string> = {
+  'location-balcony': 'Balcony',
+  'location-workspace': 'Workspace',
+  'location-living-room': 'Living Room',
+  'location-bedroom': 'Bedroom',
+};
+
+/** A plant belongs to a sub-category if it is its main category OR it is tagged with it. */
+const LOCATION_FIELD: Record<string, string> = {
+  'location-balcony': 'Balcony',
+  'location-workspace': 'Office Desk',
+  'location-living-room': 'Living Room',
+  'location-bedroom': 'Bedroom',
+};
+
+const matchesPlantCategory = (p: Product, slug: string) =>
+  p.category === slug ||
+  (p.tags || []).some((t) => t.toLowerCase() === slug) ||
+  // Products added in the admin (no location tags) fall back to their "location" field
+  (!!LOCATION_FIELD[slug] &&
+    !(p.id || '').startsWith('b4p-') &&
+    !(p.tags || []).some((t) => t.startsWith('location-')) &&
+    p.location === LOCATION_FIELD[slug]);
 
 const PLANT_CARE_FILTERS = [
   { label: 'All Plant Care', slug: 'plant-care' },
-  { label: 'Organic Fertilizers', slug: 'fertilizers' },
-  { label: 'Pest Shields & Neem', slug: 'pest-control' },
-  { label: 'Potting Soil & Media', slug: 'potting-soil' },
-  { label: 'Growth Boosters', slug: 'growth-boosters' },
+  { label: 'Fertilizers & Plant Food', slug: 'fertilizers' },
+  { label: 'Soil & Potting Mix', slug: 'potting-soil' },
+  { label: 'Pest Control', slug: 'pest-control' },
+  { label: 'Garden Tools', slug: 'garden-tools' },
+  { label: 'Watering Solutions', slug: 'watering-tools' },
+  { label: 'Gardening Decor', slug: 'garden-decor' },
 ];
 
 const POTS_FILTERS = [
   { label: 'All Pots & Planters', slug: 'pots-planters' },
-  { label: 'Self-Watering', slug: 'self-watering' },
+  { label: 'Plastic Pots', slug: 'plastic-pots' },
   { label: 'Ceramic Pots', slug: 'ceramic-pots' },
-  { label: 'Terracotta Pots', slug: 'terracotta-pots' },
-  { label: 'Metal Planters', slug: 'metal-planters' },
+  { label: 'Hanging Planters', slug: 'hanging-planters' },
+  { label: 'Planter Stands', slug: 'planter-stands' },
 ];
 
+const GIFTING_FILTERS = [
+  { label: 'All Gifts', slug: 'gifting' },
+  { label: 'Corporate Gifting', slug: 'corporate-gifting' },
+  { label: 'Festive Gifting', slug: 'festive-gifting' },
+  { label: 'Green Gifting', slug: 'green-gifting' },
+];
+
+const isGiftingCategory = (cat?: string) => ['gifting', 'corporate-gifting', 'festive-gifting', 'green-gifting', 'combos'].includes(cat || '');
+
 const isPlantCareCategory = (cat?: string) =>
-  ['plant-care', 'fertilizers', 'pest-control', 'potting-soil', 'growth-boosters'].includes(cat || '');
+  ['plant-care', 'fertilizers', 'potting-soil', 'pest-control', 'garden-tools', 'watering-tools', 'garden-decor', 'growth-boosters'].includes(cat || '');
 
 const isPotsCategory = (cat?: string) =>
-  ['pots-planters', 'ceramic-pots', 'terracotta-pots', 'self-watering', 'metal-planters'].includes(cat || '');
+  ['pots-planters', 'ceramic-pots', 'plastic-pots', 'hanging-planters', 'planter-stands', 'terracotta-pots', 'self-watering', 'metal-planters'].includes(cat || '');
 
 export const ProductListingPage: React.FC<ProductListingPageProps> = ({
   initialCategorySlug = 'all',
@@ -58,7 +100,7 @@ export const ProductListingPage: React.FC<ProductListingPageProps> = ({
     category: initialCategorySlug,
     plantType: [],
     minPrice: 0,
-    maxPrice: 3500,
+    maxPrice: 10000,
     light: [],
     maintenance: [],
     location: [],
@@ -70,6 +112,14 @@ export const ProductListingPage: React.FC<ProductListingPageProps> = ({
   };
 
   const [filters, setFilters] = useState<FilterState>(initialFilters);
+
+  // Pagination (24 plants per page, like large plant stores). Page is kept in the URL (?page=2).
+  const PAGE_SIZE = 24;
+  const [currentPage, setCurrentPage] = useState<number>(() => {
+    if (typeof window === 'undefined') return 1;
+    const n = parseInt(new URLSearchParams(window.location.search).get('page') || '1', 10);
+    return Number.isFinite(n) && n > 0 ? n : 1;
+  });
 
   useEffect(() => {
     if (initialCategorySlug) {
@@ -102,13 +152,21 @@ export const ProductListingPage: React.FC<ProductListingPageProps> = ({
 
   const isPlantCareSection = isPlantCareCategory(filters.category);
   const isPotsSection = isPotsCategory(filters.category);
+  const isGiftingSection = isGiftingCategory(filters.category);
 
   // Filter & Sort Logic
   const filteredProducts = useMemo(() => {
     return products
       .filter((p) => {
         // Section isolation
-        if (isPlantCareSection) {
+        if (isGiftingSection) {
+          const tags = (p.tags || []).map((t) => t.toLowerCase());
+          if (filters.category === 'gifting') {
+            if (!isGiftingCategory(p.category) && !tags.some((t) => isGiftingCategory(t))) return false;
+          } else if (p.category !== filters.category && !tags.includes(filters.category)) {
+            return false;
+          }
+        } else if (isPlantCareSection) {
           if (filters.category === 'plant-care') {
             if (!isPlantCareCategory(p.category) && !p.tags?.some(t => ['plant-care', 'fertilizer', 'soil', 'neem', 'tonic'].includes(t.toLowerCase()))) {
               return false;
@@ -127,12 +185,13 @@ export const ProductListingPage: React.FC<ProductListingPageProps> = ({
         } else {
           // Live Plants section
           if (filters.category === 'all' || filters.category === 'plants') {
-            // Strictly exclude plant-care and pots from the main plants catalogue!
-            if (isPlantCareCategory(p.category) || isPotsCategory(p.category)) {
+            // Strictly exclude plant-care, pots and gifting hampers from the main plants catalogue!
+            if (isPlantCareCategory(p.category) || isPotsCategory(p.category) || isGiftingCategory(p.category)) {
               return false;
             }
           } else {
-            if (p.category !== filters.category) {
+            if (isPlantCareCategory(p.category) || isPotsCategory(p.category)) return false;
+            if (!matchesPlantCategory(p, filters.category)) {
               return false;
             }
           }
@@ -171,10 +230,56 @@ export const ProductListingPage: React.FC<ProductListingPageProps> = ({
         if (filters.sortBy === 'newest') return (b.createdAt || 0) - (a.createdAt || 0);
         return 0;
       });
-  }, [products, filters, isPlantCareSection, isPotsSection]);
+  }, [products, filters, isPlantCareSection, isPotsSection, isGiftingSection]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / PAGE_SIZE));
+  const safePage = Math.min(currentPage, totalPages);
+  const pageStart = (safePage - 1) * PAGE_SIZE;
+  const pagedProducts = filteredProducts.slice(pageStart, pageStart + PAGE_SIZE);
+
+  const goToPage = (page: number) => {
+    const next = Math.min(Math.max(1, page), totalPages);
+    setCurrentPage(next);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      if (next === 1) url.searchParams.delete('page');
+      else url.searchParams.set('page', String(next));
+      window.history.replaceState({}, '', url.pathname + url.search);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  // Go back to page 1 whenever the filters / category / sorting change (not on first load)
+  const filtersKey = JSON.stringify(filters);
+  const lastFiltersKey = React.useRef(filtersKey);
+  useEffect(() => {
+    if (lastFiltersKey.current === filtersKey) return;
+    lastFiltersKey.current = filtersKey;
+    goToPage(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filtersKey]);
+
+  const pageNumbers = (() => {
+    const pages: (number | '...')[] = [];
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || Math.abs(i - safePage) <= 1) pages.push(i);
+      else if (pages[pages.length - 1] !== '...') pages.push('...');
+    }
+    return pages;
+  })();
 
   const currentCategory = categories.find((c) => c.slug === filters.category);
-  const activeChips = isPlantCareSection ? PLANT_CARE_FILTERS : isPotsSection ? POTS_FILTERS : QUICK_FILTERS;
+  useEffect(() => {
+    const path = window.location.pathname;
+    const name = currentCategory?.name || (filters.category === 'all' ? 'All Plants' : 'Shop');
+    setSeo({
+      title: `${name} - Buy Online in Lucknow & India`,
+      description: (currentCategory?.description || `Shop ${name.toLowerCase()} online from Buddy4Plant, a Lucknow nursery.`).slice(0, 160),
+      path,
+      jsonLd: [breadcrumbLd([{ name: 'Home', path: '/' }, { name, path }])],
+    });
+  }, [currentCategory?.slug, filters.category]);
+  const activeChips = isGiftingSection ? GIFTING_FILTERS : isPlantCareSection ? PLANT_CARE_FILTERS : isPotsSection ? POTS_FILTERS : QUICK_FILTERS;
 
   return (
     <div className="bg-[#FDFCF9] min-h-screen py-10 text-[#141414]">
@@ -186,7 +291,7 @@ export const ProductListingPage: React.FC<ProductListingPageProps> = ({
           </button>
           <span>/</span>
           <span className="text-[#141414] font-medium">
-            {isPlantCareSection ? 'Plant Care Collection' : isPotsSection ? 'Pots & Planters' : 'Nursery Catalogue'}
+            {isGiftingSection ? 'Gifting' : isPlantCareSection ? 'Plant Care Collection' : isPotsSection ? 'Pots & Planters' : 'Nursery Catalogue'}
           </span>
           {currentCategory && (
             <>
@@ -200,17 +305,25 @@ export const ProductListingPage: React.FC<ProductListingPageProps> = ({
         <div className="mb-10">
           <div className="max-w-2xl">
             <span className="text-[10px] font-bold text-[#5B6E58] uppercase tracking-[0.24em] block mb-1.5">
-              {isPlantCareSection ? 'Plant Nutrition & Doctor Care' : isPotsSection ? 'Artisanal Planters' : 'Botanical Sanctuary'}
+              {isGiftingSection ? 'Gifts That Grow' : isPlantCareSection ? 'Plant Nutrition & Doctor Care' : isPotsSection ? 'Artisanal Planters' : 'Botanical Sanctuary'}
             </span>
             <h1 className="font-editorial text-4xl sm:text-5xl lg:text-6xl font-bold text-[#141414] tracking-tight">
-              {isPlantCareSection
+              {isGiftingSection
+                ? (currentCategory ? currentCategory.name : 'Plant Gifts for Every Occasion')
+                : isPlantCareSection
                 ? (currentCategory ? currentCategory.name : 'Plant Care, Organic Fertilizers & Soils')
                 : isPotsSection
                 ? (currentCategory ? currentCategory.name : 'Pots, Planters & Drainage Systems')
-                : (currentCategory ? currentCategory.name : 'Living Botanical Collection')}
+                : (currentCategory ? currentCategory.name : LOCATION_LABELS[filters.category] ? `Plants for ${LOCATION_LABELS[filters.category]}` : 'All Plants')}
             </h1>
             <p className="mt-3 text-xs sm:text-sm text-[#5C5C5C] leading-relaxed">
-              {isPlantCareSection
+              {isGiftingSection
+                ? (filters.category === 'corporate-gifting'
+                  ? 'Plant hampers for employees, clients and festive occasions - custom branding, bulk pricing and pan-India delivery. Enquire on WhatsApp for a quote.'
+                  : filters.category === 'festive-gifting'
+                  ? 'Lucky plants, festive bundles and gift-ready pots for Diwali, Ganpati, housewarmings and every celebration.'
+                  : 'Living gifts that keep growing - easy plants for birthdays, anniversaries, housewarmings and thank-yous.')
+                : isPlantCareSection
                 ? 'Cold-pressed neem shields, bio-active organic plant foods, vermicompost, and microbiome-rich potting mixes engineered for lush leaf growth and disease immunity.'
                 : isPotsSection
                 ? 'Handcrafted terracotta, artisanal glazed ceramics, and smart self-watering containers designed to let root systems breathe.'
@@ -257,9 +370,14 @@ export const ProductListingPage: React.FC<ProductListingPageProps> = ({
           {/* Product Grid Area */}
           <div className="flex-1 min-w-0">
             {/* Top Toolbar */}
-            <div className="bg-[#FAF9F5] p-4 rounded-2xl border border-[#E5E2D9] mb-6 flex items-center justify-between gap-4">
+            <div className="bg-[#FAF9F5] p-3 sm:p-4 rounded-2xl border border-[#E5E2D9] mb-6 flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
               <span className="text-xs text-[#5C5C5C]">
-                Showing <strong className="text-[#141414] font-semibold">{filteredProducts.length}</strong> botanical specimens
+                Showing{' '}
+                <strong className="text-[#141414] font-semibold">
+                  {filteredProducts.length === 0 ? 0 : pageStart + 1}–{Math.min(pageStart + PAGE_SIZE, filteredProducts.length)}
+                </strong>{' '}
+                of <strong className="text-[#141414] font-semibold">{filteredProducts.length}</strong>{' '}
+                {isPotsSection || isPlantCareSection || isGiftingSection ? 'products' : 'plants'}
               </span>
 
               <div className="flex items-center gap-3">
@@ -302,16 +420,61 @@ export const ProductListingPage: React.FC<ProductListingPageProps> = ({
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
-                {filteredProducts.map((prod) => (
-                  <ProductCard
-                    key={prod.id}
-                    product={prod}
-                    navigate={navigate}
-                    onQuickView={onQuickView}
-                  />
-                ))}
-              </div>
+              <>
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
+                  {pagedProducts.map((prod) => (
+                    <ProductCard
+                      key={prod.id}
+                      product={prod}
+                      navigate={navigate}
+                      onQuickView={onQuickView}
+                    />
+                  ))}
+                </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <nav aria-label="Pages" className="mt-10 flex flex-col items-center gap-3">
+                    <div className="flex items-center gap-1.5 flex-wrap justify-center">
+                      <button
+                        onClick={() => goToPage(safePage - 1)}
+                        disabled={safePage === 1}
+                        className="h-10 px-3 rounded-full border border-[#DDD9CF] bg-white text-[#1A1A1A] text-xs font-semibold flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed hover:border-[#1F3B22]"
+                      >
+                        <ChevronLeft className="w-4 h-4" /> Prev
+                      </button>
+                      {pageNumbers.map((n, idx) =>
+                        n === '...' ? (
+                          <span key={`dots-${idx}`} className="px-1 text-xs text-[#7A7A7A]">…</span>
+                        ) : (
+                          <button
+                            key={n}
+                            onClick={() => goToPage(n)}
+                            aria-current={n === safePage ? 'page' : undefined}
+                            className={`h-10 w-10 rounded-full text-xs font-bold transition-colors ${
+                              n === safePage
+                                ? 'bg-[#1F3B22] text-white'
+                                : 'bg-white border border-[#DDD9CF] text-[#1A1A1A] hover:border-[#1F3B22]'
+                            }`}
+                          >
+                            {n}
+                          </button>
+                        )
+                      )}
+                      <button
+                        onClick={() => goToPage(safePage + 1)}
+                        disabled={safePage === totalPages}
+                        className="h-10 px-3 rounded-full border border-[#DDD9CF] bg-white text-[#1A1A1A] text-xs font-semibold flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed hover:border-[#1F3B22]"
+                      >
+                        Next <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <span className="text-[11px] text-[#7A7A7A]">
+                      Page {safePage} of {totalPages}
+                    </span>
+                  </nav>
+                )}
+              </>
             )}
           </div>
         </div>

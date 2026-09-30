@@ -4,18 +4,19 @@ import { getProducts } from '../../services/productService';
 import { getCategories } from '../../services/categoryService';
 import { getRecentReviews } from '../../services/reviewService';
 import { HeroBanner } from './HeroBanner';
+import { setSeo, DEFAULT_TITLE, DEFAULT_DESCRIPTION } from '../../utils/seo';
 import { BotanicaSection } from './BotanicaSection';
-import { WhatsInsideSection } from './WhatsInsideSection';
+import { INITIAL_REVIEWS } from '../../data/initialSettings';
 import { CategoryBar } from './CategoryBar';
 import { BestSellersSection } from './BestSellersSection';
 import { ShopBySpaceSection } from './ShopBySpaceSection';
+import { TrustStrip } from './TrustStrip';
 import { ComboPacksSection } from './ComboPacksSection';
-import { WhyChooseUs } from './WhyChooseUs';
 import { CustomerReviewsSection } from './CustomerReviewsSection';
 import { ProjectsSection } from './ProjectsSection';
-import { MessageCircle, ArrowRight, Sparkles, ShieldCheck } from 'lucide-react';
+import { MessageCircle, ArrowRight, Sparkles, ShieldCheck } from '../common/Icons';
 
-import { useStoreSettings } from '../../context/StoreSettingsContext';
+import { useStoreSettings, storefrontBackground } from '../../context/StoreSettingsContext';
 
 interface HomePageProps {
   navigate: (path: string) => void;
@@ -24,6 +25,9 @@ interface HomePageProps {
 
 export const HomePage: React.FC<HomePageProps> = ({ navigate, onQuickView }) => {
   const { homepageCMS, settings } = useStoreSettings();
+  useEffect(() => {
+    setSeo({ title: DEFAULT_TITLE, description: DEFAULT_DESCRIPTION, path: '/' });
+  }, []);
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -52,7 +56,7 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate, onQuickView }) => 
     };
   }, []);
 
-  const bgStyle = homepageCMS.siteBackground || '#FDFCF9';
+  const bgStyle = storefrontBackground(homepageCMS.siteBackground);
 
   return (
     <div
@@ -64,17 +68,16 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate, onQuickView }) => 
         backgroundAttachment: 'fixed',
       }}
     >
-      {/* Hero Banner - Exact Thornfield Editorial Match */}
+      {/* Unified Sylva Living Green 3D Hero Banner */}
       <HeroBanner navigate={navigate} />
+      <TrustStrip />
 
       {/* Botanica Section - Slow-grown stone slab presentation */}
       <BotanicaSection navigate={navigate} />
 
-      {/* What's Inside Section - Arched botanical ingredient cards */}
-      <WhatsInsideSection navigate={navigate} />
 
       {/* Category Pills & Grid */}
-      <CategoryBar categories={categories} navigate={navigate} />
+      <CategoryBar categories={categories} products={products} navigate={navigate} />
 
       {/* Bestsellers Section */}
       <BestSellersSection
@@ -84,7 +87,7 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate, onQuickView }) => 
       />
 
       {/* Shop by Living Space */}
-      <ShopBySpaceSection navigate={navigate} />
+      <ShopBySpaceSection navigate={navigate} products={products} onQuickView={onQuickView} />
 
       {/* Combo Value Packs Section */}
       <ComboPacksSection
@@ -96,49 +99,10 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate, onQuickView }) => 
       {/* Curated Botanical Projects Showcase */}
       <ProjectsSection navigate={navigate} />
 
-      {/* Why Choose Us Standard */}
-      <WhyChooseUs />
 
       {/* Real Customer Stories & Reviews */}
-      <CustomerReviewsSection reviews={reviews} />
+      <CustomerReviewsSection reviews={reviews.filter((r) => !INITIAL_REVIEWS.some((d) => d.id === r.id))} />
 
-      {/* WhatsApp Plant Doctor Consultation Banner */}
-      <section className="py-16 bg-transparent border-b border-black/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-[#1A1A1A] border border-[#2D4A27]/40 p-8 sm:p-12 text-[#FDFCF9] flex flex-col md:flex-row items-center justify-between gap-8">
-            <div className="max-w-xl">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#2D4A27] border border-[#2D4A27] text-[#A3B899] text-[10px] font-bold uppercase tracking-[0.25em] mb-4">
-                <Sparkles className="w-3 h-3 text-[#A3B899]" />
-                Complimentary Service
-              </span>
-              <h2 className="font-serif text-2xl sm:text-3xl font-normal text-[#FDFCF9]">
-                Got Questions About Your Houseplants?
-              </h2>
-              <p className="mt-2 text-xs sm:text-sm text-[#D5D2C9] leading-relaxed font-light">
-                Chat 1-on-1 with certified horticulturists for watering diagnosis, repotting guidance, and light positioning tips.
-              </p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-              <a
-                href={`https://wa.me/${(settings.whatsappSupportNumber || '919876543210').replace(/[^0-9]/g, '')}?text=Hi%20Plant%20Doctor,%20I%20would%20like%20guidance%20for%20my%20plants`}
-                target="_blank"
-                rel="noreferrer"
-                className="px-6 py-3.5 bg-[#2D4A27] hover:bg-[#1F341C] text-white font-bold text-[11px] uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-xs"
-              >
-                <MessageCircle className="w-4 h-4 text-white" />
-                Chat on WhatsApp Now
-              </a>
-              <button
-                onClick={() => navigate('/plant-doctor')}
-                className="px-6 py-3.5 bg-transparent hover:bg-white/10 border border-[#E5E2D9]/40 text-[#FDFCF9] text-[11px] uppercase tracking-wider font-bold transition-colors text-center"
-              >
-                Self-Help Guide &rarr;
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
     </div>
   );
 };

@@ -1,16 +1,20 @@
 import React, { useState, useRef } from 'react';
 import { Plus, Edit2, Trash2, Check, X, Image as ImageIcon, Upload, Sparkles } from 'lucide-react';
-import { Category } from '../../types';
+import { Category, Product } from '../../types';
 import { saveCategory, deleteCategory, deleteAllCategories, restoreInitialCategories } from '../../services/categoryService';
 import { RotateCcw } from 'lucide-react';
 import { PlantImage, PLANT_FALLBACK_IMAGES } from '../../utils/imageFallback';
+import { ImageUploadField } from './ImageUploadField';
 
 interface AdminCategoriesProps {
   categories: Category[];
+  products?: Product[];
   onRefresh: () => void;
 }
 
-export const AdminCategories: React.FC<AdminCategoriesProps> = ({ categories, onRefresh }) => {
+export const AdminCategories: React.FC<AdminCategoriesProps> = ({ categories, products = [], onRefresh }) => {
+  /** Products in a collection: by category, or by tag (XL, Hanging, Pots & Planters... use tags). */
+  const countFor = (slug: string) => products.filter((p) => p.category === slug || (p.tags || []).includes(slug)).length;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
 
@@ -77,7 +81,7 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({ categories, on
   const handleDeleteAll = async () => {
     const count = categories.length;
     if (count === 0) return;
-    if (window.confirm(`⚠️ Are you sure you want to delete ALL ${count} collections? This cannot be undone.`)) {
+    if (window.confirm(`Are you sure you want to delete ALL ${count} collections? This cannot be undone.`)) {
       await deleteAllCategories();
       onRefresh();
     }
@@ -135,7 +139,12 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({ categories, on
             <div className="p-5 flex-1 flex flex-col justify-between">
               <div>
                 <h3 className="font-serif font-bold text-base text-[#1A1A1A]">{c.name}</h3>
-                <span className="text-[11px] font-mono text-[#7A7A7A] block mb-2">/plants/{c.slug}</span>
+                <span className="text-[11px] font-mono text-[#7A7A7A] block">/{c.slug}</span>
+                {products.length > 0 && (
+                  <span className={`inline-block mt-1 mb-2 px-2 py-0.5 rounded-full text-[10px] font-bold ${countFor(c.slug) ? 'bg-[#EBF5EC] text-[#1F3B22]' : 'bg-[#FDECEA] text-[#B42318]'}`}>
+                    {countFor(c.slug) ? `${countFor(c.slug)} products` : c.active ? 'No products - consider disabling' : 'No products - hidden from the shop'}
+                  </span>
+                )}
                 <p className="text-xs text-[#5A5A5A] font-light line-clamp-2">{c.description}</p>
                 {c.subCategories && (
                   <div className="flex flex-wrap gap-1 mt-3">
@@ -244,66 +253,14 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({ categories, on
                 />
               </div>
 
-              <div>
-                <label className="block font-bold text-[#1A1A1A] mb-1">Collection Cover Photo</label>
-
-                {/* Compact Preview Thumbnail */}
-                {image && (
-                  <div className="relative aspect-video max-h-36 w-full bg-[#F5F2EB] border border-[#E5E2D9] rounded-lg mb-2 overflow-hidden">
-                    <PlantImage src={image} alt="Cover preview" className="w-full h-full object-cover" />
-                  </div>
-                )}
-
-                <div className="space-y-2">
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="https://images.unsplash.com/..."
-                      value={image}
-                      onChange={(e) => setImage(e.target.value)}
-                      className="flex-1 px-3 py-1.5 bg-white border border-[#D5D2C9] rounded-lg text-[#1A1A1A] font-mono text-[11px] focus:outline-none focus:border-[#2D4A27]"
-                    />
-                    <label className="px-3 py-1.5 bg-[#2D4A27]/10 hover:bg-[#2D4A27]/20 text-[#2D4A27] text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors shrink-0">
-                      <Upload className="w-3.5 h-3.5" />
-                      Upload
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            const reader = new FileReader();
-                            reader.onload = (ev) => {
-                              if (ev.target?.result) setImage(ev.target.result as string);
-                            };
-                            reader.readAsDataURL(file);
-                          }
-                        }}
-                      />
-                    </label>
-                  </div>
-
-                  {/* Preset quick picks */}
-                  <div>
-                    <span className="text-[10px] text-[#7A7A7A] block mb-1 font-semibold">OR Choose Sample Cover:</span>
-                    <div className="grid grid-cols-5 gap-1.5">
-                      {PLANT_FALLBACK_IMAGES.slice(0, 5).map((imgUrl, idx) => (
-                        <button
-                          key={idx}
-                          type="button"
-                          onClick={() => setImage(imgUrl)}
-                          className={`aspect-square rounded border overflow-hidden transition-all ${
-                            image === imgUrl ? 'border-[#2D4A27] ring-2 ring-[#2D4A27]' : 'border-[#E5E2D9]'
-                          }`}
-                        >
-                          <PlantImage src={imgUrl} alt={`Preset ${idx + 1}`} className="w-full h-full object-cover" />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <ImageUploadField
+                label="Collection cover photo"
+                hint="Shown on the home page collection strip and at the top of the collection page"
+                value={image}
+                onChange={setImage}
+                folder="collections"
+                aspect="aspect-[16/9]"
+              />
 
               <div>
                 <label className="block font-bold text-[#1A1A1A] mb-1">Sub-Categories (comma separated)</label>

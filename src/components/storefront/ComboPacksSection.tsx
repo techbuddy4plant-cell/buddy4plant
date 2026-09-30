@@ -1,7 +1,7 @@
 import React from 'react';
 import { Product } from '../../types';
 import { ProductCard } from '../common/ProductCard';
-import { Gift, ArrowRight } from 'lucide-react';
+import { Gift, ArrowRight } from '../common/Icons';
 
 interface ComboPacksSectionProps {
   products: Product[];

@@ -16,7 +16,7 @@ import {
   ChevronRight,
   ExternalLink,
   Plus
-} from 'lucide-react';
+} from '../common/Icons';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import { Order, OrderItem, Product } from '../../types';
@@ -105,7 +105,7 @@ export const UserOrdersPage: React.FC<UserOrdersPageProps> = ({ navigate }) => {
           onClick={() => openAuthModal('login')}
           className="mt-6 px-6 py-3 bg-[#2D4A27] hover:bg-[#1F341C] text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-md transition-all cursor-pointer"
         >
-          Sign In Now &rr;
+          Sign In Now &rarr;
         </button>
       </div>
     );
@@ -265,7 +265,7 @@ export const UserOrdersPage: React.FC<UserOrdersPageProps> = ({ navigate }) => {
         <body>
           <div class="header">
             <div>
-              <div class="brand">🌱 buddy4plant</div>
+              <div class="brand">buddy4plant</div>
               <p style="font-size: 12px; color: #555; margin: 4px 0 0 0;">Official Order Tax Invoice</p>
             </div>
             <div style="text-align: right;">
@@ -485,7 +485,7 @@ export const UserOrdersPage: React.FC<UserOrdersPageProps> = ({ navigate }) => {
               onClick={() => navigate('/plants')}
               className="mt-5 px-6 py-2.5 bg-[#2D4A27] text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-xs"
             >
-              Explore Plants &rr;
+              Explore Plants &rarr;
             </button>
           </div>
         ) : (
@@ -521,7 +521,7 @@ export const UserOrdersPage: React.FC<UserOrdersPageProps> = ({ navigate }) => {
                         <p className="font-bold text-stone-900">{ord.shippingAddress.fullName}</p>
                         <p>{ord.shippingAddress.street}</p>
                         <p>{ord.shippingAddress.city}, {ord.shippingAddress.state} - {ord.shippingAddress.pincode}</p>
-                        <p className="mt-1 text-stone-500">📞 {ord.shippingAddress.phone}</p>
+                        <p className="mt-1 text-stone-500"><i className="fa-solid fa-phone mr-1.5 text-[10px]" aria-hidden="true" />{ord.shippingAddress.phone}</p>
                       </div>
                     </div>
                   </div>
@@ -653,7 +653,7 @@ export const UserOrdersPage: React.FC<UserOrdersPageProps> = ({ navigate }) => {
                     </div>
 
                     <a
-                      href={`https://wa.me/919876543210?text=Hi%20buddy4plant%20Support,%20I%20need%20help%20with%20my%20Order%20%23${ord.orderNumber}`}
+                      href={`https://wa.me/918004881668?text=Hi%20buddy4plant%20Support,%20I%20need%20help%20with%20my%20Order%20%23${ord.orderNumber}`}
                       target="_blank"
                       rel="noreferrer"
                       className="text-xs text-[#2D6A4F] font-bold hover:underline flex items-center gap-1"
@@ -894,7 +894,7 @@ export const UserOrdersPage: React.FC<UserOrdersPageProps> = ({ navigate }) => {
             <div className="bg-[#F8FCF9] p-4 rounded-xl border border-[#E2ECE0] text-xs space-y-1">
               <p className="text-[#556955]">Courier Partner: <strong className="text-[#182319]">{trackingModalOrder.deliveryCourier || 'BlueDart Express Eco'}</strong></p>
               <p className="text-[#556955]">AWB Tracking Code: <strong className="text-[#2D4A27] font-mono">{trackingModalOrder.trackingNumber || 'B4P-EXP-84729'}</strong></p>
-              <p className="text-[#556955]">Current Transit Hub: <strong className="text-[#182319]">{trackingModalOrder.currentLocation || 'Bengaluru Sorting Center'}</strong></p>
+              <p className="text-[#556955]">Current Transit Hub: <strong className="text-[#182319]">{trackingModalOrder.currentLocation || 'Buddy4Plant Nursery, Lucknow'}</strong></p>
             </div>
 
             <div className="space-y-4 relative pl-4 border-l-2 border-[#2D4A27]">

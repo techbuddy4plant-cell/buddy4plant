@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Star, CheckCircle, MessageSquare, Send } from 'lucide-react';
+import { Star, CheckCircle, MessageSquare, Send } from '../common/Icons';
 import { Review, Product } from '../../types';
 import { getProductReviews, submitReview } from '../../services/reviewService';
 import { useAuth } from '../../context/AuthContext';
@@ -111,14 +111,14 @@ export const ReviewList: React.FC<ReviewListProps> = ({ product }) => {
               setShowForm(!showForm);
             }
           }}
-          className="px-4 py-2 bg-[#2D4A27] hover:bg-[#1F341C] text-white text-[11px] font-bold uppercase tracking-wider self-start sm:self-auto transition-all shadow-xs"
+          className="px-5 py-2.5 rounded-full bg-[#13301B] hover:bg-[#1F4A2B] text-white text-[11px] font-bold uppercase tracking-wider self-start sm:self-auto transition-all shadow-xs"
         >
           {showForm ? 'Cancel' : 'Write a Review'}
         </button>
       </div>
 
       {success && (
-        <div className="p-3 bg-[#2D4A27]/10 border border-[#2D4A27]/20 text-[#2D4A27] text-xs flex items-center gap-2">
+        <div className="p-3 rounded-xl bg-[#2D4A27]/10 border border-[#2D4A27]/20 text-[#2D4A27] text-xs flex items-center gap-2">
           <CheckCircle className="w-4 h-4 shrink-0" />
           <span>Thank you! Your verified review has been published.</span>
         </div>
@@ -126,7 +126,7 @@ export const ReviewList: React.FC<ReviewListProps> = ({ product }) => {
 
       {/* Review Submission Form */}
       {showForm && (
-        <form onSubmit={handleSubmitReview} className="bg-[#F5F2EB] p-5 border border-[#E5E2D9] space-y-4 animate-fadeIn">
+        <form onSubmit={handleSubmitReview} className="bg-[#F6F2EA] p-5 rounded-2xl space-y-4 animate-fadeIn">
           <h4 className="font-serif font-bold text-sm text-[#1A1A1A]">Share your plant experience</h4>
 
           <div>
@@ -153,7 +153,7 @@ export const ReviewList: React.FC<ReviewListProps> = ({ product }) => {
               placeholder="e.g. Arrived vibrant and healthy in Mumbai!"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-xs focus:outline-none focus:border-[#2D4A27]"
+              className="w-full px-3.5 py-2.5 bg-white border border-[#E0D9CB] rounded-xl text-sm focus:outline-none focus:border-[#2D4A27]"
             />
           </div>
 
@@ -165,14 +165,14 @@ export const ReviewList: React.FC<ReviewListProps> = ({ product }) => {
               placeholder="How was the packaging, leaf condition, and growth after watering?"
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-xs focus:outline-none focus:border-[#2D4A27]"
+              className="w-full px-3.5 py-2.5 bg-white border border-[#E0D9CB] rounded-xl text-sm focus:outline-none focus:border-[#2D4A27]"
             />
           </div>
 
           <button
             type="submit"
             disabled={submitting}
-            className="px-5 py-2.5 bg-[#2D4A27] hover:bg-[#1F341C] text-white text-[11px] font-bold uppercase tracking-wider transition-colors flex items-center gap-1.5"
+            className="px-6 py-3 rounded-full bg-[#13301B] hover:bg-[#1F4A2B] text-white text-[11px] font-bold uppercase tracking-wider transition-colors flex items-center gap-1.5"
           >
             <Send className="w-3.5 h-3.5" />
             {submitting ? 'Submitting...' : 'Post Verified Review'}
@@ -193,7 +193,7 @@ export const ReviewList: React.FC<ReviewListProps> = ({ product }) => {
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-xs text-[#1A1A1A]">{rev.userName}</span>
                   {rev.verifiedPurchase && (
-                    <span className="inline-flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wider text-[#2D4A27] bg-[#2D4A27]/10 px-1.5 py-0.5">
+                    <span className="inline-flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wider text-[#2D4A27] bg-[#2D4A27]/10 px-2 py-0.5 rounded-full">
                       <CheckCircle className="w-2.5 h-2.5" />
                       Verified Buyer
                     </span>

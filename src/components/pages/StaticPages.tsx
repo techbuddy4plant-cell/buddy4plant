@@ -12,50 +12,62 @@ import {
   MessageCircle,
   HelpCircle,
   Leaf
-} from 'lucide-react';
+} from '../common/Icons';
 import { getAllReviews } from '../../services/reviewService';
+import { INITIAL_REVIEWS } from '../../data/initialSettings';
 import { useStoreSettings } from '../../context/StoreSettingsContext';
 
 export const AboutUsPage: React.FC = () => {
+  // Text is edited in Admin > About us
+  const { homepageCMS } = useStoreSettings();
+  const c = homepageCMS as any;
+  const title = c.aboutTitle || 'Cultivating Calm in Indian Living Spaces';
+  const subtitle =
+    c.aboutSubtitle ||
+    'Buddy4Plant is a Lucknow nursery and landscaping company growing healthy plants and green spaces for homes, offices and campuses.';
+  const storyHeading = c.aboutStoryHeading || 'From Our Nursery to Your Space';
+  const story =
+    c.aboutStoryContent ||
+    'We grow and supply healthy plants, pots and organic plant care from Lucknow, and our landscaping team designs, builds and maintains gardens for homes, offices and government campuses across Uttar Pradesh and Delhi.';
+  const metrics = [1, 2, 3]
+    .map((i) => ({ value: c[`aboutMetric${i}Value`], label: c[`aboutMetric${i}Label`], desc: c[`aboutMetric${i}Desc`] }))
+    .filter((m) => m.value || m.label);
+  const shown = metrics.length
+    ? metrics
+    : [
+        { value: '18+', label: 'Landscaping Projects', desc: 'Government, institutional and private gardens across Uttar Pradesh and Delhi.' },
+        { value: 'UP & Delhi', label: 'Service Area', desc: 'Site visits, landscaping and annual maintenance contracts.' },
+        { value: 'WhatsApp', label: 'Plant Help', desc: 'Send us a photo of your plant and our team will guide you.' },
+      ];
   return (
     <div className="bg-stone-50 min-h-screen py-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-2xl mx-auto mb-12">
-          <span className="text-xs font-semibold text-emerald-800 uppercase tracking-widest block">
-            Our Story & Nursery Heritage
-          </span>
-          <h1 className="font-serif text-3xl sm:text-4xl font-bold text-stone-900 mt-1">
-            Cultivating Calm in Indian Living Spaces
-          </h1>
-          <p className="text-xs sm:text-sm text-stone-600 mt-3 leading-relaxed">
-            Founded with a vision to reconnect urban homes with pristine botanical nature, buddy4plant nurtures climate-resilient plants suited for Indian living conditions.
-          </p>
+          <span className="text-xs font-semibold text-emerald-800 uppercase tracking-widest block">Our Story</span>
+          <h1 className="font-serif text-3xl sm:text-4xl font-bold text-stone-900 mt-1">{title}</h1>
+          <p className="text-xs sm:text-sm text-stone-600 mt-3 leading-relaxed">{subtitle}</p>
         </div>
 
         <div className="bg-white rounded-3xl p-8 sm:p-12 border border-stone-200 shadow-sm space-y-8 text-stone-700 text-xs sm:text-sm leading-relaxed">
           <div>
-            <h2 className="font-serif font-bold text-xl text-stone-900 mb-3">Greenhouse to Doorstep</h2>
-            <p>
-              Unlike traditional roadside nurseries where plants sit in low-grade heavy clay soil and face transplant shock, every buddy4plant specimen is grown in our eco-controlled greenhouses across Western Ghats and Bengaluru. We pot our plants in aerated, sterilized cocopeat enriched with organic vermicompost, perlite, and neem cake.
-            </p>
+            <h2 className="font-serif font-bold text-xl text-stone-900 mb-3">{storyHeading}</h2>
+            {String(story)
+              .split(/\n\s*\n/)
+              .map((para: string, i: number) => (
+                <p key={i} className={i ? 'mt-3' : ''}>
+                  {para}
+                </p>
+              ))}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-4 border-t border-stone-100">
-            <div className="p-4 bg-stone-50 rounded-2xl border border-stone-200">
-              <span className="font-serif font-bold text-2xl text-emerald-950 block mb-1">0%</span>
-              <span className="font-bold text-stone-900 text-xs block">Single-Use Plastics</span>
-              <p className="text-[11px] text-stone-500 mt-1">All packaging is 100% recyclable honeycomb board.</p>
-            </div>
-            <div className="p-4 bg-stone-50 rounded-2xl border border-stone-200">
-              <span className="font-serif font-bold text-2xl text-emerald-950 block mb-1">7 Days</span>
-              <span className="font-bold text-stone-900 text-xs block">Transit Guarantee</span>
-              <p className="text-[11px] text-stone-500 mt-1">Immediate free replacement if damaged in transit.</p>
-            </div>
-            <div className="p-4 bg-stone-50 rounded-2xl border border-stone-200">
-              <span className="font-serif font-bold text-2xl text-emerald-950 block mb-1">24x7</span>
-              <span className="font-bold text-stone-900 text-xs block">Plant Doctor Advice</span>
-              <p className="text-[11px] text-stone-500 mt-1">Direct WhatsApp access to botanists.</p>
-            </div>
+            {shown.map((m, i) => (
+              <div key={i} className="p-4 bg-stone-50 rounded-2xl border border-stone-200">
+                <span className="font-serif font-bold text-2xl text-emerald-950 block mb-1">{m.value}</span>
+                <span className="font-bold text-stone-900 text-xs block">{m.label}</span>
+                {m.desc && <p className="text-[11px] text-stone-500 mt-1">{m.desc}</p>}
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -107,7 +119,7 @@ export const PlantDoctorPage: React.FC = () => {
             Self-Help & Diagnostic Guide
           </span>
           <h1 className="font-serif text-3xl sm:text-4xl font-bold text-stone-900 mt-1">
-            The Botanical Plant Doctor
+            Plant Doctor
           </h1>
           <p className="text-xs text-stone-500 mt-2">
             Diagnose common leaf symptoms in seconds or chat with our horticulturists on WhatsApp.
@@ -167,13 +179,13 @@ export const PlantDoctorPage: React.FC = () => {
 
                 <div className="pt-4 border-t border-stone-100">
                   <a
-                    href="https://wa.me/919876543210?text=Hi%20Plant%20Doctor,%20I%20need%20help%20with%20my%20plant"
+                    href="https://wa.me/918004881668?text=Hi%20Plant%20Doctor,%20I%20need%20help%20with%20my%20plant"
                     target="_blank"
                     rel="noreferrer"
                     className="inline-flex items-center gap-2 text-xs font-bold text-emerald-950 hover:underline"
                   >
                     <MessageCircle className="w-4 h-4 text-emerald-700" />
-                    Send a photo to WhatsApp Plant Doctor (+91 98765 43210) &rarr;
+                    Send a photo to WhatsApp Plant Doctor (+91 80048 81668) &rarr;
                   </a>
                 </div>
               </div>
@@ -186,12 +198,15 @@ export const PlantDoctorPage: React.FC = () => {
 };
 
 export const ContactUsPage: React.FC = () => {
+  const { settings } = useStoreSettings();
+  const wa = (settings.whatsappSupportNumber || settings.contactPhone || '').replace(/\D/g, '');
+  const email = settings.contactEmail || 'care@buddy4plant.com';
   return (
     <div className="bg-stone-50 min-h-screen py-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-xl mx-auto mb-10">
           <span className="text-xs font-semibold text-emerald-800 uppercase tracking-widest block">
-            Customer Care & Greenhouse Support
+            Customer Care & Nursery Support
           </span>
           <h1 className="font-serif text-3xl font-bold text-stone-900 mt-1">Get in Touch</h1>
           <p className="text-xs text-stone-500 mt-2">
@@ -207,12 +222,12 @@ export const ContactUsPage: React.FC = () => {
             <h3 className="font-serif font-bold text-sm text-stone-900 mb-1">WhatsApp Support</h3>
             <p className="text-xs text-stone-500 mb-3">Fastest response for plant photos</p>
             <a
-              href="https://wa.me/919876543210"
+              href={`https://wa.me/${wa}`}
               target="_blank"
               rel="noreferrer"
               className="text-xs font-bold text-emerald-900 hover:underline"
             >
-              +91 98765 43210
+              {settings.whatsappSupportNumber || settings.contactPhone}
             </a>
           </div>
 
@@ -222,11 +237,8 @@ export const ContactUsPage: React.FC = () => {
             </div>
             <h3 className="font-serif font-bold text-sm text-stone-900 mb-1">Email Care</h3>
             <p className="text-xs text-stone-500 mb-3">For order inquiries & corporate gifts</p>
-            <a
-              href="mailto:support@buddy4plant.com"
-              className="text-xs font-bold text-emerald-900 hover:underline"
-            >
-              support@buddy4plant.com
+            <a href={`mailto:${email}`} className="text-xs font-bold text-emerald-900 hover:underline break-all">
+              {email}
             </a>
           </div>
 
@@ -234,9 +246,20 @@ export const ContactUsPage: React.FC = () => {
             <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-900 flex items-center justify-center mx-auto mb-3">
               <MapPin className="w-5 h-5" />
             </div>
-            <h3 className="font-serif font-bold text-sm text-stone-900 mb-1">Greenhouse Facility</h3>
-            <p className="text-xs text-stone-500 mb-3">Western Ghats Botanical Reserve</p>
-            <span className="text-xs text-stone-700 font-medium">Bengaluru & Pune Hubs</span>
+            <h3 className="font-serif font-bold text-sm text-stone-900 mb-1">Visit Our Nursery</h3>
+            <p className="text-xs text-stone-500 mb-3 whitespace-pre-line">{settings.storeAddress || 'Lucknow, Uttar Pradesh'}</p>
+            <a
+              href="/store-locator"
+              onClick={(e) => {
+                e.preventDefault();
+                window.history.pushState({}, '', '/store-locator');
+                window.dispatchEvent(new PopStateEvent('popstate'));
+                window.scrollTo({ top: 0 });
+              }}
+              className="text-xs font-bold text-emerald-900 hover:underline"
+            >
+              Locate our store &rarr;
+            </a>
           </div>
         </div>
       </div>
@@ -251,7 +274,8 @@ export const ReviewsPage: React.FC<{ navigate?: (path: string) => void }> = ({ n
   const fetchReviews = async () => {
     try {
       const data = await getAllReviews();
-      setReviews(data.filter((r: any) => r.approved));
+      // Sample reviews that came with the template are never shown
+      setReviews(data.filter((r: any) => r.approved && !INITIAL_REVIEWS.some((d) => d.id === r.id)));
     } catch (err) {
       console.warn(err);
     } finally {
@@ -277,7 +301,7 @@ export const ReviewsPage: React.FC<{ navigate?: (path: string) => void }> = ({ n
             Real Customer Stories
           </span>
           <h1 className="font-serif text-3xl sm:text-4xl font-bold text-[#1A1A1A] mt-2">
-            Verified Plant Parent Experiences
+            Customer Reviews
           </h1>
           <p className="text-xs sm:text-sm text-[#7A7A7A] mt-3">
             Real reviews and photo feedback from plant lovers across India whose spaces have blossomed with buddy4plant.
@@ -353,7 +377,7 @@ export const CareGuidePage: React.FC<{ navigate?: (path: string) => void }> = ({
             Nursery Knowledge Hub
           </span>
           <h1 className="font-serif text-3xl sm:text-4xl font-bold text-[#1A1A1A] mt-2">
-            The Complete Botanical Care & Watering Guide
+            Plant Care & Watering Guide
           </h1>
           <p className="text-xs sm:text-sm text-[#7A7A7A] mt-3">
             Essential care rhythms to keep your indoor tropicals, succulents, and balcony gardens vibrant in Indian seasons.
@@ -398,16 +422,6 @@ export const CareGuidePage: React.FC<{ navigate?: (path: string) => void }> = ({
           </div>
         </div>
 
-        {navigate && (
-          <div className="mt-12 text-center">
-            <button
-              onClick={() => navigate('/plant-doctor')}
-              className="px-6 py-3 border border-[#2D4A27] text-[#2D4A27] hover:bg-[#2D4A27] hover:text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-colors"
-            >
-              Have a Sick Plant? Ask the Plant Doctor &rarr;
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );
@@ -422,7 +436,7 @@ export const ShippingPolicyPage: React.FC<{ navigate?: (path: string) => void }>
             Guaranteed Safe Delivery
           </span>
           <h1 className="font-serif text-3xl sm:text-4xl font-bold text-[#1A1A1A] mt-2">
-            14-Day Transit Health Guarantee & Shipping Policy
+            Shipping & Returns Policy
           </h1>
           <p className="text-xs sm:text-sm text-[#7A7A7A] mt-3">
             Every buddy4plant order is dispatched in moisture-lock eco packaging designed to withstand up to 7 days of transit.
@@ -436,7 +450,7 @@ export const ShippingPolicyPage: React.FC<{ navigate?: (path: string) => void }>
               Shipping Timelines & Courier Partners
             </h2>
             <p>
-              We partner with premier express logistics networks (Bluedart, Delhivery, DTDC, and Shadowfax) to deliver across 19,000+ PIN codes in India. Orders are hand-inspected and potted within 24–48 hours. Metro deliveries typically arrive within 2–4 business days; non-metro zones take 4–6 business days.
+              We ship through trusted courier partners. Orders are checked and packed at our Lucknow nursery within 24–48 hours. Metro deliveries typically arrive within 2–4 business days; non-metro zones take 4–6 business days.
             </p>
           </div>
 
@@ -446,7 +460,7 @@ export const ShippingPolicyPage: React.FC<{ navigate?: (path: string) => void }>
               Zero-Risk Transit Guarantee
             </h2>
             <p>
-              If your plant arrives damaged, snapped, or excessively wilted during transit, send a photo to our WhatsApp Helpline (+91 98765 43210) or email support@buddy4plant.com within 7 days of delivery. We will immediately dispatch a fresh replacement plant free of cost—no questions asked!
+              If your plant arrives damaged, snapped, or excessively wilted during transit, send a photo to our WhatsApp Helpline (+91 80048 81668) or email support@buddy4plant.com within 7 days of delivery. We will immediately dispatch a fresh replacement plant free of cost—no questions asked!
             </p>
           </div>
 

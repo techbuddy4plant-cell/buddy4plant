@@ -25,8 +25,8 @@ import { AdminToastNotification } from './AdminToastNotification';
 
 const HERO_WALLPAPER_PRESETS = [
   { name: 'Kyari Living Plants (Default)', url: '/editorial/kyari-living-plants-hero.jpg' },
-  { name: 'Artisanal Botanical Jar', url: '/editorial/hero-botanical-branch.jpg' },
-  { name: 'Botanica Stone Slab', url: '/editorial/botanica-stone-slab.jpg' },
+  { name: 'Buddy4Plant Plant Food', url: '/editorial/b4p-plant-food-2.jpg' },
+  { name: 'Forest (home background)', url: '/editorial/home-forest.jpg' },
   { name: 'Light Botanical Haven', url: 'https://images.unsplash.com/photo-1545241047-6083a3684587?auto=format&fit=crop&w=1600&q=85' },
   { name: 'Lush Monstera Wall', url: 'https://images.unsplash.com/photo-1614594975525-e45190c55d0b?auto=format&fit=crop&w=1600&q=85' },
   { name: 'Modern Plant Shelf', url: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1600&q=85' },
@@ -155,7 +155,7 @@ export const AdminCMS: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 border border-[#E5E2D9] rounded-lg">
         <div>
           <h2 className="font-serif font-bold text-xl text-[#1A1A1A] flex items-center gap-2">
-            <span>🏠</span>
+            <i className="fa-solid fa-house" aria-hidden="true" />
             Storefront Merchandising &amp; Live Section Editor
           </h2>
           <p className="text-xs text-[#5A5A5A] font-light mt-0.5">
@@ -189,7 +189,7 @@ export const AdminCMS: React.FC = () => {
         {/* SECTION 1: Top Announcement Bar */}
         <div className="p-4 bg-[#F5F2EB] border border-[#E5E2D9] space-y-3 rounded-lg">
           <h3 className="font-serif font-bold text-base text-[#1A1A1A] flex items-center gap-2">
-            <span>📢</span>
+            <i className="fa-solid fa-bullhorn" aria-hidden="true" />
             1. Top Storefront Announcement Bar Message
           </h3>
           <p className="text-[#5A5A5A] text-[11px]">
@@ -511,7 +511,7 @@ export const AdminCMS: React.FC = () => {
             <label className="block font-semibold text-[#1A1A1A] mb-1">Stone Slab Image URL</label>
             <input
               type="text"
-              value={formData.botanicaImage || '/editorial/botanica-stone-slab.jpg'}
+              value={formData.botanicaImage || '/editorial/b4p-plant-food-2.jpg'}
               onChange={(e) => setFormData({ ...formData, botanicaImage: e.target.value })}
               className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-[#1A1A1A] font-mono text-[11px] rounded"
             />
@@ -705,7 +705,7 @@ export const AdminCMS: React.FC = () => {
         {/* SECTION 12: Footer & Studio Branding */}
         <div className="space-y-4 pb-6 border-b border-[#E5E2D9]">
           <h3 className="font-serif font-bold text-base text-[#1A1A1A] flex items-center gap-2">
-            <span>🌿</span>
+            <i className="fa-solid fa-leaf" aria-hidden="true" />
             12. Footer Statement &amp; Newsletter
           </h3>
 

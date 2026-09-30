@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, Leaf } from 'lucide-react';
+import { ArrowRight, Leaf } from '../common/Icons';
 import { useStoreSettings } from '../../context/StoreSettingsContext';
 
 interface BotanicaSectionProps {
@@ -13,7 +13,9 @@ export const BotanicaSection: React.FC<BotanicaSectionProps> = ({ navigate }) =>
   const subtitle =
     homepageCMS.botanicaSubtitle ||
     'Organic plant food and microbiome fertilizers crafted from what takes nature years to form.';
-  const image = homepageCMS.botanicaImage || '/editorial/botanica-stone-slab.jpg';
+  const savedImage = homepageCMS.botanicaImage || '';
+  // The old stone-slab photo showed another brand's cosmetic jar - always use our own plant food photo instead
+  const image = savedImage && !/botanica-stone-slab|hero-botanical-branch/.test(savedImage) ? savedImage : '/editorial/b4p-plant-food-2.jpg';
   const buttonLink = homepageCMS.botanicaButtonLink || '/plants/plant-care';
   const buttonText = homepageCMS.botanicaButtonText || 'Shop Organic Plant Food';
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Product } from '../../types';
 import { ProductCard } from '../common/ProductCard';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight, Sparkles } from '../common/Icons';
 
 interface BestSellersSectionProps {
   products: Product[];

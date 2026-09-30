@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowUpDown } from 'lucide-react';
+import { ArrowUpDown } from '../common/Icons';
 import { FilterState } from '../../types';
 
 interface SortDropdownProps {
@@ -15,12 +15,11 @@ export const SortDropdown: React.FC<SortDropdownProps> = ({ sortBy, onChange }) 
       <select
         value={sortBy}
         onChange={(e) => onChange(e.target.value as FilterState['sortBy'])}
-        className="bg-white border border-[#E5E2D9] px-3 py-1.5 font-medium text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27] text-xs"
+        className="bg-white border border-[#E5E2D9] rounded-lg px-3 py-1.5 font-medium text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27] text-xs max-w-[9.5rem] sm:max-w-none"
       >
-        <option value="featured">Featured / Curated</option>
+        <option value="featured">Featured</option>
         <option value="price-asc">Price: Low to High</option>
         <option value="price-desc">Price: High to Low</option>
-        <option value="rating">Highest Rated</option>
         <option value="newest">New Arrivals</option>
       </select>
     </div>

@@ -18,7 +18,7 @@ import {
   ExternalLink,
   Star,
   X
-} from 'lucide-react';
+} from '../common/Icons';
 import { Order, OrderStatus } from '../../types';
 import { getOrderByNumberOrPhone, subscribeToOrder } from '../../services/orderService';
 import { submitReview } from '../../services/reviewService';
@@ -282,7 +282,7 @@ export const OrderTrackingPage: React.FC<OrderTrackingPageProps> = ({ initialOrd
                   <span className="text-[#7A7A7A] text-[11px] block">Current Location / Status</span>
                   <p className="font-medium text-[#1A1A1A] flex items-center gap-1">
                     <MapPin className="w-3 h-3 text-[#2D4A27]" />
-                    {order.currentLocation || 'Bengaluru Central Botanical Hub'}
+                    {order.currentLocation || 'Buddy4Plant Nursery, Lucknow'}
                   </p>
                 </div>
               </div>
@@ -415,7 +415,7 @@ export const OrderTrackingPage: React.FC<OrderTrackingPageProps> = ({ initialOrd
               </div>
 
               <a
-                href={`https://wa.me/${settings.contactPhone?.replace(/[^0-9]/g, '') || '919876543210'}?text=Hi%20buddy4plant,%20I%20have%20a%20query%20about%20my%20order%20${encodeURIComponent(order.orderNumber)}`}
+                href={`https://wa.me/${settings.contactPhone?.replace(/[^0-9]/g, '') || '918004881668'}?text=Hi%20buddy4plant,%20I%20have%20a%20query%20about%20my%20order%20${encodeURIComponent(order.orderNumber)}`}
                 target="_blank"
                 rel="noreferrer"
                 className="px-4 py-2 bg-[#2D4A27] hover:bg-[#1F341C] text-white text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 shrink-0"

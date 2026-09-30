@@ -1,6 +1,6 @@
 import { useStoreSettings } from '../../context/StoreSettingsContext';
 import React from 'react';
-import { Star, CheckCircle } from 'lucide-react';
+import { Star, CheckCircle } from '../common/Icons';
 import { Review } from '../../types';
 
 interface CustomerReviewsSectionProps {
@@ -10,6 +10,8 @@ interface CustomerReviewsSectionProps {
 export const CustomerReviewsSection: React.FC<CustomerReviewsSectionProps> = ({ reviews }) => {
   const { homepageCMS } = useStoreSettings();
   const displayReviews = reviews.slice(0, 3);
+  // Only real customer reviews are shown; the section stays hidden until there are some.
+  if (displayReviews.length === 0) return null;
 
   return (
     <section className="py-20 sm:py-28 bg-transparent border-b border-black/10">
@@ -19,10 +21,10 @@ export const CustomerReviewsSection: React.FC<CustomerReviewsSectionProps> = ({ 
             Botanical Testimonials
           </span>
           <h2 className="font-editorial text-3xl sm:text-4xl lg:text-5xl font-bold text-[#141414] mt-2 tracking-tight">
-            {homepageCMS.reviewsTitle || 'Loved in 50,000+ Homes'}
+            {homepageCMS.reviewsTitle && !/\d{2},\d{3}/.test(homepageCMS.reviewsTitle) ? homepageCMS.reviewsTitle : 'What Our Customers Say'}
           </h2>
           <p className="text-xs sm:text-sm text-[#666666] mt-3 font-normal leading-relaxed">
-            {homepageCMS.reviewsSubtitle || 'Authentic reflections from plant parents experiencing living serene spaces.'}
+            {homepageCMS.reviewsSubtitle || 'Reviews from Buddy4Plant customers.'}
           </p>
         </div>
 

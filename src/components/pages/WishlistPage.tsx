@@ -3,7 +3,7 @@ import { useWishlist } from '../../context/WishlistContext';
 import { ProductCard } from '../common/ProductCard';
 import { Product } from '../../types';
 import { getProducts } from '../../services/productService';
-import { Heart, Sparkles, ArrowRight, Leaf } from 'lucide-react';
+import { Heart, Sparkles, ArrowRight, Leaf } from '../common/Icons';
 
 interface WishlistPageProps {
   navigate: (path: string) => void;
@@ -33,7 +33,7 @@ export const WishlistPage: React.FC<WishlistPageProps> = ({ navigate, onQuickVie
             Reserved Flora
           </span>
           <h1 className="font-editorial text-4xl sm:text-5xl font-bold text-[#141414] tracking-tight">
-            Saved Botanicals
+            My Wishlist
           </h1>
           <p className="text-xs sm:text-sm text-[#5C5C5C] mt-3 font-normal leading-relaxed">
             Your personal curation of living houseplants and artisanal planters for upcoming spaces.

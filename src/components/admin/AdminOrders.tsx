@@ -98,7 +98,7 @@ export const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, onRefresh }) =
     setEditStatus(ord.orderStatus);
     setDeliveryCourier(ord.deliveryCourier || 'BlueDart Express Eco');
     setTrackingNumber(ord.trackingNumber || `B4P-EXP-${ord.orderNumber.replace(/[^0-9]/g, '')}`);
-    setCurrentLocation(ord.currentLocation || 'Bengaluru Regional Botanical Sorting Center');
+    setCurrentLocation(ord.currentLocation || 'Buddy4Plant Nursery, Lucknow');
     setEstimatedDeliveryDate(
       ord.estimatedDeliveryDate ||
         new Date(Date.now() + 3 * 86400000).toLocaleDateString('en-IN', {
@@ -499,7 +499,7 @@ export const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, onRefresh }) =
                   type="text"
                   value={currentLocation}
                   onChange={(e) => setCurrentLocation(e.target.value)}
-                  placeholder="e.g. Bengaluru Central Botanical Hub / Indiranagar Delivery Van"
+                  placeholder="e.g. Buddy4Plant Nursery, Lucknow / Indiranagar Delivery Van"
                   className="w-full p-2.5 bg-white border border-[#E5E2D9] text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
                 />
               </div>
@@ -662,7 +662,7 @@ export const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, onRefresh }) =
                   AWB: {selectedOrder.trackingNumber || 'Pending AWB allocation'}
                 </span>
                 <p className="text-[11px] text-[#7A7A7A] mt-1">
-                  Hub: <strong>{selectedOrder.currentLocation || 'Bengaluru Nursery Hub'}</strong>
+                  Hub: <strong>{selectedOrder.currentLocation || 'Buddy4Plant Nursery, Lucknow'}</strong>
                 </p>
               </div>
 

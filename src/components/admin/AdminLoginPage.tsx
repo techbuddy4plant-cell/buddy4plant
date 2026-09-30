@@ -32,7 +32,7 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onLoginSuccess, 
   };
 
   return (
-    <div className="min-h-screen bg-[#111A12] text-[#FDFCF9] flex items-center justify-center p-4 relative overflow-hidden font-sans">
+    <div className="admin-root b4p-fixed-theme min-h-screen bg-[#111A12] text-[#FDFCF9] flex items-center justify-center p-4 relative overflow-hidden font-sans">
       {/* Background Decorative Gradient Circles */}
       <div className="absolute -top-32 -left-32 w-96 h-96 bg-[#2D4A27]/20 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-[#182319]/40 rounded-full blur-3xl pointer-events-none" />

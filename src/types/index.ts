@@ -28,6 +28,12 @@ export interface Product {
   weightVolume?: string;
   weightOptions?: string[];
   variants?: ProductVariant[];
+  /** Pots & planters: material (Plastic, Ceramic, Metal...) */
+  material?: string;
+  /** Colour choices shown on the product page (pots, planters) */
+  colorOptions?: string[];
+  /** Show the colour / planter-finish picker on the product page and Quick View (off unless the admin turns it on) */
+  showColourOptions?: boolean;
   lightRequirement: 'Low Light' | 'Bright Indirect Light' | 'Direct Sunlight' | 'Medium Light';
   wateringFrequency: 'Once a week' | 'Twice a week' | 'When topsoil is dry' | 'Every 10-14 days';
   maintenanceLevel: 'Easy' | 'Moderate' | 'High';
@@ -76,8 +82,18 @@ export interface BotanicalProject {
   area?: string;
   duration?: string;
   client?: string;
+  sites?: string[];
   active?: boolean;
   createdAt?: number;
+  updatedAt?: number;
+  /** 'private' = homes, villas, terraces (own section on Gardening Services); default = government & institutional */
+  segment?: 'institutional' | 'private';
+  /** extra site photos (cover image is shown first) */
+  gallery?: string[];
+  /** short site videos */
+  videos?: { src: string; poster?: string }[];
+  /** matching before / after photos */
+  beforeAfter?: { before: string; after: string };
 }
 
 export interface CartItem {
@@ -204,6 +220,10 @@ export interface StoreSettings {
   contactPhone: string;
   whatsappSupportNumber: string;
   storeAddress: string;
+  /** Google Maps link for "Locate our store" (share link from Google Maps) */
+  storeMapsUrl?: string;
+  /** e.g. Mon-Sat 9 AM - 7 PM */
+  storeHours?: string;
   currency: string;
   currencySymbol: string;
   orderPrefix: string;

@@ -14,7 +14,10 @@ import {
   X
 } from 'lucide-react';
 import { BlogPost, getBlogPosts, saveBlogPost, deleteBlogPost } from '../../services/blogService';
+import { BLOG_SECTIONS } from '../../data/pillarArticles';
 import { PlantImage } from '../../utils/imageFallback';
+import { ImageUploadField } from './ImageUploadField';
+import { UploadKeyError, uploadMedia } from '../../services/uploadService';
 
 interface AdminBlogProps {
   navigate: (path: string) => void;
@@ -31,11 +34,45 @@ export const AdminBlog: React.FC<AdminBlogProps> = ({ navigate }) => {
   const [title, setTitle] = useState('');
   const [slug, setSlug] = useState('');
   const [excerpt, setExcerpt] = useState('');
-  const [category, setCategory] = useState('Plant Care');
+  const [category, setCategory] = useState('Plants & Plant Care');
+  const [seoTitle, setSeoTitle] = useState('');
+  const [metaDescription, setMetaDescription] = useState('');
   const [readTime, setReadTime] = useState('5 min read');
   const [image, setImage] = useState('');
-  const [authorName, setAuthorName] = useState('Dr. Ananya Roy');
-  const [authorRole, setAuthorRole] = useState('Chief Horticulturist');
+  const [authorName, setAuthorName] = useState('Buddy4Plant Gardening Team');
+  const [authorRole, setAuthorRole] = useState('Nursery & landscaping experts, Lucknow');
+  const contentRef = React.useRef<HTMLTextAreaElement>(null);
+  const inlineInput = React.useRef<HTMLInputElement>(null);
+  const [inlineBusy, setInlineBusy] = useState('');
+
+  /** Upload photos and put them into the article where the cursor is. */
+  const insertPhotos = async (files: File[]) => {
+    if (!files.length) return;
+    const el = contentRef.current;
+    const pos = el ? el.selectionStart : contentString.length;
+    const snippets: string[] = [];
+    try {
+      for (let i = 0; i < files.length; i++) {
+        setInlineBusy(`Uploading photo ${i + 1} of ${files.length}...`);
+        const url = await uploadMedia(files[i], 'blog');
+        const caption = files[i].name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ');
+        snippets.push(`![${caption}](${url})`);
+      }
+    } catch (e: any) {
+      alertMsg(e instanceof UploadKeyError ? 'Upload key needed - upload the cover photo first to enter it.' : e?.message || 'Upload failed');
+    } finally {
+      setInlineBusy('');
+    }
+    if (!snippets.length) return;
+    const before = contentString.slice(0, pos).replace(/\s*$/, '');
+    const after = contentString.slice(pos).replace(/^\s*/, '');
+    setContentString(`${before}${before ? '\n\n' : ''}${snippets.join('\n\n')}${after ? '\n\n' : ''}${after}`);
+  };
+  const [inlineMsg, setInlineMsg] = useState('');
+  const alertMsg = (m: string) => {
+    setInlineMsg(m);
+    setTimeout(() => setInlineMsg(''), 5000);
+  };
   const [contentString, setContentString] = useState('');
   const [tagsString, setTagsString] = useState('');
 
@@ -58,11 +95,13 @@ export const AdminBlog: React.FC<AdminBlogProps> = ({ navigate }) => {
     setTitle('');
     setSlug('');
     setExcerpt('');
-    setCategory('Plant Care');
+    setCategory('Plants & Plant Care');
+    setSeoTitle('');
+    setMetaDescription('');
     setReadTime('5 min read');
-    setImage('https://images.unsplash.com/photo-1545241047-6083a3684587?w=1000&auto=format&fit=crop&q=80');
-    setAuthorName('Dr. Ananya Roy');
-    setAuthorRole('Chief Horticulturist');
+    setImage('');
+    setAuthorName('Buddy4Plant Gardening Team');
+    setAuthorRole('Nursery & landscaping experts, Lucknow');
     setContentString('');
     setTagsString('Houseplants, Plant Care, Living Room');
     setIsModalOpen(true);
@@ -74,10 +113,12 @@ export const AdminBlog: React.FC<AdminBlogProps> = ({ navigate }) => {
     setSlug(post.slug);
     setExcerpt(post.excerpt);
     setCategory(post.category);
+    setSeoTitle(post.seoTitle || '');
+    setMetaDescription(post.metaDescription || '');
     setReadTime(post.readTime);
     setImage(post.image);
-    setAuthorName(post.author?.name || 'Dr. Ananya Roy');
-    setAuthorRole(post.author?.role || 'Chief Horticulturist');
+    setAuthorName(post.author?.name || 'Buddy4Plant Gardening Team');
+    setAuthorRole(post.author?.role || 'Nursery & landscaping experts, Lucknow');
     setContentString(post.content?.join('\n\n') || '');
     setTagsString(post.tags?.join(', ') || '');
     setIsModalOpen(true);
@@ -93,7 +134,14 @@ export const AdminBlog: React.FC<AdminBlogProps> = ({ navigate }) => {
       .map((p) => p.trim())
       .filter(Boolean);
 
+    const sectionId = Object.keys(BLOG_SECTIONS).find((k) => BLOG_SECTIONS[k] === category) || editingPost?.section;
     const postPayload: BlogPost = {
+      ...(editingPost || {}),
+      section: sectionId,
+      seoTitle: seoTitle.trim() || undefined,
+      metaDescription: metaDescription.trim() || undefined,
+      isoDate: editingPost?.isoDate || new Date().toISOString().slice(0, 10),
+      updatedDate: new Date().toISOString().slice(0, 10),
       id: editingPost ? editingPost.id : Date.now().toString(),
       slug: computedSlug,
       title: title.trim(),
@@ -101,11 +149,11 @@ export const AdminBlog: React.FC<AdminBlogProps> = ({ navigate }) => {
       category: category as any,
       readTime: readTime.trim() || '5 min read',
       publishDate: editingPost ? editingPost.publishDate : new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-      image: image.trim() || 'https://images.unsplash.com/photo-1545241047-6083a3684587?w=1000&auto=format&fit=crop&q=80',
+      image: image.trim() || '/plant-photos/areca-palm-plant.jpg',
       author: {
-        name: authorName.trim() || 'Dr. Ananya Roy',
-        role: authorRole.trim() || 'Chief Horticulturist',
-        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80',
+        name: authorName.trim() || 'Buddy4Plant Gardening Team',
+        role: authorRole.trim() || 'Nursery & landscaping experts, Lucknow',
+        avatar: editingPost?.author?.avatar || '/logo.png',
       },
       content: paragraphs.length > 0 ? paragraphs : [excerpt],
       tags: tagsString.split(',').map((t) => t.trim()).filter(Boolean),
@@ -289,10 +337,10 @@ export const AdminBlog: React.FC<AdminBlogProps> = ({ navigate }) => {
                     onChange={(e) => setCategory(e.target.value)}
                     className="w-full px-3 py-2 border border-[#E5E2D9] rounded bg-white text-xs focus:outline-none focus:border-[#2D4A27]"
                   >
-                    <option value="Plant Care">Plant Care</option>
-                    <option value="Interior Styling">Interior Styling</option>
-                    <option value="Planters & Decor">Planters &amp; Decor</option>
-                    <option value="Urban Gardening">Urban Gardening</option>
+                    {Object.values(BLOG_SECTIONS).map((label) => (
+                      <option key={label} value={label}>{label}</option>
+                    ))}
+                    {!Object.values(BLOG_SECTIONS).includes(category) && <option value={category}>{category}</option>}
                   </select>
                 </div>
                 <div>
@@ -307,17 +355,40 @@ export const AdminBlog: React.FC<AdminBlogProps> = ({ navigate }) => {
                 </div>
               </div>
 
-              <div>
-                <label className="block font-semibold text-[#1A1A1A] mb-1">Cover Image URL</label>
-                <input
-                  type="text"
-                  value={image}
-                  onChange={(e) => setImage(e.target.value)}
-                  placeholder="https://images.unsplash.com/..."
-                  className="w-full px-3 py-2 border border-[#E5E2D9] rounded font-mono text-[11px] focus:outline-none focus:border-[#2D4A27]"
-                />
-              </div>
+              <ImageUploadField
+                label="Cover photo"
+                hint="Shown at the top of the article, on the blog list and when the link is shared"
+                value={image}
+                onChange={setImage}
+                folder="blog"
+              />
 
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold text-[#1A1A1A] mb-1">SEO Title (Google, max 60)</label>
+                  <input
+                    type="text"
+                    value={seoTitle}
+                    maxLength={70}
+                    onChange={(e) => setSeoTitle(e.target.value)}
+                    placeholder="Leave empty to use the article title"
+                    className="w-full px-3 py-2 border border-[#E5E2D9] rounded text-xs focus:outline-none focus:border-[#2D4A27]"
+                  />
+                  <span className="text-[10px] text-[#7A7A7A]">{seoTitle.length}/60</span>
+                </div>
+                <div>
+                  <label className="block font-semibold text-[#1A1A1A] mb-1">Meta Description (max 160)</label>
+                  <textarea
+                    rows={2}
+                    value={metaDescription}
+                    maxLength={170}
+                    onChange={(e) => setMetaDescription(e.target.value)}
+                    placeholder="Leave empty to use the excerpt"
+                    className="w-full px-3 py-2 border border-[#E5E2D9] rounded text-xs focus:outline-none focus:border-[#2D4A27]"
+                  />
+                  <span className="text-[10px] text-[#7A7A7A]">{metaDescription.length}/160</span>
+                </div>
+              </div>
               <div>
                 <label className="block font-semibold text-[#1A1A1A] mb-1">Short Excerpt / Teaser *</label>
                 <textarea
@@ -331,9 +402,27 @@ export const AdminBlog: React.FC<AdminBlogProps> = ({ navigate }) => {
               </div>
 
               <div>
-                <label className="block font-semibold text-[#1A1A1A] mb-1">Article Content (Separate paragraphs with double Enter)</label>
+                <div className="flex flex-wrap items-end justify-between gap-2 mb-1">
+                  <label className="block font-semibold text-[#1A1A1A]">
+                    Article Content
+                    <span className="block font-normal text-[10px] text-[#7A7A7A]">
+                      Blank line between blocks. ## heading, - list, | table |, **bold**, [link](/path), ![caption](photo)
+                    </span>
+                  </label>
+                  <button
+                    type="button"
+                    disabled={!!inlineBusy}
+                    onClick={() => inlineInput.current?.click()}
+                    className="px-3 py-1.5 bg-white border border-[#2D4A27] text-[#2D4A27] rounded-md text-[11px] font-bold disabled:opacity-50"
+                  >
+                    {inlineBusy || '+ Insert photo at cursor'}
+                  </button>
+                  <input ref={inlineInput} type="file" accept="image/*" multiple hidden onChange={(e) => { insertPhotos(Array.from(e.target.files || [])); e.target.value = ''; }} />
+                </div>
+                {inlineMsg && <div className="text-[11px] font-semibold text-[#B42318] mb-1">{inlineMsg}</div>}
                 <textarea
-                  rows={6}
+                  ref={contentRef}
+                  rows={14}
                   value={contentString}
                   onChange={(e) => setContentString(e.target.value)}
                   placeholder="Write the full botanical guide here. Each paragraph separated by an empty line..."

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { getProductSection, isGiftingProduct } from '../../utils/productSections';
 import {
   Plus,
   Search,
@@ -130,34 +131,46 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
     let sectionDefaults: { slug: string; name: string }[] = [];
     if (sectionFilter === 'plants') {
       sectionDefaults = [
-        { slug: 'indoor-plants', name: 'Indoor Foliage Plants' },
-        { slug: 'air-purifying', name: 'Air Purifying (NASA Detox)' },
-        { slug: 'low-maintenance', name: 'Low Maintenance & Hardy' },
-        { slug: 'cacti-succulents', name: 'Cacti & Succulents' },
-        { slug: 'flowering-plants', name: 'Flowering Houseplants' },
-        { slug: 'hanging-plants', name: 'Hanging & Trailing Vines' },
-        { slug: 'pet-friendly', name: 'Pet Friendly Houseplants' },
+        { slug: 'indoor-plants', name: 'Indoor Plants' },
+        { slug: 'xl-plants', name: 'XL Plants' },
+        { slug: 'plant-bundles', name: 'Plant Bundles' },
+        { slug: 'low-light-plants', name: 'Low Light Plants' },
+        { slug: 'cacti-succulents', name: 'Cacti and Succulents' },
+        { slug: 'hanging-plants', name: 'Hanging Plants' },
+        { slug: 'fruit-plants', name: 'Fruit Plants' },
+        { slug: 'outdoor-shrubs', name: 'Outdoor Shrubs' },
+        { slug: 'air-purifying', name: 'Air Purifying Plants' },
+        { slug: 'flowering-plants', name: 'Flowering Plants' },
+        { slug: 'low-maintenance', name: 'Low Maintenance' },
+        { slug: 'pet-friendly', name: 'Pet Friendly' },
       ];
     } else if (sectionFilter === 'pots-planters') {
       sectionDefaults = [
         { slug: 'pots-planters', name: 'Pots & Planters (General)' },
         { slug: 'self-watering', name: 'Self-Watering Sub-Irrigation' },
-        { slug: 'ceramic-pots', name: 'Artisanal Glazed Ceramic Pots' },
+        { slug: 'ceramic-pots', name: 'Ceramic Pots' },
+        { slug: 'plastic-pots', name: 'Plastic Pots' },
+        { slug: 'hanging-planters', name: 'Hanging Planters' },
+        { slug: 'planter-stands', name: 'Planter Stands' },
         { slug: 'terracotta-pots', name: 'Natural Clay Terracotta Pots' },
         { slug: 'metal-planters', name: 'Metal Planters & Heavy Stands' },
       ];
     } else if (sectionFilter === 'plant-care') {
       sectionDefaults = [
-        { slug: 'plant-care', name: 'Plant Care & Soil (General)' },
-        { slug: 'fertilizers', name: 'Organic Bio-Fertilizers & Kelp Feed' },
-        { slug: 'pest-control', name: 'Golden Neem Oil Pest Shields' },
-        { slug: 'potting-soil', name: 'Aged Bark & Microbiome Soil' },
+        { slug: 'plant-care', name: 'Plant Care (General)' },
+        { slug: 'fertilizers', name: 'Fertilizers & Plant Food' },
+        { slug: 'potting-soil', name: 'Soil & Potting Mix' },
+        { slug: 'pest-control', name: 'Pest Control' },
+        { slug: 'garden-tools', name: 'Garden Tools' },
+        { slug: 'watering-tools', name: 'Watering Solutions' },
+        { slug: 'garden-decor', name: 'Gardening Decor' },
       ];
     } else if (sectionFilter === 'combos') {
       sectionDefaults = [
-        { slug: 'combos', name: 'Curated Combos & Value Packs' },
-        { slug: 'gifting', name: 'Botanical Gifts & Starter Sets' },
-        { slug: 'purifier-trio', name: 'Air Purifying Detox Trio' },
+        { slug: 'corporate-gifting', name: 'Corporate Gifting' },
+        { slug: 'festive-gifting', name: 'Festive Gifting' },
+        { slug: 'green-gifting', name: 'Green Gifting' },
+        { slug: 'combos', name: 'Combos & Value Packs' },
       ];
     } else {
       sectionDefaults = [
@@ -166,6 +179,7 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
         { slug: 'low-maintenance', name: 'Low Maintenance' },
         { slug: 'cacti-succulents', name: 'Cacti & Succulents' },
         { slug: 'flowering-plants', name: 'Flowering Houseplants' },
+        { slug: 'outdoor-shrubs', name: 'Outdoor Shrubs' },
         { slug: 'pots-planters', name: 'Pots & Planters' },
         { slug: 'plant-care', name: 'Plant Care & Soil' },
         { slug: 'combos', name: 'Combos & Gift Packs' },
@@ -243,26 +257,10 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
     if (p.variants && p.variants.length > 0) {
       setFormVariants(p.variants);
     } else if (p.weightOptions && p.weightOptions.length > 0) {
-      setFormVariants(p.weightOptions.map((opt, i) => {
-        const ratio = i === 0 ? 1 : i === 1 ? 1.75 : i === 2 ? 3.25 : 5.5;
-        const price = Math.round(p.price * ratio);
-        return {
-          size: opt,
-          price,
-          compareAtPrice: p.compareAtPrice ? Math.round(p.compareAtPrice * ratio) : Math.round(price * 1.4),
-          unitRate: opt.toLowerCase().includes('kg') ? `(₹${Math.round(price / (i === 0 ? 1 : i === 1 ? 5 : 10))}/kg)` : undefined,
-        };
-      }));
+      // No stored per-size prices: start every size at the real price (never invent prices)
+      setFormVariants(p.weightOptions.map((opt) => ({ size: opt, price: p.price, compareAtPrice: p.compareAtPrice })));
     } else if (p.availableSizes && p.availableSizes.length > 0) {
-      setFormVariants(p.availableSizes.map((sz, i) => {
-        const ratio = i === 0 ? 0.75 : i === 1 ? 1 : 1.6;
-        const price = Math.round(p.price * ratio);
-        return {
-          size: sz,
-          price,
-          compareAtPrice: p.compareAtPrice ? Math.round(p.compareAtPrice * ratio) : Math.round(price * 1.4),
-        };
-      }));
+      setFormVariants(p.availableSizes.map((sz) => ({ size: sz, price: p.price, compareAtPrice: p.compareAtPrice })));
     } else if (p.weightVolume) {
       setFormVariants([{ size: p.weightVolume, price: p.price, compareAtPrice: p.compareAtPrice, unitRate: p.weightVolume.toLowerCase().includes('kg') ? `₹${p.price}/kg` : '' }]);
     } else if (p.plantSize) {
@@ -303,11 +301,19 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
           unitRate: v.unitRate ? v.unitRate.trim() : undefined,
           inStock: v.inStock !== undefined ? v.inStock : true,
         }));
+      // With a single size, the main "Selling Price" / "Compare Price" fields are the source of truth
+      if (validVariants.length === 1) {
+        validVariants[0].price = Number(formData.price) || validVariants[0].price;
+        validVariants[0].compareAtPrice = formData.compareAtPrice ? Number(formData.compareAtPrice) : validVariants[0].compareAtPrice;
+      }
       const primaryPrice = validVariants.length > 0 ? validVariants[0].price : Number(formData.price);
       const primaryCompare = validVariants.length > 0 ? validVariants[0].compareAtPrice : (formData.compareAtPrice ? Number(formData.compareAtPrice) : undefined);
       const primarySize = validVariants.length > 0 ? validVariants[0].size : (formData.plantSize || (sectionFilter === 'plant-care' ? '1 KG' : 'Medium (9-15")'));
 
       const productToSave: Product = {
+        // Keep every existing field (colours, material, sub-category, etc.) that the form does not show
+        ...(editingProduct || {}),
+        ...formData,
         id: editingProduct ? editingProduct.id : `prod_${Date.now()}`,
         name: formData.name,
         slug,
@@ -373,7 +379,7 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
   const handleDeleteAll = async () => {
     const count = products.length;
     if (count === 0) return;
-    if (window.confirm(`⚠️ Are you sure you want to delete ALL ${count} products from the store? This will completely clear the inventory and cannot be undone.`)) {
+    if (window.confirm(`Are you sure you want to delete ALL ${count} products from the store? This will completely clear the inventory and cannot be undone.`)) {
       setIsSaving(true);
       try {
         await deleteAllProducts();
@@ -398,26 +404,11 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
 
   // Filter by section and search
   const filteredProducts = products.filter((p) => {
-    const cat = (p.category || '').toLowerCase();
-    const type = (p.plantType || '').toLowerCase();
-    const name = (p.name || '').toLowerCase();
-
-    // 1. Section matching
-    if (sectionFilter === 'pots-planters') {
-      const isPot = cat.includes('pot') || cat.includes('planter') || type.includes('pot') || type.includes('planter') || name.includes('pot') || name.includes('planter');
-      if (!isPot) return false;
-    } else if (sectionFilter === 'plant-care') {
-      const isCare = cat.includes('care') || cat.includes('fertilizer') || cat.includes('soil') || type.includes('care') || type.includes('food') || type.includes('fertilizer') || name.includes('elixir') || name.includes('neem') || name.includes('fertilizer');
-      if (!isCare) return false;
-    } else if (sectionFilter === 'combos') {
-      const isCombo = cat.includes('combo') || cat.includes('gift') || type.includes('combo') || type.includes('bundle') || name.includes('combo') || name.includes('bundle') || name.includes('trio');
-      if (!isCombo) return false;
-    } else if (sectionFilter === 'plants') {
-      const isPot = cat.includes('pot') || cat.includes('planter') || type.includes('pot') || type.includes('planter') || name.includes('pot') || name.includes('planter');
-      const isCare = cat.includes('care') || cat.includes('fertilizer') || cat.includes('soil') || type.includes('care') || type.includes('food') || type.includes('fertilizer') || name.includes('elixir') || name.includes('neem');
-      const isCombo = cat.includes('combo') || cat.includes('gift') || type.includes('combo') || type.includes('bundle') || name.includes('combo') || name.includes('bundle') || name.includes('trio');
-      if (isPot || isCare || isCombo) return false;
-    }
+    // 1. Section matching (by category, same rules as the storefront)
+    if (sectionFilter === 'pots-planters' && getProductSection(p) !== 'pots-planters') return false;
+    if (sectionFilter === 'plant-care' && getProductSection(p) !== 'plant-care') return false;
+    if (sectionFilter === 'plants' && getProductSection(p) !== 'plants') return false;
+    if (sectionFilter === 'combos' && !isGiftingProduct(p)) return false;
 
     // 2. Search query matching
     const matchesSearch =
@@ -885,6 +876,56 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
                     placeholder="Architectural statement foliage with lush violin-shaped leaves."
                     value={formData.shortDescription || ''}
                     onChange={(e) => setFormData({ ...formData, shortDescription: e.target.value })}
+                    className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block font-semibold text-[#1A1A1A] mb-1">Full Description (product page)</label>
+                  <textarea
+                    rows={4}
+                    value={formData.description || ''}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
+                  />
+                </div>
+                <label className="flex items-start gap-2.5 p-3 rounded-lg bg-[#F5F2EB] border border-[#E5E2D9] cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={!!formData.showColourOptions}
+                    onChange={(e) => setFormData({ ...formData, showColourOptions: e.target.checked })}
+                    className="mt-0.5 w-4 h-4 accent-[#2D4A27]"
+                  />
+                  <span>
+                    <span className="block font-semibold text-[#1A1A1A]">Show "Select Colour" on the product page</span>
+                    <span className="block text-[11px] text-[#7A7A7A]">When off, customers don't see a colour / planter finish choice for this product.</span>
+                  </span>
+                </label>
+                <div>
+                  <label className="block font-semibold text-[#1A1A1A] mb-1">Colour Options (comma-separated)</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. White, Black, Terracotta"
+                    value={(formData.colorOptions || []).join(', ')}
+                    onChange={(e) => setFormData({ ...formData, colorOptions: e.target.value.split(',').map((c) => c.trim()).filter(Boolean) })}
+                    className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold text-[#1A1A1A] mb-1">Material (pots & planters)</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Plastic, Ceramic, Metal"
+                    value={formData.material || ''}
+                    onChange={(e) => setFormData({ ...formData, material: e.target.value })}
+                    className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block font-semibold text-[#1A1A1A] mb-1">Tags (comma-separated - controls menus like balcony, gifting, low light)</label>
+                  <input
+                    type="text"
+                    value={(formData.tags || []).join(', ')}
+                    onChange={(e) => setFormData({ ...formData, tags: e.target.value.split(',').map((t) => t.trim()).filter(Boolean) })}
                     className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
                   />
                 </div>

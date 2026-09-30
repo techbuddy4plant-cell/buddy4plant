@@ -1,5 +1,5 @@
 import React from 'react';
-import { LogOut, X, AlertTriangle, ShieldAlert, User as UserIcon } from 'lucide-react';
+import { LogOut, X, AlertTriangle, ShieldAlert, User as UserIcon } from './Icons';
 
 interface SignOutConfirmModalProps {
   isOpen: boolean;

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowUpRight, X, Sparkles, Check, Droplets, Leaf } from 'lucide-react';
+import { ArrowUpRight, X, Sparkles, Check, Droplets, Leaf } from '../common/Icons';
 
 interface WhatsInsideSectionProps {
   navigate: (path: string) => void;

@@ -13,7 +13,7 @@ import {
   MessageCircle,
   Copy,
   Check
-} from 'lucide-react';
+} from '../common/Icons';
 import { Order, OrderStatus } from '../../types';
 import { subscribeToOrder } from '../../services/orderService';
 import { useStoreSettings } from '../../context/StoreSettingsContext';
@@ -179,7 +179,7 @@ export const OrderSuccess: React.FC<OrderSuccessProps> = ({ orderNumber, navigat
                     </button>
                   </div>
                   <p className="text-[11px] text-[#7A7A7A] mt-1.5 font-light">
-                    Current Location: <strong className="text-[#1A1A1A]">{order.currentLocation || 'Bengaluru Central Botanical Hub'}</strong>
+                    Current Location: <strong className="text-[#1A1A1A]">{order.currentLocation || 'Buddy4Plant Nursery, Lucknow'}</strong>
                   </p>
                 </div>
 

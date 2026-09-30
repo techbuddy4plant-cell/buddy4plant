@@ -103,13 +103,56 @@ export const AdminSettings: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block font-semibold text-[#1A1A1A] mb-1">WhatsApp Plant Doctor Number</label>
+              <label className="block font-semibold text-[#1A1A1A] mb-1">Phone number (Call us)</label>
               <input
                 type="text"
                 value={storeForm.contactPhone}
                 onChange={(e) => setStoreForm({ ...storeForm, contactPhone: e.target.value })}
+                placeholder="+91 80048 81668"
                 className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
               />
+            </div>
+            <div>
+              <label className="block font-semibold text-[#1A1A1A] mb-1">WhatsApp number</label>
+              <input
+                type="text"
+                value={storeForm.whatsappSupportNumber}
+                onChange={(e) => setStoreForm({ ...storeForm, whatsappSupportNumber: e.target.value })}
+                placeholder="+91 80048 81668"
+                className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
+              />
+              <span className="text-[10px] text-[#7A7A7A]">Used for every WhatsApp button on the website</span>
+            </div>
+            <div>
+              <label className="block font-semibold text-[#1A1A1A] mb-1">Opening hours (optional)</label>
+              <input
+                type="text"
+                value={storeForm.storeHours || ''}
+                onChange={(e) => setStoreForm({ ...storeForm, storeHours: e.target.value })}
+                placeholder="e.g. Mon - Sat, 9 AM - 7 PM"
+                className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block font-semibold text-[#1A1A1A] mb-1">Store / nursery address</label>
+              <textarea
+                rows={2}
+                value={storeForm.storeAddress}
+                onChange={(e) => setStoreForm({ ...storeForm, storeAddress: e.target.value })}
+                placeholder="Full address shown on Locate Our Store and Contact pages"
+                className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block font-semibold text-[#1A1A1A] mb-1">Google Maps link (for "Directions")</label>
+              <input
+                type="text"
+                value={storeForm.storeMapsUrl || ''}
+                onChange={(e) => setStoreForm({ ...storeForm, storeMapsUrl: e.target.value })}
+                placeholder="Open your nursery in Google Maps > Share > Copy link, and paste it here"
+                className="w-full px-3 py-2 bg-white border border-[#E5E2D9] text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
+              />
+              <span className="text-[10px] text-[#7A7A7A]">If empty, directions use the address above</span>
             </div>
           </div>
         </div>

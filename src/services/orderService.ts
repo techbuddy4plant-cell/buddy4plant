@@ -46,12 +46,12 @@ export async function createOrder(
     updatedAt: timestamp,
     deliveryCourier: orderData.deliveryCourier || 'BlueDart Express Eco',
     trackingNumber: orderData.trackingNumber || `B4P-EXP-${orderNumber.replace(/[^0-9]/g, '')}`,
-    currentLocation: orderData.currentLocation || 'Bengaluru Central Botanical Nursery Hub',
+    currentLocation: orderData.currentLocation || 'Buddy4Plant Nursery, Lucknow',
     statusHistory: [
       {
         status: orderData.orderStatus || 'Pending',
         timestamp,
-        location: 'Bengaluru Central Botanical Nursery Hub',
+        location: 'Buddy4Plant Nursery, Lucknow',
         note:
           orderData.paymentMethod === 'cod'
             ? 'Order placed with Cash on Delivery. Preparing specimen potting inspection.'

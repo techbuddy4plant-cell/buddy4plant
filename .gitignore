@@ -6,3 +6,9 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Local working folders (not part of the site)
+_to_delete/
+scratch/
+Claude outputs/
+uploads/

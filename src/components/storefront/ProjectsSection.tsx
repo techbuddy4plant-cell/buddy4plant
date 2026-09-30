@@ -1,56 +1,19 @@
 import { useStoreSettings } from '../../context/StoreSettingsContext';
 import React from 'react';
-import { ArrowUpRight, Sparkles, MapPin, CheckCircle, ArrowRight } from 'lucide-react';
+import { ArrowUpRight, Sparkles, MapPin, CheckCircle, ArrowRight } from '../common/Icons';
 import { PlantImage } from '../../utils/imageFallback';
+import { LANDSCAPE_PROJECTS } from '../../data/landscapeProjects';
 
 interface ProjectsSectionProps {
   navigate: (path: string) => void;
 }
 
-export const BOTANICAL_PROJECTS = [
-  {
-    id: 'balcony-sanctuary',
-    title: 'The Urban Balcony Sanctuary',
-    location: 'Indiranagar, Bengaluru',
-    category: 'Residential Balcony',
-    image: 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=1200&q=80',
-    description:
-      'Transformed a bare 150 sq.ft sunny balcony into a lush subtropical sanctuary featuring custom drainage-friendly planters, monstera deliciosa, and automated organic misting.',
-    speciesCount: 28,
-    plantHighlights: ['Monstera Deliciosa', 'Fiddle Leaf Fig', 'Golden Pothos', 'Organic Kelp Fed Soil'],
-    tag: 'Completed Project',
-  },
-  {
-    id: 'biophilic-atrium',
-    title: 'Biophilic Workspace Atrium',
-    location: 'Whitefield Tech Park, Bengaluru',
-    category: 'Corporate Green Interior',
-    image: 'https://images.unsplash.com/photo-1545241047-6083a3684587?auto=format&fit=crop&w=1200&q=80',
-    description:
-      'Engineered an indoor oxygen micro-climate for 400+ employees with 120+ NASA air-purifiers, zero-maintenance self-watering planters, and bi-weekly organic soil nutrition.',
-    speciesCount: 120,
-    plantHighlights: ['Areca Palms', 'Snake Plants', 'ZZ Raven', 'Peace Lilies'],
-    tag: 'Completed Project',
-  },
-  {
-    id: 'terrace-zen-garden',
-    title: 'Terrace Zen & Organic Herb Garden',
-    location: 'Greater Kailash, New Delhi',
-    category: 'Rooftop Terrace',
-    image: 'https://images.unsplash.com/photo-1599598425947-320d43702580?auto=format&fit=crop&w=1200&q=80',
-    description:
-      'A serene rooftop retreat with hand-thrown terracotta pots, cold-pressed neem fed soil beds, and aromatic culinary and medicinal plants resilient to extreme northern heat.',
-    speciesCount: 45,
-    plantHighlights: ['Lemon Grass', 'Holy Basil (Tulsi)', 'Aloe Arborescens', 'Rosemary'],
-    tag: 'Completed Project',
-  },
-];
 
 import { getProjects } from '../../services/projectService';
 
 export const ProjectsSection: React.FC<ProjectsSectionProps> = ({ navigate }) => {
   const { homepageCMS } = useStoreSettings();
-  const [projects, setProjects] = React.useState<any[]>(BOTANICAL_PROJECTS);
+  const [projects, setProjects] = React.useState<any[]>(LANDSCAPE_PROJECTS);
 
   React.useEffect(() => {
     getProjects().then((data) => {
@@ -84,10 +47,10 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({ navigate }) =>
               Botanical Architecture &amp; Styling
             </span>
             <h2 className="font-editorial text-3xl sm:text-4xl lg:text-5xl font-bold text-[#141414] tracking-tight">
-              {homepageCMS.projectsTitle || 'Curated Botanical Projects'}
+              {homepageCMS.projectsTitle && homepageCMS.projectsTitle !== 'Curated Botanical Projects' ? homepageCMS.projectsTitle : 'Our Landscaping Projects'}
             </h2>
             <p className="mt-3 text-xs sm:text-sm text-[#5C5C5C] max-w-xl">
-              {homepageCMS.projectsSubtitle || 'From compact urban balconies to full corporate atriums, explore living spaces thoughtfully greenscaped with our nurtured flora.'}
+              {homepageCMS.projectsSubtitle && !homepageCMS.projectsSubtitle.startsWith('From compact urban balconies') ? homepageCMS.projectsSubtitle : 'Landscaping and garden maintenance for government campuses, institutes, industry and homes across Uttar Pradesh and Delhi.'}
             </p>
           </div>
 
@@ -106,7 +69,7 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({ navigate }) =>
             <div
               key={project.id}
               onClick={() => navigate('/projects')}
-              className="group relative cursor-pointer bg-[#FAF9F5] rounded-3xl overflow-hidden border border-[#E5E2D9] hover:border-[#1F3B22]/40 hover:shadow-xl transition-all duration-500 flex flex-col justify-between"
+              className="group relative cursor-pointer bg-white rounded-[22px] overflow-hidden ring-1 ring-[#ECE6DA] shadow-[0_10px_30px_-18px_rgba(19,48,27,0.35)] hover:shadow-[0_22px_40px_-20px_rgba(19,48,27,0.45)] hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between"
             >
               <div className="relative aspect-[4/3] w-full overflow-hidden bg-[#EAE7DF]">
                 <PlantImage
@@ -146,7 +109,7 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({ navigate }) =>
 
                 <div className="mt-5 pt-4 border-t border-[#E8E5DC] flex items-center justify-between text-xs">
                   <span className="text-[#1F3B22] font-bold">
-                    {project.speciesCount} Live Flora Specimen
+                    {project.speciesCount > 0 ? `${project.speciesCount} Live Flora Specimen` : project.location}
                   </span>
                   <span className="text-[11px] font-semibold text-[#7A7A7A] group-hover:text-[#141414] group-hover:translate-x-0.5 transition-all">
                     View Case Study &rarr;

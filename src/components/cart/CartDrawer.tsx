@@ -9,7 +9,7 @@ import {
   ShieldCheck,
   Check,
   Leaf
-} from 'lucide-react';
+} from '../common/Icons';
 import { useCart } from '../../context/CartContext';
 import { useStoreSettings } from '../../context/StoreSettingsContext';
 import { PlantImage } from '../../utils/imageFallback';

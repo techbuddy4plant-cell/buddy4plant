@@ -13,7 +13,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { Product } from '../types';
-import { INITIAL_PRODUCTS } from '../data/initialProducts';
+import { INITIAL_PRODUCTS, LEGACY_DEMO_PRODUCT_IDS, STORE_CATALOGUE } from '../data/initialProducts';
 
 const PRODUCTS_COLLECTION = 'products';
 const LOCAL_STORAGE_KEY = 'b4p_products_db';
@@ -130,7 +130,7 @@ export async function seedProductsIfEmpty(): Promise<void> {
   }
 }
 
-export async function getAllProducts(): Promise<Product[]> {
+async function getAllProductsBase(): Promise<Product[]> {
   const deletedIds = getDeletedProductIds();
   const saved = typeof window !== 'undefined' ? localStorage.getItem(LOCAL_STORAGE_KEY) : null;
   const isSeeded = typeof window !== 'undefined' ? localStorage.getItem(SEEDED_FLAG_KEY) === 'true' : false;
@@ -190,6 +190,87 @@ export async function getAllProducts(): Promise<Product[]> {
   return getLocalProducts().map(sanitizeProduct);
 }
 
+const CATALOGUE_MERGE_FLAG = 'b4p_plant_catalogue_v24';
+
+/**
+ * Products replaced by the current catalogue: old demo items, the earlier "cat-" test list,
+ * and every older "b4p-" catalogue product (they are re-added fresh from PLANT_CATALOGUE).
+ */
+const isLegacyDemoProduct = (p: Product) =>
+  LEGACY_DEMO_PRODUCT_IDS.includes(p.id) ||
+  (p.id || '').startsWith('cat-') ||
+  (p.id || '').startsWith('b4p-');
+
+/**
+ * One-time store update (runs once per browser):
+ *  1. removes the old demo/sample products (locally and in Firestore)
+ *  2. adds the plant catalogue (src/data/plantCatalogue.ts) - never re-adds products the admin deleted
+ * Products the admin created themselves are never touched.
+ */
+async function getAllProductsWithCatalogue(): Promise<Product[]> {
+  const base = await getAllProductsBase();
+  if (typeof window === 'undefined' || localStorage.getItem(CATALOGUE_MERGE_FLAG) === 'true') return base;
+
+  const legacy = base.filter(isLegacyDemoProduct);
+  const kept = base.filter((p) => !isLegacyDemoProduct(p));
+  const catalogueIds = new Set(STORE_CATALOGUE.map((p) => p.id));
+  legacy.forEach((p) => {
+    if (!catalogueIds.has(p.id)) markProductDeleted(p.id);
+  });
+  // A new catalogue version restores every catalogue product (earlier updates may have hidden some).
+  catalogueIds.forEach((id) => unmarkProductDeleted(id));
+
+  const deletedIds = getDeletedProductIds();
+  const ids = new Set(kept.map((p) => p.id));
+  const slugs = new Set(kept.map((p) => (p.slug || '').toLowerCase()));
+  const now = Date.now();
+  const missing = STORE_CATALOGUE.filter(
+    (p) => !ids.has(p.id) && !slugs.has(p.slug.toLowerCase()) && !deletedIds.has(p.id)
+  ).map((p) => ({ ...p, createdAt: now, updatedAt: now }));
+
+  localStorage.setItem(CATALOGUE_MERGE_FLAG, 'true');
+  const merged = [...kept, ...missing];
+  setLocalProducts(merged);
+
+  try {
+    const batch = writeBatch(db);
+    for (const p of legacy) if (!catalogueIds.has(p.id)) batch.delete(doc(db, PRODUCTS_COLLECTION, p.id));
+    for (const p of missing) batch.set(doc(db, PRODUCTS_COLLECTION, p.id), p);
+    await batch.commit();
+  } catch (error) {
+    console.warn('Could not update Firestore catalogue (changes kept locally):', error);
+  }
+  return merged;
+}
+
+const POT_IMAGE_CLEANUP_FLAG = 'b4p_pot_hover_cleanup_v1';
+const POT_IMAGE = '/editorial/buddy4plant-pot.jpg';
+
+/** Removes the Buddy4Plant pot photo from plant products (it was showing on hover). Runs once. */
+export async function getAllProducts(): Promise<Product[]> {
+  const all = await getAllProductsWithCatalogue();
+  if (typeof window === 'undefined' || localStorage.getItem(POT_IMAGE_CLEANUP_FLAG) === 'true') return all;
+  const changed: Product[] = [];
+  const cleaned = all.map((p) => {
+    const isPot = (p.category || '').includes('pot') || (p.category || '').includes('planter');
+    if (isPot || !(p.images || []).includes(POT_IMAGE) || p.images.length < 2) return p;
+    const np = { ...p, images: p.images.filter((img) => img !== POT_IMAGE) };
+    changed.push(np);
+    return np;
+  });
+  localStorage.setItem(POT_IMAGE_CLEANUP_FLAG, 'true');
+  if (changed.length === 0) return all;
+  setLocalProducts(cleaned);
+  try {
+    const batch = writeBatch(db);
+    for (const p of changed) batch.set(doc(db, PRODUCTS_COLLECTION, p.id), { images: p.images }, { merge: true });
+    await batch.commit();
+  } catch (error) {
+    console.warn('Could not update product images in Firestore (kept locally):', error);
+  }
+  return cleaned;
+}
+
 export async function getProducts(category?: string): Promise<Product[]> {
   const all = await getAllProducts();
   if (category && category !== 'all') {
@@ -223,6 +304,8 @@ export async function saveProduct(product: Partial<Product> & { name: string; pr
   const slug = product.slug || product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
   
   const productData: Product = {
+    // keep any extra fields (colour options, material, etc.)
+    ...(product as Product),
     id,
     name: product.name,
     slug,

@@ -10,7 +10,7 @@ import {
   ArrowLeft,
   Tag,
   Sparkles
-} from 'lucide-react';
+} from '../common/Icons';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import { useStoreSettings } from '../../context/StoreSettingsContext';
@@ -324,7 +324,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ navigate }) => {
                     <input
                       type="tel"
                       required
-                      placeholder="+91 98765 43210"
+                      placeholder="+91 80048 81668"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       className="w-full px-3 py-2.5 bg-white border border-[#E5E2D9] text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
@@ -368,7 +368,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ navigate }) => {
                     <input
                       type="text"
                       required
-                      placeholder="Bengaluru"
+                      placeholder="Lucknow"
                       value={city}
                       onChange={(e) => setCity(e.target.value)}
                       className="w-full px-3 py-2.5 bg-white border border-[#E5E2D9] text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"

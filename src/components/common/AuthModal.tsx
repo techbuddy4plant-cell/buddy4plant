@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Mail, Lock, User, Phone, Sparkles, ShieldAlert, CheckCircle2, ArrowRight } from 'lucide-react';
+import { X, Mail, Lock, User, Phone, Sparkles, ShieldAlert, CheckCircle2, ArrowRight } from './Icons';
 import { useAuth } from '../../context/AuthContext';
 import { Buddy4PlantLogo } from './Buddy4PlantLogo';
 
@@ -163,7 +163,7 @@ export const AuthModal: React.FC = () => {
                 <div className="relative">
                   <input
                     type="tel"
-                    placeholder="+91 98765 43210"
+                    placeholder="+91 80048 81668"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     className="w-full pl-9 pr-3 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-800 focus:bg-white"

@@ -16,18 +16,28 @@ const emitStoreDataChanged = () => {
 };
 
 // --- Store Settings ---
+/** Replaces the old template placeholders (demo phone number, Bengaluru address) with Buddy4Plant's details. */
+const fixStoreSettings = (st: StoreSettings): StoreSettings => {
+  const out = { ...st };
+  const digits = (v?: string) => (v || '').replace(/\D/g, '');
+  if (!digits(out.contactPhone) || digits(out.contactPhone).endsWith('9876543210')) out.contactPhone = INITIAL_STORE_SETTINGS.contactPhone;
+  if (!digits(out.whatsappSupportNumber) || digits(out.whatsappSupportNumber).endsWith('9876543210'))
+    out.whatsappSupportNumber = INITIAL_STORE_SETTINGS.whatsappSupportNumber;
+  if (!out.storeAddress || /Bengaluru|Indiranagar|Greenway Pavilion/i.test(out.storeAddress)) out.storeAddress = INITIAL_STORE_SETTINGS.storeAddress;
+  return out;
+};
 const STORE_SETTINGS_KEY = 'b4p_store_settings';
 
 const getLocalStoreSettings = (): StoreSettings => {
   try {
     const saved = localStorage.getItem(STORE_SETTINGS_KEY);
     if (saved) {
-      return { ...INITIAL_STORE_SETTINGS, ...JSON.parse(saved) };
+      return fixStoreSettings({ ...INITIAL_STORE_SETTINGS, ...JSON.parse(saved) });
     }
   } catch (err) {
     console.warn('Error reading store settings from localStorage:', err);
   }
-  return INITIAL_STORE_SETTINGS;
+  return fixStoreSettings(INITIAL_STORE_SETTINGS);
 };
 
 export async function getStoreSettings(): Promise<StoreSettings> {
@@ -38,7 +48,7 @@ export async function getStoreSettings(): Promise<StoreSettings> {
       const data = snap.data();
       const storeName = data.storeName === 'Vana Botanica' ? 'buddy4plant' : (data.storeName || 'buddy4plant');
       const logoText = data.logoText === 'VANA BOTANICA' ? 'buddy4plant' : (data.logoText || 'buddy4plant');
-      const merged = { ...INITIAL_STORE_SETTINGS, ...data, storeName, logoText } as StoreSettings;
+      const merged = fixStoreSettings({ ...INITIAL_STORE_SETTINGS, ...data, storeName, logoText } as StoreSettings);
       localStorage.setItem(STORE_SETTINGS_KEY, JSON.stringify(merged));
       return merged;
     }

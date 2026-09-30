@@ -18,6 +18,9 @@ import {
 import { BotanicalProject } from '../../types';
 import { getProjects, saveProject, deleteProject } from '../../services/projectService';
 import { PlantImage, PLANT_FALLBACK_IMAGES } from '../../utils/imageFallback';
+import { ProjectMediaManager, ProjectMediaValue } from './ProjectMediaManager';
+import { useStoreSettings } from '../../context/StoreSettingsContext';
+import { resolveGardenContent } from '../../data/gardenServicesContent';
 
 interface AdminProjectsProps {
   onRefresh?: () => void;
@@ -32,12 +35,12 @@ const SAMPLE_PROJECT_IMAGES = [
 ];
 
 const CATEGORY_PRESETS = [
-  'Residential Balcony',
-  'Corporate Green Interior',
-  'Rooftop Terrace',
-  'Villa Courtyard',
-  'Hospitality Greenery',
-  'Vertical Garden',
+  'Government',
+  'Education & Training',
+  'Defence & Industrial',
+  'Commercial',
+  'Residential',
+  'Corporate Office',
 ];
 
 export const AdminProjects: React.FC<AdminProjectsProps> = ({ onRefresh }) => {
@@ -60,6 +63,30 @@ export const AdminProjects: React.FC<AdminProjectsProps> = ({ onRefresh }) => {
   const [plantHighlights, setPlantHighlights] = useState('');
   const [tag, setTag] = useState('Completed Project');
   const [area, setArea] = useState('');
+  const [client, setClient] = useState('');
+  const [sites, setSites] = useState('');
+  const [media, setMedia] = useState<ProjectMediaValue>({ photos: [], videos: [] });
+  const [segment, setSegment] = useState<'institutional' | 'private'>('institutional');
+  const { homepageCMS, updateHomepageCMS } = useStoreSettings();
+  const cms = homepageCMS as any;
+  const gc = resolveGardenContent(cms.gardenServicesContent, cms);
+  const [privTitle, setPrivTitle] = useState<string>(gc.privateSection.title);
+  const [privSubtitle, setPrivSubtitle] = useState<string>(gc.privateSection.subtitle);
+  const [privShow, setPrivShow] = useState<boolean>(gc.privateSection.enabled);
+  const [privSaved, setPrivSaved] = useState(false);
+  const savePrivateSection = async () => {
+    const current = resolveGardenContent(cms.gardenServicesContent, cms);
+    await updateHomepageCMS({
+      ...homepageCMS,
+      gardenServicesContent: {
+        ...current,
+        privateSection: { ...current.privateSection, title: privTitle.trim(), subtitle: privSubtitle.trim(), enabled: privShow },
+      },
+    } as any);
+    setPrivSaved(true);
+    setTimeout(() => setPrivSaved(false), 2500);
+  };
+  const [segmentFilter, setSegmentFilter] = useState<'all' | 'institutional' | 'private'>('all');
   const [duration, setDuration] = useState('');
   const [featured, setFeatured] = useState(false);
   const [active, setActive] = useState(true);
@@ -91,15 +118,19 @@ export const AdminProjects: React.FC<AdminProjectsProps> = ({ onRefresh }) => {
   const openAddModal = () => {
     setEditingProject(null);
     setTitle('');
-    setLocation('Bengaluru, Karnataka');
-    setCategory('Residential Balcony');
-    setImage(SAMPLE_PROJECT_IMAGES[0]);
+    setLocation('Lucknow, Uttar Pradesh');
+    setCategory(segmentFilter === 'private' ? 'Residential' : 'Government');
+    setImage('');
     setDescription('');
-    setSpeciesCount(25);
-    setPlantHighlights('Monstera Deliciosa, Fiddle Leaf Fig, Areca Palm, Organic Kelp Fed Soil');
+    setSpeciesCount(0);
+    setPlantHighlights('Landscaping, Lawn development, Plantation');
     setTag('Completed Project');
-    setArea('180 sq. ft');
-    setDuration('2 Weeks');
+    setArea('');
+    setDuration('');
+    setClient('');
+    setSites('');
+    setMedia({ photos: [], videos: [] });
+    setSegment(segmentFilter === 'private' ? 'private' : 'institutional');
     setFeatured(true);
     setActive(true);
     setIsModalOpen(true);
@@ -112,7 +143,15 @@ export const AdminProjects: React.FC<AdminProjectsProps> = ({ onRefresh }) => {
     setCategory(p.category);
     setImage(p.image);
     setDescription(p.description);
-    setSpeciesCount(p.speciesCount || 10);
+    setSpeciesCount(p.speciesCount || 0);
+    setClient(p.client || '');
+    setSites((p.sites || []).join(', '));
+    setMedia({
+      photos: Array.from(new Set([p.image, ...(p.gallery || [])].filter((x) => !!x && !x.endsWith('.svg')))),
+      videos: p.videos || [],
+      beforeAfter: p.beforeAfter,
+    });
+    setSegment(p.segment === 'private' ? 'private' : 'institutional');
     setPlantHighlights(p.plantHighlights?.join(', ') || '');
     setTag(p.tag || 'Completed Project');
     setArea(p.area || '');
@@ -132,13 +171,20 @@ export const AdminProjects: React.FC<AdminProjectsProps> = ({ onRefresh }) => {
       .filter(Boolean);
 
     const projectData: BotanicalProject = {
+      ...(editingProject || {}),
+      client: client.trim() || undefined,
+      sites: sites.split(',').map((x) => x.trim()).filter(Boolean),
+      segment,
+      gallery: media.photos.slice(1),
+      videos: media.videos,
+      beforeAfter: media.beforeAfter,
       id: editingProject ? editingProject.id : `proj_${Date.now()}`,
       title: title.trim(),
       location: location.trim() || 'Pan-India',
       category: category.trim() || 'Botanical Space',
-      image: image.trim() || SAMPLE_PROJECT_IMAGES[0],
+      image: media.photos[0] || image.trim() || '/logo-white.jpg',
       description: description.trim(),
-      speciesCount: Number(speciesCount) || 10,
+      speciesCount: Number(speciesCount) || 0,
       plantHighlights: highlightsList,
       tag: tag.trim() || 'Completed Project',
       area: area.trim(),
@@ -168,7 +214,8 @@ export const AdminProjects: React.FC<AdminProjectsProps> = ({ onRefresh }) => {
       p.category.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCat =
       selectedCategory === 'all' || p.category.toLowerCase() === selectedCategory.toLowerCase();
-    return matchesSearch && matchesCat;
+    const matchesSeg = segmentFilter === 'all' || (segmentFilter === 'private' ? p.segment === 'private' : p.segment !== 'private');
+    return matchesSearch && matchesCat && matchesSeg;
   });
 
   return (
@@ -185,7 +232,7 @@ export const AdminProjects: React.FC<AdminProjectsProps> = ({ onRefresh }) => {
             </span>
           </div>
           <p className="text-xs text-[#5A5A5A] font-light mt-0.5">
-            Manage your custom balcony transformations, biophilic office spaces, and terrace case studies.
+            Manage the landscaping and AMC projects shown on the Gardening Services, Projects and blog pages.
           </p>
         </div>
 
@@ -197,6 +244,61 @@ export const AdminProjects: React.FC<AdminProjectsProps> = ({ onRefresh }) => {
           Add New Project
         </button>
       </div>
+
+      {/* Section tabs: Our Work vs Private Projects */}
+      <div className="flex flex-wrap gap-2">
+        {([
+          ['all', 'All projects'],
+          ['institutional', 'Our Work (Govt & Institutional)'],
+          ['private', 'Private Projects'],
+        ] as const).map(([val, label]) => {
+          const n = val === 'all' ? projects.length : projects.filter((p) => (val === 'private' ? p.segment === 'private' : p.segment !== 'private')).length;
+          return (
+            <button
+              key={val}
+              onClick={() => setSegmentFilter(val)}
+              className={`px-3.5 py-2 rounded-lg text-xs font-bold border transition-colors ${
+                segmentFilter === val ? 'bg-[#1F3B22] text-white border-[#1F3B22]' : 'bg-white text-[#1F3B22] border-[#E5E2D9] hover:border-[#1F3B22]'
+              }`}
+            >
+              {label} <span className="opacity-60 ml-1">{n}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {segmentFilter === 'private' && (
+        <div className="bg-white p-4 rounded-xl border border-[#E5E2D9] space-y-3 text-xs">
+          <div className="flex items-center justify-between gap-2">
+            <span className="font-bold text-[#1A1A1A]">&quot;Private Projects&quot; section on the Gardening Services page</span>
+            <label className="flex items-center gap-2 font-semibold text-[#1F3B22] cursor-pointer">
+              <input type="checkbox" checked={privShow} onChange={(e) => setPrivShow(e.target.checked)} className="accent-[#2D4A27]" />
+              Show section
+            </label>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <input
+              value={privTitle}
+              onChange={(e) => setPrivTitle(e.target.value)}
+              placeholder="Section title"
+              className="px-3 py-2 bg-[#FAF9F5] border border-[#E5E2D9] rounded-lg focus:outline-none focus:border-[#2D4A27]"
+            />
+            <input
+              value={privSubtitle}
+              onChange={(e) => setPrivSubtitle(e.target.value)}
+              placeholder="Short description under the title"
+              className="sm:col-span-2 px-3 py-2 bg-[#FAF9F5] border border-[#E5E2D9] rounded-lg focus:outline-none focus:border-[#2D4A27]"
+            />
+          </div>
+          <div className="flex items-center gap-3">
+            <button onClick={savePrivateSection} className="px-4 py-2 bg-[#2D4A27] hover:bg-[#1F341C] text-white text-[11px] font-bold uppercase tracking-wider rounded-md">
+              Save section text
+            </button>
+            {privSaved && <span className="text-[#2D6A4F] font-semibold flex items-center gap-1"><Check className="w-3.5 h-3.5" /> Saved</span>}
+            <span className="text-[10px] text-[#7A7A7A]">Add a project with &quot;Show this project in: Private Projects&quot; to list it here.</span>
+          </div>
+        </div>
+      )}
 
       {/* Filter & Search Bar */}
       <div className="bg-white p-3 sm:p-4 rounded-xl border border-[#E5E2D9] flex flex-col md:flex-row items-center justify-between gap-3 shadow-2xs">
@@ -287,6 +389,14 @@ export const AdminProjects: React.FC<AdminProjectsProps> = ({ onRefresh }) => {
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-black/60 text-white backdrop-blur-xs">
                     {p.category}
                   </span>
+                  {p.segment === 'private' && (
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#C4661F] text-white">Private</span>
+                  )}
+                  {(p.gallery?.length || 0) + (p.videos?.length || 0) > 0 && (
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/90 text-[#1F3B22]">
+                      {1 + (p.gallery?.length || 0)} photos{p.videos?.length ? ` · ${p.videos.length} videos` : ''}
+                    </span>
+                  )}
                 </div>
                 <div className="absolute top-2.5 right-2.5">
                   <span
@@ -320,7 +430,7 @@ export const AdminProjects: React.FC<AdminProjectsProps> = ({ onRefresh }) => {
                   {/* Highlights & Stats */}
                   <div className="mt-3.5 pt-3 border-t border-[#F0ECE1] flex items-center justify-between text-[11px]">
                     <span className="font-bold text-[#1F3B22] flex items-center gap-1">
-                      🌿 {p.speciesCount} Flora Species
+                      {p.speciesCount > 0 ? `${p.speciesCount} species` : (p.sites && p.sites.length > 0 ? `${p.sites.length} sites` : (p.client || p.category))}
                     </span>
                     {p.area && (
                       <span className="text-[#6A7B6B] font-medium bg-[#F5F2EB] px-2 py-0.5 rounded">
@@ -442,7 +552,7 @@ export const AdminProjects: React.FC<AdminProjectsProps> = ({ onRefresh }) => {
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Indiranagar, Bengaluru"
+                    placeholder="e.g. Gomti Nagar, Lucknow"
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
                     className="w-full px-3 py-2 bg-white border border-[#D5D2C9] rounded-lg text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
@@ -456,7 +566,7 @@ export const AdminProjects: React.FC<AdminProjectsProps> = ({ onRefresh }) => {
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Residential Balcony"
+                    placeholder="e.g. Government"
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
                     className="w-full px-3 py-2 bg-white border border-[#D5D2C9] rounded-lg text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
@@ -483,81 +593,33 @@ export const AdminProjects: React.FC<AdminProjectsProps> = ({ onRefresh }) => {
                 ))}
               </div>
 
-              {/* Cover Photo */}
+              {/* Where it shows */}
               <div>
-                <label className="block font-bold text-[#1A1A1A] mb-1">
-                  Project Cover Photo
-                </label>
-
-                {/* Compact Preview Thumbnail */}
-                {image && (
-                  <div className="relative aspect-video max-h-36 w-full bg-[#F5F2EB] border border-[#E5E2D9] rounded-lg mb-2 overflow-hidden">
-                    <PlantImage
-                      src={image}
-                      alt="Project preview"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
-
-                <div className="space-y-2">
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="https://images.unsplash.com/..."
-                      value={image}
-                      onChange={(e) => setImage(e.target.value)}
-                      className="flex-1 px-3 py-1.5 bg-white border border-[#D5D2C9] rounded-lg text-[#1A1A1A] font-mono text-[11px] focus:outline-none focus:border-[#2D4A27]"
-                    />
-                    <label className="px-3 py-1.5 bg-[#2D4A27]/10 hover:bg-[#2D4A27]/20 text-[#2D4A27] text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors shrink-0">
-                      <Upload className="w-3.5 h-3.5" />
-                      Upload
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            const reader = new FileReader();
-                            reader.onload = (ev) => {
-                              if (ev.target?.result) setImage(ev.target.result as string);
-                            };
-                            reader.readAsDataURL(file);
-                          }
-                        }}
-                      />
-                    </label>
-                  </div>
-
-                  {/* Preset quick picks */}
-                  <div>
-                    <span className="text-[10px] text-[#7A7A7A] block mb-1 font-semibold">
-                      Sample Architecture Photos:
-                    </span>
-                    <div className="grid grid-cols-5 gap-1.5">
-                      {SAMPLE_PROJECT_IMAGES.map((imgUrl, idx) => (
-                        <button
-                          key={idx}
-                          type="button"
-                          onClick={() => setImage(imgUrl)}
-                          className={`aspect-square rounded border overflow-hidden transition-all ${
-                            image === imgUrl
-                              ? 'border-[#2D4A27] ring-2 ring-[#2D4A27]'
-                              : 'border-[#E5E2D9]'
-                          }`}
-                        >
-                          <PlantImage
-                            src={imgUrl}
-                            alt={`Preset ${idx + 1}`}
-                            className="w-full h-full object-cover"
-                          />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                <label className="block font-bold text-[#1A1A1A] mb-1">Show this project in *</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {([
+                    ['institutional', 'Our Work', 'Government, institutes, industry, commercial'],
+                    ['private', 'Private Projects', 'Homes, villas, terraces, balconies, farmhouses'],
+                  ] as const).map(([val, label, hint]) => (
+                    <button
+                      key={val}
+                      type="button"
+                      onClick={() => {
+                        setSegment(val);
+                        if (val === 'private' && (!category || category === 'Government')) setCategory('Residential');
+                        if (val === 'institutional' && category === 'Residential') setCategory('Government');
+                      }}
+                      className={`text-left p-3 rounded-lg border-2 transition-colors ${segment === val ? 'border-[#2D4A27] bg-[#EEF5EE]' : 'border-[#E0DCD3] bg-white hover:border-[#A3B899]'}`}
+                    >
+                      <span className="block font-bold text-[#1A1A1A]">{label}</span>
+                      <span className="block text-[10px] text-[#7A7A7A] mt-0.5">{hint}</span>
+                    </button>
+                  ))}
                 </div>
               </div>
+
+              {/* Photos, videos, before/after */}
+              <ProjectMediaManager value={media} onChange={setMedia} />
 
               {/* Description */}
               <div>
@@ -573,6 +635,30 @@ export const AdminProjects: React.FC<AdminProjectsProps> = ({ onRefresh }) => {
                 />
               </div>
 
+              {/* Client & sites */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-[#1A1A1A] mb-1">Client / Organisation</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. UP 112 (Emergency Response Services)"
+                    value={client}
+                    onChange={(e) => setClient(e.target.value)}
+                    className="w-full px-3 py-2 bg-white border border-[#D5D2C9] rounded-lg text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-[#1A1A1A] mb-1">Sites covered (comma-separated, optional)</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Hardoi, Sidhauli, Charbagh"
+                    value={sites}
+                    onChange={(e) => setSites(e.target.value)}
+                    className="w-full px-3 py-2 bg-white border border-[#D5D2C9] rounded-lg text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"
+                  />
+                </div>
+              </div>
+
               {/* Grid 3 cols: Species Count, Area, Duration */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
@@ -581,7 +667,7 @@ export const AdminProjects: React.FC<AdminProjectsProps> = ({ onRefresh }) => {
                   </label>
                   <input
                     type="number"
-                    min="1"
+                    min="0"
                     value={speciesCount}
                     onChange={(e) => setSpeciesCount(Number(e.target.value))}
                     className="w-full px-3 py-2 bg-white border border-[#D5D2C9] rounded-lg text-[#1A1A1A] focus:outline-none focus:border-[#2D4A27]"

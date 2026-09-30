@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getProductSection } from '../../utils/productSections';
 import {
   LayoutDashboard,
   Package,
@@ -38,6 +39,8 @@ import { AdminProducts } from './AdminProducts';
 import { AdminOrders } from './AdminOrders';
 import { AdminCategories } from './AdminCategories';
 import { AdminProjects } from './AdminProjects';
+import { AdminGardenContent } from './AdminGardenContent';
+import { AdminServiceEnquiries } from './AdminServiceEnquiries';
 import { AdminReviews } from './AdminReviews';
 import { AdminCoupons } from './AdminCoupons';
 import { AdminCMS } from './AdminCMS';
@@ -70,6 +73,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
   const { profile, user, promptSignOut } = useAuth();
   const { adminDarkMode, toggleAdminDarkMode } = useStoreSettings();
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
+  const [gardenTab, setGardenTab] = useState<'projects' | 'content' | 'enquiries'>('projects');
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -116,40 +120,28 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
     };
   }, []);
 
-  const lowStockLivePlants = products.filter((p) => {
-    const cat = (p.category || '').toLowerCase();
-    const type = (p.plantType || '').toLowerCase();
-    const isPot = cat.includes('pot') || type.includes('pot') || cat.includes('planter') || type.includes('planter');
-    const isCare = cat.includes('care') || cat.includes('fertilizer') || cat.includes('soil') || cat.includes('nutrition') || type.includes('fertilizer') || type.includes('soil');
-    const isCombo = cat.includes('combo') || cat.includes('gift') || cat.includes('bundle') || type.includes('combo');
-    return !isPot && !isCare && !isCombo && p.stock <= 5;
-  }).length;
-
-  const lowStockPots = products.filter((p) => {
-    const cat = (p.category || '').toLowerCase();
-    const type = (p.plantType || '').toLowerCase();
-    return (cat.includes('pot') || type.includes('pot') || cat.includes('planter') || type.includes('planter')) && p.stock <= 5;
-  }).length;
+  const lowStockLivePlants = products.filter((p) => getProductSection(p) === 'plants' && p.stock <= 5).length;
+  const lowStockPots = products.filter((p) => getProductSection(p) === 'pots-planters' && p.stock <= 5).length;
 
   // Replaced available sections in admin panel to match storefront navbar exactly:
-  // Plants, Pots and Planters, Plant care, Gifting, blog, Garden Services, About us
+  // Plants, Pots and Planters, Plant care, Gifting, blog, Gardening Services, About us
   const navItems: { id: AdminTab; label: string; icon: React.ReactNode; badge?: number }[] = [
     { id: 'overview', label: 'Overview & Stats', icon: <LayoutDashboard className="w-4 h-4" /> },
-    { id: 'cms', label: '🏠 Home Page Sections', icon: <Home className="w-4 h-4" /> },
+    { id: 'cms', label: 'Home Page Sections', icon: <Home className="w-4 h-4" /> },
     // Exact Storefront Navigation Sections (replacing old labels)
-    { id: 'plants', label: '🌿 Plants', icon: <Leaf className="w-4 h-4" />, badge: lowStockLivePlants },
-    { id: 'pots-planters', label: '🪴 Pots and Planters', icon: <Package className="w-4 h-4" />, badge: lowStockPots },
-    { id: 'plant-care', label: '🧪 Plant care', icon: <FlaskConical className="w-4 h-4" /> },
-    { id: 'gifting', label: '🎁 Gifting', icon: <Gift className="w-4 h-4" /> },
-    { id: 'blog', label: '📰 blog', icon: <BookOpen className="w-4 h-4" /> },
-    { id: 'garden-services', label: '🌱 Garden Services', icon: <Trees className="w-4 h-4" /> },
+    { id: 'plants', label: 'Plants', icon: <Leaf className="w-4 h-4" />, badge: lowStockLivePlants },
+    { id: 'pots-planters', label: 'Pots and Planters', icon: <Package className="w-4 h-4" />, badge: lowStockPots },
+    { id: 'plant-care', label: 'Plant care', icon: <FlaskConical className="w-4 h-4" /> },
+    { id: 'gifting', label: 'Gifting', icon: <Gift className="w-4 h-4" /> },
+    { id: 'blog', label: 'blog', icon: <BookOpen className="w-4 h-4" /> },
+    { id: 'garden-services', label: 'Gardening Services', icon: <Trees className="w-4 h-4" /> },
     { id: 'about-us', label: 'ℹ️ About us', icon: <Building2 className="w-4 h-4" /> },
     // Core store operations
-    { id: 'orders', label: '📦 Orders & Fulfillment', icon: <Truck className="w-4 h-4" />, badge: orders.filter((o) => o.orderStatus === 'Pending' || o.orderStatus === 'Confirmed').length },
-    { id: 'categories', label: '🗂️ Collections & Categories', icon: <FolderTree className="w-4 h-4" /> },
-    { id: 'reviews', label: '⭐ Customer Reviews', icon: <Star className="w-4 h-4" /> },
-    { id: 'coupons', label: '🏷️ Coupons & Promos', icon: <Tag className="w-4 h-4" /> },
-    { id: 'settings', label: '⚙️ Store & Helpline Settings', icon: <Settings className="w-4 h-4" /> },
+    { id: 'orders', label: 'Orders & Fulfillment', icon: <Truck className="w-4 h-4" />, badge: orders.filter((o) => o.orderStatus === 'Pending' || o.orderStatus === 'Confirmed').length },
+    { id: 'categories', label: 'Collections & Categories', icon: <FolderTree className="w-4 h-4" /> },
+    { id: 'reviews', label: 'Customer Reviews', icon: <Star className="w-4 h-4" /> },
+    { id: 'coupons', label: 'Coupons & Promos', icon: <Tag className="w-4 h-4" /> },
+    { id: 'settings', label: 'Store & Helpline Settings', icon: <Settings className="w-4 h-4" /> },
   ];
 
   const getTabTitle = (tab: AdminTab) => {
@@ -169,7 +161,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
       case 'blog':
         return 'blog — Botanical Wisdom & Editorial Guides';
       case 'garden-services':
-        return 'Garden Services — Landscaping & Installations';
+        return 'Gardening Services — Garden Design & Installations';
       case 'about-us':
         return 'About us — Nursery Origins & Story';
       case 'orders':
@@ -188,7 +180,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
   };
 
   return (
-    <div className={`h-screen flex flex-col md:flex-row font-sans overflow-hidden transition-colors duration-200 ${
+    <div className={`admin-root b4p-fixed-theme h-screen flex flex-col md:flex-row font-sans overflow-hidden transition-colors duration-200 ${
       adminDarkMode ? 'admin-dark-mode bg-[#0E150F] text-[#E5EAE3]' : 'bg-[#FDFCF9] text-[#1A1A1A]'
     }`}>
       {/* Sidebar Navigation - Fixed & Sticky */}
@@ -389,9 +381,30 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
           {/* 5. blog */}
           {activeTab === 'blog' && <AdminBlog navigate={navigate} />}
 
-          {/* 6. Garden Services */}
+          {/* 6. Gardening Services */}
           {activeTab === 'garden-services' && (
-            <AdminProjects onRefresh={loadAllData} />
+            <div className="space-y-5">
+              <div className="flex flex-wrap gap-2 border-b border-[#E5E2D9] pb-3">
+                {([
+                  ['projects', 'Projects & photos'],
+                  ['content', 'Page content'],
+                  ['enquiries', 'Enquiries'],
+                ] as const).map(([id, label]) => (
+                  <button
+                    key={id}
+                    onClick={() => setGardenTab(id)}
+                    className={`px-4 py-2 rounded-lg text-xs font-bold transition-colors ${
+                      gardenTab === id ? 'bg-[#1F3B22] text-white' : 'bg-white border border-[#E5E2D9] text-[#1F3B22] hover:border-[#1F3B22]'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              {gardenTab === 'projects' && <AdminProjects onRefresh={loadAllData} />}
+              {gardenTab === 'content' && <AdminGardenContent />}
+              {gardenTab === 'enquiries' && <AdminServiceEnquiries />}
+            </div>
           )}
 
           {/* 7. About us */}
@@ -403,7 +416,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
           )}
 
           {activeTab === 'categories' && (
-            <AdminCategories categories={categories} onRefresh={loadAllData} />
+            <AdminCategories categories={categories} products={products} onRefresh={loadAllData} />
           )}
 
           {activeTab === 'reviews' && (

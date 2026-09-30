@@ -1,0 +1,12 @@
+I have uploaded a PDF called "Buddy4Plant Photo List". It contains STYLE RULES and a numbered list of 125 plants.
+
+Your job: create product photos for my online plant shop, ONE plant at a time.
+
+For every item in the list, in order, starting from item 1:
+1. Generate exactly ONE separate square (1:1) photorealistic image of ONLY that plant, following the STYLE RULES in the PDF exactly.
+2. Only one plant in one pot per image. Never put two items together, never make a collage or a grid.
+3. No text, no labels, no numbers, no logos, no watermarks anywhere in the image.
+4. Below each image, write one line:  #<number> - <Save as file name>
+5. Then immediately continue with the next item. Do not ask me questions and do not skip items.
+
+If you have to stop because of a limit, stop after a finished image. When I type "next", continue from the next number. If I type "redo 12", make item 12 again.

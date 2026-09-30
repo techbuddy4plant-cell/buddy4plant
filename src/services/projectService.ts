@@ -1,6 +1,10 @@
+import { collection, deleteDoc, doc, getDocs, setDoc } from 'firebase/firestore';
+import { db } from '../config/firebase';
 import { BotanicalProject } from '../types';
+import { LANDSCAPE_PROJECTS } from '../data/landscapeProjects';
 
-export const INITIAL_PROJECTS: BotanicalProject[] = [
+// Old demo projects (kept for reference, no longer shown)
+export const LEGACY_DEMO_PROJECTS: BotanicalProject[] = [
   {
     id: 'balcony-sanctuary',
     title: 'The Urban Balcony Sanctuary',
@@ -54,6 +58,55 @@ export const INITIAL_PROJECTS: BotanicalProject[] = [
 const LOCAL_STORAGE_KEY = 'b4p_projects_db';
 const DELETED_IDS_KEY = 'b4p_deleted_project_ids';
 const SEEDED_FLAG_KEY = 'b4p_projects_seeded';
+const PROJECTS_VERSION_KEY = 'b4p_projects_version';
+const PROJECTS_VERSION = 'landscape-v4';
+const PROJECTS_COLLECTION = 'projects';
+
+export const INITIAL_PROJECTS: BotanicalProject[] = LANDSCAPE_PROJECTS;
+
+/**
+ * Keeps the saved project list in step with the projects shipped in code.
+ * v1: replaced the old demo projects with the real Buddy4Plant projects.
+ * v2: adds real site photos, videos and before/after pictures, plus new projects,
+ *     without losing anything edited or added in the admin panel.
+ */
+const migrateProjects = () => {
+  try {
+    if (typeof window === 'undefined') return;
+    const version = localStorage.getItem(PROJECTS_VERSION_KEY);
+    if (version === PROJECTS_VERSION) return;
+    const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+    const saved: BotanicalProject[] | null = raw ? JSON.parse(raw) : null;
+    if (!['landscape-v1', 'landscape-v2', 'landscape-v3'].includes(version || '') || !Array.isArray(saved)) {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(INITIAL_PROJECTS));
+      localStorage.removeItem(DELETED_IDS_KEY);
+    } else {
+      const deleted = getDeletedProjectIds();
+      const byId = new Map(INITIAL_PROJECTS.map((p) => [p.id, p]));
+      const merged = saved.map((p) => {
+        const base = byId.get(p.id);
+        if (!base) return p;
+        const untouchedCover = !p.image || p.image.endsWith('.svg');
+        return {
+          ...p,
+          image: untouchedCover ? base.image : p.image,
+          gallery: p.gallery?.length ? p.gallery : base.gallery,
+          videos: p.videos?.length ? p.videos : base.videos,
+          beforeAfter: p.beforeAfter || base.beforeAfter,
+          segment: p.segment || base.segment,
+          ...(untouchedCover
+            ? { title: base.title, client: base.client, description: base.description, plantHighlights: base.plantHighlights, featured: base.featured }
+            : {}),
+        };
+      });
+      const have = new Set(merged.map((p) => p.id));
+      const added = INITIAL_PROJECTS.filter((p) => !have.has(p.id) && !deleted.has(p.id));
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify([...merged, ...added]));
+    }
+    localStorage.setItem(SEEDED_FLAG_KEY, 'true');
+    localStorage.setItem(PROJECTS_VERSION_KEY, PROJECTS_VERSION);
+  } catch (e) {}
+};
 
 const emitStoreDataChanged = () => {
   if (typeof window !== 'undefined') {
@@ -90,7 +143,80 @@ const unmarkProjectDeleted = (id: string) => {
   } catch (e) {}
 };
 
+/* ------------------------------------------------------------------ */
+/* Cloud copy (Firestore "projects" collection)                        */
+/* Admin changes are saved in this browser straight away and copied   */
+/* to Firestore, so every visitor and device sees the same projects.   */
+/* ------------------------------------------------------------------ */
+const withTimeout = <T,>(p: Promise<T>, ms = 6000) =>
+  Promise.race([p, new Promise<never>((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
+
+/** Firestore rejects `undefined` values and very large inline images. */
+const cleanForCloud = (p: BotanicalProject) => {
+  const out: Record<string, unknown> = {};
+  Object.entries(p).forEach(([k, v]) => {
+    if (v !== undefined) out[k] = v;
+  });
+  if (typeof out.image === 'string' && (out.image as string).startsWith('data:') && (out.image as string).length > 700000) {
+    out.image = '/logo-white.jpg';
+  }
+  return out;
+};
+
+const pushToCloud = async (p: BotanicalProject) => {
+  try {
+    await withTimeout(setDoc(doc(db, PROJECTS_COLLECTION, p.id), cleanForCloud(p)));
+  } catch (err) {
+    console.warn('Project saved in this browser only (cloud save failed):', err);
+  }
+};
+
+let cloudSynced = false;
+/** Pull projects from Firestore once per page load and merge by last update. */
+const syncFromCloud = async () => {
+  if (cloudSynced || typeof window === 'undefined') return;
+  cloudSynced = true;
+  try {
+    const snap = await withTimeout(getDocs(collection(db, PROJECTS_COLLECTION)));
+    if (snap.empty) {
+      // First run: upload the current list so other devices get it too.
+      const local: BotanicalProject[] = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '[]');
+      await Promise.all(local.map(pushToCloud));
+      return;
+    }
+    const remote = snap.docs.map((d) => ({ ...(d.data() as BotanicalProject & { deleted?: boolean }), id: d.id }));
+    const local: BotanicalProject[] = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '[]');
+    const byId = new Map(local.map((p) => [p.id, p]));
+    let changed = false;
+    const deleted = getDeletedProjectIds();
+    for (const r of remote) {
+      if (r.deleted) {
+        if (byId.has(r.id)) {
+          byId.delete(r.id);
+          changed = true;
+        }
+        deleted.add(r.id);
+        continue;
+      }
+      const l = byId.get(r.id);
+      if (!l || (r.updatedAt || 0) > (l.updatedAt || 0)) {
+        byId.set(r.id, r);
+        changed = true;
+      }
+    }
+    if (changed) {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(Array.from(byId.values())));
+      localStorage.setItem(DELETED_IDS_KEY, JSON.stringify(Array.from(deleted)));
+      emitStoreDataChanged();
+    }
+  } catch (err) {
+    console.warn('Could not load projects from cloud (using this browser\'s copy):', err);
+  }
+};
+
 export const getProjects = async (): Promise<BotanicalProject[]> => {
+  migrateProjects();
+  void syncFromCloud();
   const deletedIds = getDeletedProjectIds();
   try {
     const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -118,16 +244,18 @@ export const saveProject = async (project: BotanicalProject): Promise<void> => {
   const existingIndex = current.findIndex((p) => p.id === project.id);
   let updated: BotanicalProject[];
 
+  const stamped: BotanicalProject = { ...project, createdAt: project.createdAt || Date.now(), updatedAt: Date.now() };
   if (existingIndex >= 0) {
     updated = [...current];
-    updated[existingIndex] = { ...project, createdAt: project.createdAt || Date.now() };
+    updated[existingIndex] = stamped;
   } else {
-    updated = [{ ...project, createdAt: Date.now() }, ...current];
+    updated = [stamped, ...current];
   }
 
   localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
   localStorage.setItem(SEEDED_FLAG_KEY, 'true');
   emitStoreDataChanged();
+  void pushToCloud(stamped);
 };
 
 export const deleteProject = async (id: string): Promise<void> => {
@@ -137,6 +265,10 @@ export const deleteProject = async (id: string): Promise<void> => {
   localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
   localStorage.setItem(SEEDED_FLAG_KEY, 'true');
   emitStoreDataChanged();
+  // Keep a "deleted" marker in the cloud so other devices remove it too.
+  withTimeout(setDoc(doc(db, PROJECTS_COLLECTION, id), { deleted: true, updatedAt: Date.now() })).catch(() =>
+    withTimeout(deleteDoc(doc(db, PROJECTS_COLLECTION, id))).catch(() => undefined)
+  );
 };
 
 export const deleteAllProjects = async (): Promise<void> => {

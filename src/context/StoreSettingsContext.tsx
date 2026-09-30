@@ -35,6 +35,17 @@ export function calculateLuminance(hexOrColor?: string): number {
   return (r * 299 + g * 587 + b * 114) / 1000;
 }
 
+/**
+ * Background colour for the storefront. Page text is dark, so only light solid colours are used;
+ * dark colours and photos saved in Admin > Home Page Sections fall back to the brand cream,
+ * otherwise sections without their own background become dark-on-dark and unreadable.
+ */
+export function storefrontBackground(saved?: string): string {
+  const v = (saved || '').trim();
+  if (!v || !v.startsWith('#')) return '#FDFCF9';
+  return calculateLuminance(v) >= 200 ? v : '#FDFCF9';
+}
+
 export function getAutoTextColor(backgroundColor?: string): string {
   const brightness = calculateLuminance(backgroundColor);
   return brightness < 130 ? '#F3F4F6' : '#1A1A1A';
@@ -67,11 +78,12 @@ export const StoreSettingsProvider: React.FC<{ children: React.ReactNode }> = ({
   const [loading, setLoading] = useState<boolean>(true);
 
   // Storefront dark mode
+  // Storefront dark mode has been removed - the site always uses the light theme.
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('b4p_theme_mode');
-      if (saved) return saved === 'dark';
-      return window.matchMedia?.('(prefers-color-scheme: dark)').matches || false;
+    try {
+      localStorage.removeItem('b4p_theme_mode');
+    } catch {
+      /* ignore */
     }
     return false;
   });
@@ -113,7 +125,7 @@ export const StoreSettingsProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   // Compute effective text color based on settings & mode
-  const siteBg = isDarkMode ? '#121A13' : (homepageCMS.siteBackground || '#FDFCF9');
+  const siteBg = storefrontBackground(homepageCMS.siteBackground);
   const brightness = calculateLuminance(siteBg);
   const isBgDark = isDarkMode || brightness < 130;
   const autoTextColor = isBgDark ? '#F3F4F6' : '#1A1A1A';
@@ -177,19 +189,10 @@ export const StoreSettingsProvider: React.FC<{ children: React.ReactNode }> = ({
     document.documentElement.style.setProperty('--custom-site-text', effectiveTextColor);
     document.documentElement.style.setProperty('--custom-site-bg', siteBg);
 
-    // If background is dark or text is light, add site-text-light class
-    if (isBgDark || (!isDarkMode && customText && calculateLuminance(customText) > 150)) {
-      document.body.classList.add('site-text-light');
-    } else {
-      document.body.classList.remove('site-text-light');
-    }
-
-    // If a custom manual text color is set
-    if (!isDarkMode && customText && customText !== 'auto') {
-      document.body.classList.add('has-custom-text-color');
-    } else {
-      document.body.classList.remove('has-custom-text-color');
-    }
+    // Automatic light/custom text recolouring is switched off: every storefront section has its own
+    // light background, so recoloured (white) headings and text became unreadable (faded).
+    document.body.classList.remove('site-text-light');
+    document.body.classList.remove('has-custom-text-color');
 
     // Apply background to document.body
     const isImg = !isDarkMode && (siteBg.startsWith('http') || siteBg.startsWith('data:') || siteBg.startsWith('/'));

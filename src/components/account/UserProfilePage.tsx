@@ -18,7 +18,7 @@ import {
   ShoppingBag,
   Truck,
   Search
-} from 'lucide-react';
+} from '../common/Icons';
 import { useAuth } from '../../context/AuthContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { Address, Product, Order } from '../../types';
@@ -279,7 +279,7 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
                   <h1 className="font-serif font-bold text-xl sm:text-2xl text-[#182319]">
-                    {profile?.displayName || user?.displayName || 'Botanical Enthusiast'}
+                    {profile?.displayName || user?.displayName || 'My Account'}
                   </h1>
                   <span className="px-2.5 py-0.5 bg-[#EBF5EC] border border-[#C5E1C9] text-[#2D6A4F] text-[10px] font-bold uppercase tracking-wider rounded-full flex items-center gap-1">
                     <ShieldCheck className="w-3 h-3 text-[#2D6A4F]" /> Verified Customer Account
@@ -291,7 +291,7 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
                   {profile?.phone && (
                     <>
                       <span>•</span>
-                      <span>📞 {profile.phone}</span>
+                      <span><i className="fa-solid fa-phone mr-1.5 text-[10px]" aria-hidden="true" />{profile.phone}</span>
                     </>
                   )}
                 </p>
@@ -414,7 +414,7 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
                   </label>
                   <input
                     type="tel"
-                    placeholder="+91 98765 43210"
+                    placeholder="+91 80048 81668"
                     value={editPhone}
                     onChange={(e) => setEditPhone(e.target.value)}
                     className="w-full px-3.5 py-2.5 border border-stone-300 rounded-xl text-xs focus:ring-2 focus:ring-[#2D4A27]/20 focus:border-[#2D4A27] outline-none"
@@ -616,10 +616,10 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
 
                         <div className="text-xs text-[#5A5A5A] space-y-1">
                           <p className="font-medium text-[#1A1A1A]">
-                            ₹{ord.totalAmount.toLocaleString('en-IN')} • {ord.items.length} item{ord.items.length > 1 ? 's' : ''}
+                            ₹{Number(ord.total ?? ord.totalAmount ?? 0).toLocaleString('en-IN')} • {(ord.items || []).length} item{(ord.items || []).length === 1 ? '' : 's'}
                           </p>
                           <p className="text-[11px] text-[#768C76] truncate">
-                            Shipping to: {ord.shippingAddress.city}, {ord.shippingAddress.state}
+                            Shipping to: {ord.shippingAddress?.city || '-'}, {ord.shippingAddress?.state || ''}
                           </p>
                         </div>
 
@@ -839,7 +839,7 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
                       <p className="text-[#556955] leading-relaxed">{addr.street}</p>
                       {addr.landmark && <p className="text-[#6B856B] text-[11px]">Landmark: {addr.landmark}</p>}
                       <p className="text-[#556955] font-medium">{addr.city}, {addr.state} - {addr.pincode}</p>
-                      <p className="text-[#6B856B] mt-2">📞 {addr.phone}</p>
+                      <p className="text-[#6B856B] mt-2"><i className="fa-solid fa-phone mr-1.5 text-[10px]" aria-hidden="true" />{addr.phone}</p>
                     </div>
 
                     <div className="pt-3 border-t border-[#E8F0E7] flex items-center justify-between">
@@ -878,7 +878,7 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
                   onClick={() => navigate('/plants')}
                   className="mt-5 px-6 py-2.5 bg-[#2D4A27] text-white rounded-xl text-xs font-bold uppercase tracking-wider"
                 >
-                  Browse Catalogue &rr;
+                  Browse Catalogue &rarr;
                 </button>
               </div>
             ) : (
@@ -916,7 +916,7 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
                 disabled={passwordResetSent}
                 className="px-4 py-2 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-bold uppercase tracking-wider shrink-0 transition-colors cursor-pointer"
               >
-                {passwordResetSent ? 'Reset Email Sent ✓' : 'Send Password Reset Email'}
+                {passwordResetSent ? 'Reset Email Sent' : 'Send Password Reset Email'}
               </button>
             </div>
 

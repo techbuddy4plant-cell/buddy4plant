@@ -1,5 +1,5 @@
 import React from 'react';
-import { Truck, ShieldCheck, Leaf, Sparkles } from 'lucide-react';
+import { Truck, ShieldCheck, Leaf, Sparkles } from '../common/Icons';
 import { useStoreSettings } from '../../context/StoreSettingsContext';
 
 const parseBadge = (

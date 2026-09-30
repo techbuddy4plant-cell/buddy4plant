@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Star, Heart, ShoppingBag, Sun, Droplets, ShieldCheck, Check } from 'lucide-react';
+import { X, Heart, ShoppingBag, Sun, Droplets } from './Icons';
 import { Product } from '../../types';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
@@ -29,7 +29,8 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose
       ? Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100)
       : null;
 
-  const potOptions = ['Ivory White', 'Terracotta Red', 'Sage Green', 'Matte Charcoal'];
+  const potOptions = product.colorOptions && product.colorOptions.length > 0 ? product.colorOptions : ['Ivory White', 'Terracotta Red', 'Sage Green', 'Matte Charcoal'];
+  const showColours = !!product.showColourOptions;
 
   const isPlantCare =
     product.category === 'plant-care' ||
@@ -67,118 +68,99 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose
     ? product.availableSizes
     : (product.plantSize ? [product.plantSize] : ['Small (4-8")', 'Medium (9-15")', 'Large (16-28")']);
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-stone-900/60 backdrop-blur-xs transition-opacity"
-        onClick={onClose}
-      />
+  // Show (and add to cart) a size this product actually offers
+  const activeSize = sizeList.includes(selectedSize) ? selectedSize : sizeList[0];
 
-      {/* Modal Container */}
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" role="dialog" aria-modal="true" aria-label={product.name}>
+      {/* Backdrop */}
+      <div className="fixed inset-0 bg-[#0F1A11]/55 backdrop-blur-sm transition-opacity" onClick={onClose} />
+
+      {/* Modal */}
       <div
         id="quick-view-modal"
-        className="relative bg-[#FDFCF9] border border-[#E5E2D9] shadow-2xl max-w-3xl w-full overflow-hidden z-10 max-h-[90vh] flex flex-col md:flex-row animate-fadeIn"
+        className="relative z-10 flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-t-[28px] sm:rounded-[28px] bg-[#FDFBF7] shadow-[0_30px_80px_-30px_rgba(0,0,0,0.55)] md:flex-row animate-fadeIn"
       >
-        {/* Close Button */}
+        {/* Close */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-20 w-8 h-8 bg-[#F5F2EB] text-[#1A1A1A] hover:bg-[#E5E2D9] flex items-center justify-center transition-colors border border-[#E5E2D9]"
+          className="absolute right-4 top-4 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-white text-[#13301B] shadow-md transition-transform hover:scale-105"
           aria-label="Close"
         >
           <X className="w-4 h-4" />
         </button>
 
-        {/* Left: Gallery */}
-        <div className="md:w-1/2 bg-[#F5F2EB] p-6 flex flex-col justify-between">
-          <div className="aspect-square w-full overflow-hidden bg-white border border-[#E5E2D9]">
+        {/* Gallery */}
+        <div className="flex flex-col gap-3 bg-[#F3EEE4] p-4 sm:p-6 md:w-[46%]">
+          <div className="relative aspect-square w-full overflow-hidden rounded-[22px] bg-white shadow-[0_14px_32px_-22px_rgba(19,48,27,0.5)]">
             <PlantImage
+              key={selectedImage}
               src={product.images[selectedImage] || product.images[0]}
               alt={product.name}
-              className="w-full h-full object-cover"
+              className="h-full w-full object-cover animate-fadeIn"
             />
+            {discountPercent && (
+              <span className="absolute right-3 top-3 rounded-full bg-[#D62B1F] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-white">
+                {discountPercent}% Off
+              </span>
+            )}
+            {product.bestseller && (
+              <span className="absolute left-3 top-3 rounded-full bg-[#FFD54A] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-[#1A1A1A]">
+                Bestseller
+              </span>
+            )}
           </div>
 
-          {/* Thumbnails */}
           {product.images.length > 1 && (
-            <div className="flex gap-2 mt-4 overflow-x-auto pb-1">
+            <div className="flex gap-2.5 overflow-x-auto pb-1">
               {product.images.map((img, idx) => (
                 <button
                   key={idx}
                   onClick={() => setSelectedImage(idx)}
-                  className={`w-14 h-14 overflow-hidden border shrink-0 transition-all ${
-                    selectedImage === idx ? 'border-[#2D4A27] shadow-xs' : 'border-[#E5E2D9] opacity-70'
+                  aria-label={`Show photo ${idx + 1}`}
+                  className={`h-16 w-16 shrink-0 overflow-hidden rounded-xl transition-all ${
+                    selectedImage === idx ? 'ring-2 ring-[#1E9E57] ring-offset-2 ring-offset-[#F3EEE4]' : 'opacity-70 ring-1 ring-[#E0D9CB] hover:opacity-100'
                   }`}
                 >
-                  <PlantImage src={img} alt="" className="w-full h-full object-cover" />
+                  <PlantImage src={img} alt="" className="h-full w-full object-cover" />
                 </button>
               ))}
             </div>
           )}
         </div>
 
-        {/* Right: Info & Actions */}
-        <div className="md:w-1/2 p-6 md:p-8 flex flex-col justify-between overflow-y-auto bg-[#FDFCF9]">
+        {/* Details */}
+        <div className="flex flex-col overflow-y-auto p-5 sm:p-8 md:w-[54%]">
           <div>
-            <div className="flex items-center gap-2 text-[10px] font-bold text-[#2D4A27] uppercase tracking-[0.25em]">
-              <span>{product.plantType}</span>
-              <span>•</span>
-              <span>{product.location}</span>
-            </div>
-
-            <h2 className="font-serif font-bold text-2xl text-[#1A1A1A] mt-1">
-              {product.name}
-            </h2>
-
-            {/* Rating */}
-            <div className="flex items-center gap-2 mt-2">
-              <div className="flex items-center text-[#2D4A27] text-xs">
-                <Star className="w-3.5 h-3.5 fill-[#2D4A27] text-[#2D4A27]" />
-                <span className="ml-1 font-bold text-[#1A1A1A]">{product.rating.toFixed(1)}</span>
-              </div>
-              <span className="text-xs text-[#7A7A7A]">({product.reviewCount} customer reviews)</span>
-            </div>
+            <p className="pr-12 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#5B7A55]">
+              {[product.plantType, product.location].filter(Boolean).join(' · ')}
+            </p>
+            <h2 className="mt-2 pr-10 font-serif text-2xl sm:text-[2rem] font-semibold leading-tight text-[#13301B]">{product.name}</h2>
+            {product.shortDescription && (
+              <p className="mt-2 text-sm sm:text-[15px] leading-relaxed text-[#4F4F4F]">{product.shortDescription}</p>
+            )}
 
             {/* Price */}
-            <div className="flex items-baseline gap-3 mt-4">
-              <span className="text-2xl font-bold text-[#1A1A1A]">
-                ₹{currentUnitPrice.toLocaleString('en-IN')}
-              </span>
-              {product.compareAtPrice && product.compareAtPrice > product.price && (
-                <span className="text-sm text-[#8A8A8A] line-through">
-                  ₹{product.compareAtPrice.toLocaleString('en-IN')}
-                </span>
+            <div className="mt-4 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+              <span className="text-2xl sm:text-3xl font-semibold text-[#141414]">₹{currentUnitPrice.toLocaleString('en-IN')}</span>
+              {currentComparePrice && currentComparePrice > currentUnitPrice && (
+                <span className="text-base text-[#9A9A9A] line-through">₹{currentComparePrice.toLocaleString('en-IN')}</span>
               )}
-              {discountPercent && (
-                <span className="text-[10px] font-bold text-[#8B5E3C] bg-[#8B5E3C]/10 px-2 py-0.5 uppercase tracking-wider">
-                  {discountPercent}% OFF
-                </span>
-              )}
+              <span className="text-[11px] text-[#7A7A7A]">Incl. of all taxes</span>
             </div>
 
-            <p className="text-xs text-[#5A5A5A] mt-3 leading-relaxed font-light">
-              {product.shortDescription}
-            </p>
-
-            {/* Pack Size / Fertilizer Weight or Plant Size */}
             {isPlantCare ? (
-              <div className="mt-4 pt-3 border-t border-[#E5E2D9]">
-                <label className="text-xs font-bold text-[#1F4522] block mb-2">
-                  Pack Quantity: <span className="text-[#141414] font-extrabold">{selectedWeight}</span>
-                </label>
-                <div className="flex flex-wrap gap-2">
+              <div className="mt-5 border-t border-[#E6E0D3] pt-5">
+                <p className="mb-3 font-serif text-lg font-medium text-[#13301B]">
+                  Select Pack Size <span className="font-sans text-sm font-normal text-[#5A5A5A]">· {selectedWeight}</span>
+                </p>
+                <div className="flex flex-wrap gap-2.5">
                   {weightList.map((wt) => (
-                    <button
-                      key={wt}
-                      type="button"
-                      onClick={() => setSelectedWeight(wt)}
-                      className={`px-3 py-1 text-xs font-bold rounded border transition-all flex items-center gap-1 ${
-                        selectedWeight === wt
-                          ? 'border-[#1F4522] bg-[#1F4522] text-white shadow-xs'
-                          : 'border-[#DDD9CF] bg-white text-[#1A1A1A] hover:border-[#1F4522]'
-                      }`}
-                    >
-                      {selectedWeight === wt && <Check className="w-3 h-3 text-white" />}
+                    <button key={wt} type="button" onClick={() => setSelectedWeight(wt)} className={`rounded-xl border px-4 py-2.5 text-sm font-medium transition-all ${
+                          selectedWeight === wt
+                            ? 'border-[#1E9E57] bg-[#1E9E57] text-white shadow-[0_8px_18px_-10px_rgba(30,158,87,0.9)]'
+                            : 'border-[#E0D9CB] bg-white text-[#1A1A1A] hover:border-[#1E9E57]'
+                        }`}>
                       {wt}
                     </button>
                   ))}
@@ -186,108 +168,92 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose
               </div>
             ) : (
               <>
-                <div className="mt-4 pt-3 border-t border-[#E5E2D9]">
-                  <label className="text-xs font-bold text-[#1A1A1A] block mb-2">
-                    Plant Size: <span className="text-[#1F3B22] font-semibold">{selectedSize}</span>
-                  </label>
-                  <div className="flex flex-wrap gap-2">
+                <div className="mt-5 border-t border-[#E6E0D3] pt-5">
+                  <p className="mb-3 font-serif text-lg font-medium text-[#13301B]">
+                    Select Plant Size <span className="font-sans text-sm font-normal text-[#5A5A5A]">· {activeSize}</span>
+                  </p>
+                  <div className="flex flex-wrap gap-2.5">
                     {sizeList.map((sz) => (
-                      <button
-                        key={sz}
-                        type="button"
-                        onClick={() => setSelectedSize(sz)}
-                        className={`px-2.5 py-1 text-xs font-semibold rounded border transition-all flex items-center gap-1 ${
-                          selectedSize === sz
-                            ? 'border-[#1F3B22] bg-[#1F3B22] text-white shadow-xs'
-                            : 'border-[#DDD9CF] bg-white text-[#1A1A1A] hover:border-[#1F3B22]'
-                        }`}
-                      >
-                        {selectedSize === sz && <Check className="w-3 h-3 text-white" />}
+                      <button key={sz} type="button" onClick={() => setSelectedSize(sz)} className={`rounded-xl border px-4 py-2.5 text-sm font-medium transition-all ${
+                          activeSize === sz
+                            ? 'border-[#1E9E57] bg-[#1E9E57] text-white shadow-[0_8px_18px_-10px_rgba(30,158,87,0.9)]'
+                            : 'border-[#E0D9CB] bg-white text-[#1A1A1A] hover:border-[#1E9E57]'
+                        }`}>
                         {sz}
                       </button>
                     ))}
                   </div>
                 </div>
 
-                <div className="mt-3 pt-3 border-t border-[#E5E2D9]">
-                  <label className="text-xs font-semibold text-[#1A1A1A] block mb-2">
-                    Planter Finish: <span className="font-normal text-[#5A5A5A]">{selectedPotColor}</span>
-                  </label>
-                  <div className="flex flex-wrap gap-2">
+                {showColours && (
+                <div className="mt-5">
+                  <p className="mb-3 font-serif text-lg font-medium text-[#13301B]">
+                    Select Planter Finish <span className="font-sans text-sm font-normal text-[#5A5A5A]">· {potOptions.includes(selectedPotColor) ? selectedPotColor : potOptions[0]}</span>
+                  </p>
+                  <div className="flex flex-wrap gap-2.5">
                     {potOptions.map((color) => (
-                      <button
-                        key={color}
-                        type="button"
-                        onClick={() => setSelectedPotColor(color)}
-                        className={`px-3 py-1.5 text-xs font-medium border transition-all ${
-                          selectedPotColor === color
-                            ? 'border-[#2D4A27] bg-[#2D4A27] text-white font-semibold'
-                            : 'border-[#E5E2D9] text-[#1A1A1A] hover:border-[#2D4A27]'
-                        }`}
-                      >
+                      <button key={color} type="button" onClick={() => setSelectedPotColor(color)} className={`rounded-xl border px-4 py-2.5 text-sm font-medium transition-all ${
+                          (potOptions.includes(selectedPotColor) ? selectedPotColor : potOptions[0]) === color
+                            ? 'border-[#1E9E57] bg-[#1E9E57] text-white shadow-[0_8px_18px_-10px_rgba(30,158,87,0.9)]'
+                            : 'border-[#E0D9CB] bg-white text-[#1A1A1A] hover:border-[#1E9E57]'
+                        }`}>
                         {color}
                       </button>
                     ))}
                   </div>
                 </div>
+                )}
               </>
             )}
 
-            {/* Quick Specs */}
-            <div className="grid grid-cols-2 gap-3 mt-4 p-3 bg-[#F5F2EB] border border-[#E5E2D9] text-xs text-[#5A5A5A]">
-              <div className="flex items-center gap-2">
-                <Sun className="w-3.5 h-3.5 text-[#2D4A27]" />
-                <span>{product.lightRequirement}</span>
+            {/* Care at a glance */}
+            {(product.lightRequirement || product.wateringFrequency) && (
+              <div className="mt-5 grid grid-cols-2 gap-2.5 text-sm text-[#3F3F3F]">
+                {product.lightRequirement && (
+                  <div className="flex items-center gap-2.5 rounded-xl bg-[#F3EEE4] px-3.5 py-3">
+                    <Sun className="w-4 h-4 text-[#1E9E57]" />
+                    <span>{product.lightRequirement}</span>
+                  </div>
+                )}
+                {product.wateringFrequency && (
+                  <div className="flex items-center gap-2.5 rounded-xl bg-[#F3EEE4] px-3.5 py-3">
+                    <Droplets className="w-4 h-4 text-[#1E9E57]" />
+                    <span>{product.wateringFrequency}</span>
+                  </div>
+                )}
               </div>
-              <div className="flex items-center gap-2">
-                <Droplets className="w-3.5 h-3.5 text-[#2D4A27]" />
-                <span>{product.wateringFrequency}</span>
-              </div>
-            </div>
+            )}
           </div>
 
-          {/* Bottom Actions */}
-          <div className="mt-6 pt-4 border-t border-[#E5E2D9]">
-            <div className="flex items-center gap-3">
-              {/* Quantity */}
-              <div className="flex items-center border border-[#E5E2D9] overflow-hidden bg-white">
-                <button
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="px-3 py-2 text-[#1A1A1A] hover:bg-[#F5F2EB] font-bold"
-                >
-                  -
+          {/* Actions */}
+          <div className="mt-6 border-t border-[#E6E0D3] pt-5">
+            <div className="flex items-center gap-2.5">
+              <div className="flex shrink-0 items-center overflow-hidden rounded-full border border-[#E0D9CB] bg-white">
+                <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="px-3.5 py-3 font-bold text-[#1A1A1A] hover:bg-[#F3EEE4]" aria-label="Decrease quantity">
+                  −
                 </button>
-                <span className="px-3 py-2 text-xs font-bold text-[#1A1A1A] min-w-8 text-center">
-                  {quantity}
-                </span>
-                <button
-                  onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
-                  className="px-3 py-2 text-[#1A1A1A] hover:bg-[#F5F2EB] font-bold"
-                >
+                <span className="min-w-8 text-center text-sm font-semibold text-[#1A1A1A]">{quantity}</span>
+                <button onClick={() => setQuantity(Math.min(product.stock, quantity + 1))} className="px-3.5 py-3 font-bold text-[#1A1A1A] hover:bg-[#F3EEE4]" aria-label="Increase quantity">
                   +
                 </button>
               </div>
 
-              {/* Add to cart */}
               <button
                 onClick={() => {
-                  addToCart(product, quantity, isPlantCare ? undefined : selectedPotColor, isPlantCare ? undefined : selectedSize, isPlantCare ? currentVariant.size : undefined, currentUnitPrice);
+                  addToCart(product, quantity, isPlantCare || !showColours ? undefined : (potOptions.includes(selectedPotColor) ? selectedPotColor : potOptions[0]), isPlantCare ? undefined : activeSize, isPlantCare ? currentVariant.size : undefined, currentUnitPrice);
                   onClose();
                 }}
                 disabled={product.stock <= 0}
-                className="flex-1 py-3 px-4 bg-[#2D4A27] hover:bg-[#1F341C] text-white text-[11px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:scale-95"
+                className="flex flex-1 items-center justify-center gap-2 rounded-full bg-[#13301B] px-4 py-3.5 text-sm font-semibold uppercase tracking-wide text-white shadow-[0_12px_24px_-14px_rgba(19,48,27,0.8)] transition-all hover:bg-[#1F4A2B] active:scale-95 disabled:cursor-not-allowed disabled:bg-[#A7A7A7]"
               >
-                <ShoppingBag className="w-3.5 h-3.5" />
+                <ShoppingBag className="w-4 h-4" />
                 {product.stock > 0 ? 'Add to Cart' : 'Out of Stock'}
               </button>
 
-              {/* Wishlist */}
               <button
                 onClick={() => toggleWishlist(product.id)}
-                className={`p-3 border transition-colors ${
-                  isLiked
-                    ? 'border-rose-300 bg-rose-50 text-rose-600'
-                    : 'border-[#E5E2D9] text-[#1A1A1A] hover:text-[#2D4A27] hover:border-[#2D4A27]'
+                className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full border transition-colors ${
+                  isLiked ? 'border-rose-300 bg-rose-50 text-rose-600' : 'border-[#E0D9CB] bg-white text-[#1A1A1A] hover:border-[#1E9E57] hover:text-[#1E9E57]'
                 }`}
                 aria-label="Wishlist"
               >
@@ -300,9 +266,9 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose
                 navigate(`/product/${product.slug}`);
                 onClose();
               }}
-              className="mt-3 text-[11px] uppercase tracking-wider text-center w-full text-[#2D4A27] font-bold hover:underline block"
+              className="mt-4 flex w-full items-center justify-center gap-2 text-sm font-semibold text-[#1E7A45] hover:underline"
             >
-              View Full Product Specifications & Plant Care Guide &rarr;
+              View full details &amp; care guide <i className="fa-solid fa-arrow-right text-xs" aria-hidden="true" />
             </button>
           </div>
         </div>

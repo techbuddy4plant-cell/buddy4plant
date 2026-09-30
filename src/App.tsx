@@ -1,12 +1,14 @@
+import { StoreLocatorPage } from './components/pages/StoreLocatorPage';
 import React, { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { StoreSettingsProvider, useStoreSettings } from './context/StoreSettingsContext';
+import { storefrontBackground, StoreSettingsProvider, useStoreSettings } from './context/StoreSettingsContext';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
 
 import { Navbar } from './components/common/Navbar';
 import { Footer } from './components/common/Footer';
+import { WhatsAppFloat } from './components/common/WhatsAppFloat';
 import { CartDrawer } from './components/cart/CartDrawer';
 import { AuthModal } from './components/common/AuthModal';
 import { QuickViewModal } from './components/common/QuickViewModal';
@@ -33,6 +35,7 @@ import { BlogPage } from './components/pages/BlogPage';
 import { GardenServicesPage } from './components/pages/GardenServicesPage';
 import { AdminDashboard } from './components/admin/AdminDashboard';
 import { AdminLoginPage } from './components/admin/AdminLoginPage';
+import { Scene } from './Scene';
 import { Product } from './types';
 
 export default function App() {
@@ -84,6 +87,10 @@ export default function App() {
     // Redirect legacy or public /admin attempts away to maintain absolute security
     if (path.startsWith('/admin')) {
       return <HomePage navigate={navigate} onQuickView={setQuickViewProduct} />;
+    }
+
+    if (path === '/scene' || path === '/sylva-hero' || path === '/sylva') {
+      return <Scene />;
     }
 
     if (path === '/' || path === '') {
@@ -171,7 +178,10 @@ export default function App() {
     if (path === '/gifting' || path.startsWith('/gifting')) {
       return (
         <ProductListingPage
-          initialCategorySlug="combos"
+          initialCategorySlug={(() => {
+            const sub = path.replace('/gifting', '').replace(/^\//, '').split('/')[0].split('?')[0];
+            return sub ? `${sub}-gifting` : 'gifting';
+          })()}
           navigate={navigate}
           onQuickView={setQuickViewProduct}
         />
@@ -196,6 +206,10 @@ export default function App() {
 
     if (path === '/plant-doctor') {
       return <PlantDoctorPage />;
+    }
+
+    if (path === '/store-locator' || path === '/locate-store') {
+      return <StoreLocatorPage navigate={navigate} />;
     }
 
     if (path === '/contact') {
@@ -247,7 +261,7 @@ const AppShell: React.FC<{
   const { homepageCMS, isDarkMode, effectiveTextColor } = useStoreSettings();
   const isB4PAdminRoute = (currentPath || '').startsWith('/b4padmin');
 
-  const siteBg = isDarkMode ? '#101711' : (homepageCMS.siteBackground || '#FDFCF9');
+  const siteBg = storefrontBackground(homepageCMS.siteBackground);
   const isImage = !isDarkMode && (siteBg.startsWith('http') || siteBg.startsWith('data:') || siteBg.startsWith('/'));
 
   return (
@@ -261,7 +275,7 @@ const AppShell: React.FC<{
         backgroundSize: 'cover',
         backgroundAttachment: 'fixed',
         backgroundRepeat: 'no-repeat',
-        color: effectiveTextColor,
+        color: "#1A1A1A",
       }}
     >
       {!isB4PAdminRoute && <Navbar currentPath={currentPath} navigate={navigate} />}
@@ -281,6 +295,7 @@ const AppShell: React.FC<{
       </main>
 
       {!isB4PAdminRoute && <Footer navigate={navigate} />}
+      {!isB4PAdminRoute && <WhatsAppFloat />}
 
       {/* Drawers & Modals */}
       <CartDrawer navigate={navigate} />

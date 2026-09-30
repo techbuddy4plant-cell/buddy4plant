@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MapPin, Truck, CheckCircle2, AlertCircle } from 'lucide-react';
+import { MapPin, Truck, CheckCircle2, AlertCircle } from './Icons';
 
 export const PincodeChecker: React.FC = () => {
   const [pincode, setPincode] = useState('');

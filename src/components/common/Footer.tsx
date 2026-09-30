@@ -1,288 +1,207 @@
-import React, { useState } from 'react';
-import {
-  ShieldCheck,
-  Truck,
-  Leaf,
-  Sparkles,
-  ArrowRight,
-  Instagram,
-  Facebook,
-  Youtube,
-  MessageCircle,
-  Mail,
-  Check
-} from 'lucide-react';
+import React from 'react';
 import { useStoreSettings } from '../../context/StoreSettingsContext';
 
 interface FooterProps {
   navigate: (path: string) => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ navigate }) => {
-  const { settings, homepageCMS } = useStoreSettings();
-  const [emailInput, setEmailInput] = useState('');
-  const [isSubscribed, setIsSubscribed] = useState(false);
+type LinkItem = { label: string; path: string };
 
-  const handleSubscribe = (e: React.FormEvent) => {
+const COLUMNS: { title: string; links: LinkItem[] }[] = [
+  {
+    title: 'Shop',
+    links: [
+      { label: 'All Plants', path: '/plants' },
+      { label: 'Indoor Plants', path: '/plants/indoor-plants' },
+      { label: 'Pots & Planters', path: '/plants/pots-planters' },
+      { label: 'Plant Care & Soil', path: '/plants/plant-care' },
+      { label: 'Gifting', path: '/gifting' },
+    ],
+  },
+  {
+    title: 'Services',
+    links: [
+      { label: 'Gardening Services', path: '/garden-services' },
+      { label: 'Our Projects', path: '/projects' },
+      { label: 'Plant Care Guide', path: '/care-guide' },
+      { label: 'Blog', path: '/blog' },
+    ],
+  },
+  {
+    title: 'Company',
+    links: [
+      { label: 'About Us', path: '/about' },
+      { label: 'Contact Us', path: '/contact' },
+      { label: 'Locate Our Store', path: '/store-locator' },
+      { label: 'Track Your Order', path: '/track-order' },
+      { label: 'Shipping & Returns', path: '/shipping-policy' },
+    ],
+  },
+];
+
+export const Footer: React.FC<FooterProps> = ({ navigate }) => {
+  const { settings } = useStoreSettings();
+  const phone = settings.contactPhone || settings.whatsappSupportNumber || '';
+  const phoneDigits = phone.replace(/\D/g, '');
+  const wa = (settings.whatsappSupportNumber || phone).replace(/\D/g, '');
+  const email = settings.contactEmail || '';
+  const address = settings.storeAddress || 'Lucknow, Uttar Pradesh, India';
+
+  // Social icons appear only once real profile links are saved in Admin > Settings
+  const PLACEHOLDER = /^https?:\/\/(www\.)?(instagram|facebook|pinterest|youtube)\.com\/buddy4plant\/?$/i;
+  const socials = [
+    { key: 'instagram', icon: 'fa-instagram', label: 'Instagram' },
+    { key: 'facebook', icon: 'fa-facebook-f', label: 'Facebook' },
+    { key: 'youtube', icon: 'fa-youtube', label: 'YouTube' },
+    { key: 'pinterest', icon: 'fa-pinterest-p', label: 'Pinterest' },
+  ]
+    .map((x) => ({ ...x, url: ((settings.socialLinks as unknown as Record<string, string>) || {})[x.key] || '' }))
+    .filter((x) => x.url && !PLACEHOLDER.test(x.url.trim()));
+
+  const go = (path: string) => (e: React.MouseEvent) => {
     e.preventDefault();
-    if (emailInput.trim()) {
-      setIsSubscribed(true);
-      setEmailInput('');
-      setTimeout(() => setIsSubscribed(false), 4000);
-    }
+    navigate(path);
+    window.scrollTo({ top: 0 });
   };
 
   return (
-    <footer className="bg-[#FAF9F5] text-[#141414] border-t border-[#E8E5DC] transition-colors">
-      {/* Top Editorial Botanical Statement & Newsletter */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-12 border-b border-[#E8E5DC]">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center justify-between">
-          <div className="lg:col-span-7">
-            <div className="cursor-pointer inline-block" onClick={() => navigate('/')}>
-              <div className="flex items-center gap-3">
-                <span className="font-editorial text-2xl sm:text-3xl font-extrabold tracking-tight text-[#141414]">
-                  buddy4plant
-                </span>
-                <span className="text-[10px] font-bold tracking-[0.24em] text-[#5B6E58] uppercase border-l border-[#DCD7CB] pl-3 py-0.5">
-                  Botanical Studio
-                </span>
-              </div>
-            </div>
-            <p className="mt-4 text-xs sm:text-sm text-[#5C5C5C] leading-relaxed max-w-xl font-normal">
-              Cultivating mindful living spaces through hand-nurtured botanical flora, microbiome-rich organic soil,
-              and artisanal planters designed to endure.
-            </p>
-          </div>
-
-          <div className="lg:col-span-5">
-            <div className="bg-[#F2EFE8] p-5 sm:p-6 rounded-3xl border border-[#E2DED4]">
-              <span className="text-[10px] font-bold text-[#5B6E58] uppercase tracking-[0.22em] block mb-1.5">
-                {homepageCMS.newsletterTitle || 'The Botanical Journal'}
+    <footer className="b4p-fixed-theme relative overflow-hidden bg-[#13301B] text-[#D5E2D0]">
+      <div className="mx-auto max-w-7xl px-5 pt-16 pb-12 sm:px-8 sm:pt-20 lg:px-10 lg:pt-24 lg:pb-16">
+        <div className="grid gap-14 lg:grid-cols-12 lg:gap-10">
+          {/* Brand */}
+          <div className="lg:col-span-4">
+            <a href="/" onClick={go('/')} className="inline-flex items-center gap-4">
+              <span className="rounded-[22px] bg-[#F4EFE3] p-2.5 shadow-[0_10px_24px_-12px_rgba(0,0,0,0.5)]">
+                <img src="/logo.png" alt="" className="h-16 sm:h-20 w-auto object-contain" />
               </span>
-              <p className="text-xs text-[#525252] mb-3">
-                {homepageCMS.newsletterSubtitle || 'Subscribe for seasonal watering rhythms, rare specimen drops, and indoor styling guides.'}
-              </p>
-
-              {isSubscribed ? (
-                <div className="flex items-center gap-2 text-xs font-semibold text-[#1F3B22] bg-white px-4 py-2.5 rounded-full border border-[#D5DEC4]">
-                  <Check className="w-4 h-4 text-[#1F3B22]" />
-                  <span>Welcome to the journal. Check your inbox soon!</span>
-                </div>
-              ) : (
-                <form onSubmit={handleSubscribe} className="flex gap-2">
-                  <input
-                    type="email"
-                    required
-                    value={emailInput}
-                    onChange={(e) => setEmailInput(e.target.value)}
-                    placeholder="Enter your email address"
-                    className="grow bg-white border border-[#DDD9CF] px-4 py-2.5 rounded-full text-xs text-[#141414] placeholder-[#8A8A8A] focus:outline-none focus:border-[#1F3B22] focus:ring-1 focus:ring-[#1F3B22]"
-                  />
-                  <button
-                    type="submit"
-                    className="pill-btn-dark px-5 py-2.5 text-[11px] font-bold uppercase tracking-wider shrink-0"
-                  >
-                    Join
-                  </button>
-                </form>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Clean Navigation Columns */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12">
-          {/* Column 1: Collections */}
-          <div>
-            <h4 className="text-[10px] font-bold text-[#141414] uppercase tracking-[0.24em] mb-4">
-              Flora Collections
-            </h4>
-            <ul className="space-y-2.5 text-xs text-[#5C5C5C]">
-              <li>
-                <button onClick={() => navigate('/plants/indoor-plants')} className="hover:text-[#1F3B22] transition-colors">
-                  Indoor Foliage Plants
-                </button>
-              </li>
-              <li>
-                <button onClick={() => navigate('/plants/air-purifying')} className="hover:text-[#1F3B22] transition-colors">
-                  NASA Air Cleaners
-                </button>
-              </li>
-              <li>
-                <button onClick={() => navigate('/plants/low-maintenance')} className="hover:text-[#1F3B22] transition-colors">
-                  Low Maintenance &amp; Beginner
-                </button>
-              </li>
-              <li>
-                <button onClick={() => navigate('/plants/cacti-succulents')} className="hover:text-[#1F3B22] transition-colors">
-                  Rare Cacti &amp; Succulents
-                </button>
-              </li>
-              <li>
-                <button onClick={() => navigate('/plants/combos')} className="hover:text-[#1F3B22] transition-colors">
-                  Curated Sanctuary Packs
-                </button>
-              </li>
-            </ul>
-          </div>
-
-          {/* Column 2: Plant Doctor Clinic */}
-          <div>
-            <h4 className="text-[10px] font-bold text-[#141414] uppercase tracking-[0.24em] mb-4">
-              Plant Care Clinic
-            </h4>
-            <ul className="space-y-2.5 text-xs text-[#5C5C5C]">
-              <li>
-                <button onClick={() => navigate('/plant-doctor')} className="hover:text-[#1F3B22] transition-colors flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#1F3B22]" />
-                  WhatsApp Diagnosis Clinic
-                </button>
-              </li>
-              <li>
-                <button onClick={() => navigate('/care-guide')} className="hover:text-[#1F3B22] transition-colors">
-                  Seasonal Watering Rhythms
-                </button>
-              </li>
-              <li>
-                <button onClick={() => navigate('/care-guide')} className="hover:text-[#1F3B22] transition-colors">
-                  Organic Soil &amp; Repotting
-                </button>
-              </li>
-              <li>
-                <button onClick={() => navigate('/care-guide')} className="hover:text-[#1F3B22] transition-colors">
-                  Natural Pest Prevention
-                </button>
-              </li>
-            </ul>
-          </div>
-
-          {/* Column 3: The Sanctuary */}
-          <div>
-            <h4 className="text-[10px] font-bold text-[#141414] uppercase tracking-[0.24em] mb-4">
-              The Sanctuary
-            </h4>
-            <ul className="space-y-2.5 text-xs text-[#5C5C5C]">
-              <li>
-                <button onClick={() => navigate('/about')} className="hover:text-[#1F3B22] transition-colors">
-                  Our Nursery Origins
-                </button>
-              </li>
-              <li>
-                <button onClick={() => navigate('/about')} className="hover:text-[#1F3B22] transition-colors">
-                  Botanical Ethics &amp; Peat-Free
-                </button>
-              </li>
-              <li>
-                <button onClick={() => navigate('/reviews')} className="hover:text-[#1F3B22] transition-colors">
-                  Verified Plant Parent Stories
-                </button>
-              </li>
-              <li>
-                <button onClick={() => navigate('/about')} className="hover:text-[#1F3B22] transition-colors">
-                  Sustainable Packaging Standard
-                </button>
-              </li>
-            </ul>
-          </div>
-
-          {/* Column 4: Client Services */}
-          <div>
-            <h4 className="text-[10px] font-bold text-[#141414] uppercase tracking-[0.24em] mb-4">
-              Support &amp; Studio
-            </h4>
-            <ul className="space-y-2.5 text-xs text-[#5C5C5C]">
-              <li>
-                <button
-                  onClick={() => navigate('/b4padmin')}
-                  className="hover:text-[#1F3B22] transition-colors flex items-center gap-1.5 font-bold text-[#2D4A27]"
-                >
-                  <ShieldCheck className="w-3.5 h-3.5 text-[#2D4A27]" />
-                  Admin Portal &amp; CMS
-                </button>
-              </li>
-              <li>
-                <button onClick={() => navigate('/my-orders')} className="hover:text-[#1F3B22] transition-colors">
-                  Track Live Orders
-                </button>
-              </li>
-              <li>
-                <button onClick={() => navigate('/shipping-policy')} className="hover:text-[#1F3B22] transition-colors">
-                  14-Day Transit Health Guarantee
-                </button>
-              </li>
-              <li>
-                <a href={`mailto:${settings.contactEmail}`} className="hover:text-[#1F3B22] transition-colors block">
-                  {settings.contactEmail}
-                </a>
-              </li>
-              <li>
+              <span>
+                <span className="block font-serif text-3xl sm:text-4xl font-semibold leading-none text-white">buddy4plant</span>
+                <span className="mt-2 block text-[11px] sm:text-xs font-semibold uppercase tracking-[0.22em] text-[#9CCB8F]">Botanical Sanctuary</span>
+              </span>
+            </a>
+            <p className="mt-7 max-w-md text-base leading-relaxed text-[#B9CBB3]">
+              A Lucknow nursery and landscaping company - plants, pots and organic plant care, plus gardening and
+              landscaping services across Uttar Pradesh and Delhi.
+            </p>
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              {wa && (
                 <a
-                  href={`https://wa.me/${(settings.whatsappSupportNumber || '919876543210').replace(/[^0-9]/g, '')}`}
+                  href={`https://wa.me/${wa}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="hover:text-[#1F3B22] transition-colors flex items-center gap-1.5"
+                  className="inline-flex items-center gap-2.5 rounded-full bg-[#F4EFE3] px-6 py-3.5 text-base font-semibold text-[#13301B] transition-colors hover:bg-white"
                 >
-                  <MessageCircle className="w-3.5 h-3.5 text-[#1F3B22]" />
+                  <i className="fa-brands fa-whatsapp text-xl text-[#1F9D55]" aria-hidden="true" />
                   Chat on WhatsApp
                 </a>
+              )}
+              {socials.map((x) => (
+                <a
+                  key={x.key}
+                  href={x.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={x.label}
+                  className="flex h-12 w-12 items-center justify-center rounded-full border border-white/20 text-lg text-white transition-colors hover:bg-white hover:text-[#13301B]"
+                >
+                  <i className={`fa-brands ${x.icon}`} aria-hidden="true" />
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* Link columns */}
+          <nav className="grid grid-cols-2 gap-10 sm:grid-cols-3 lg:col-span-5" aria-label="Footer">
+            {COLUMNS.map((col) => (
+              <div key={col.title}>
+                <h4 className="mb-5 text-sm font-semibold uppercase tracking-[0.18em] text-[#9CCB8F]">{col.title}</h4>
+                <ul className="space-y-3.5">
+                  {col.links.map((l) => (
+                    <li key={l.path}>
+                      <a href={l.path} onClick={go(l.path)} className="text-base text-[#D5E2D0] transition-colors hover:text-white">
+                        {l.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </nav>
+
+          {/* Contact */}
+          <div className="lg:col-span-3">
+            <h4 className="mb-5 text-sm font-semibold uppercase tracking-[0.18em] text-[#9CCB8F]">Get in touch</h4>
+            <ul className="space-y-4 text-base">
+              {phone && (
+                <li>
+                  <a href={`tel:+${phoneDigits}`} className="flex items-start gap-3.5 transition-colors hover:text-white">
+                    <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-[#9CCB8F]"><i className="fa-solid fa-phone text-sm" aria-hidden="true" /></span>
+                    <span className="pt-1.5">{phone}</span>
+                  </a>
+                </li>
+              )}
+              {email && (
+                <li>
+                  <a href={`mailto:${email}`} className="flex items-start gap-3.5 break-all transition-colors hover:text-white">
+                    <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-[#9CCB8F]"><i className="fa-regular fa-envelope text-sm" aria-hidden="true" /></span>
+                    <span className="pt-1.5">{email}</span>
+                  </a>
+                </li>
+              )}
+              <li>
+                <a href="/store-locator" onClick={go('/store-locator')} className="flex items-start gap-3.5 transition-colors hover:text-white">
+                  <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-[#9CCB8F]"><i className="fa-solid fa-location-dot text-sm" aria-hidden="true" /></span>
+                  <span className="whitespace-pre-line pt-1.5">{address}</span>
+                </a>
               </li>
+              {settings.storeHours && (
+                <li className="flex items-start gap-3.5">
+                  <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-[#9CCB8F]"><i className="fa-regular fa-clock text-sm" aria-hidden="true" /></span>
+                  <span className="whitespace-pre-line pt-1.5">{settings.storeHours}</span>
+                </li>
+              )}
             </ul>
           </div>
         </div>
       </div>
 
-      {/* Minimal Bottom Bar */}
-      <div className="border-t border-[#E8E5DC] py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-[#7A7A7A]">
-          <div>
-            &copy; {new Date().getFullYear()} buddy4plant Studio. Handcrafted for mindful botanical living.
-          </div>
+      {/* Large faded wordmark */}
+      <div aria-hidden="true" className="pointer-events-none select-none overflow-hidden whitespace-nowrap px-4 pb-6 pt-2 text-center font-serif font-semibold leading-[1.1] tracking-tight text-white/[0.08] text-[16vw] lg:text-[11.5rem]">
+        buddy4plant
+      </div>
 
-          {/* Clean Social Icons */}
-          <div className="flex items-center space-x-5 text-[#5C5C5C]">
-            <a
-              href="https://instagram.com"
-              target="_blank"
-              rel="noreferrer"
-              aria-label="Instagram"
-              className="hover:text-[#1F3B22] transition-colors"
+      {/* Bottom bar */}
+      <div className="relative bg-[#0C2213]">
+        <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-7 pb-28 sm:px-8 lg:flex-row lg:items-center lg:justify-between lg:px-10 lg:pb-7">
+          <p className="text-sm text-[#A9BFA3]">
+            &copy; {new Date().getFullYear()} Buddy4Plant, Lucknow. All rights reserved.
+          </p>
+          <ul className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
+            {[
+              { label: 'Shipping & Returns', path: '/shipping-policy' },
+              { label: 'Contact Us', path: '/contact' },
+              { label: 'Locate Our Store', path: '/store-locator' },
+              { label: 'Track Order', path: '/track-order' },
+            ].map((l) => (
+              <li key={l.path}>
+                <a href={l.path} onClick={go(l.path)} className="text-[#D5E2D0] transition-colors hover:text-white">
+                  {l.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+          <div className="flex items-center gap-4">
+            <span className="inline-flex items-center gap-2 rounded-full bg-white/[0.07] px-4 py-2 text-sm text-[#D5E2D0]">
+              <i className="fa-solid fa-map-location-dot text-[#9CCB8F]" aria-hidden="true" />
+              Serving Uttar Pradesh &amp; Delhi
+            </span>
+            <button
+              type="button"
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              aria-label="Back to top"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#F4EFE3] text-[#13301B] transition-transform hover:-translate-y-0.5"
             >
-              <Instagram className="w-4 h-4" />
-            </a>
-            <a
-              href="https://facebook.com"
-              target="_blank"
-              rel="noreferrer"
-              aria-label="Facebook"
-              className="hover:text-[#1F3B22] transition-colors"
-            >
-              <Facebook className="w-4 h-4" />
-            </a>
-            <a
-              href="https://youtube.com"
-              target="_blank"
-              rel="noreferrer"
-              aria-label="YouTube"
-              className="hover:text-[#1F3B22] transition-colors"
-            >
-              <Youtube className="w-4 h-4" />
-            </a>
-          </div>
-
-          <div className="flex items-center space-x-6 text-[11px]">
-            <button onClick={() => navigate('/privacy-policy')} className="hover:text-[#141414] transition-colors">
-              Privacy Policy
-            </button>
-            <button onClick={() => navigate('/terms')} className="hover:text-[#141414] transition-colors">
-              Terms
-            </button>
-            <button onClick={() => navigate('/shipping-policy')} className="hover:text-[#141414] transition-colors">
-              Shipping &amp; Returns
-            </button>
-            <button onClick={() => navigate('/b4padmin')} className="hover:text-[#141414] transition-colors font-medium text-[#2D4A27]">
-              Admin Console
+              <i className="fa-solid fa-arrow-up" aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -290,3 +209,5 @@ export const Footer: React.FC<FooterProps> = ({ navigate }) => {
     </footer>
   );
 };
+
+export default Footer;

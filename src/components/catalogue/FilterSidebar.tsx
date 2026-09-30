@@ -1,6 +1,6 @@
 import React from 'react';
 import { FilterState, Category } from '../../types';
-import { RotateCcw, X, Check, Sun, Droplets, PawPrint } from 'lucide-react';
+import { RotateCcw, X, Check, Sun, Droplets, PawPrint } from '../common/Icons';
 
 interface FilterSidebarProps {
   filters: FilterState;
@@ -178,8 +178,8 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
         </div>
         <input
           type="range"
-          min="199"
-          max="3500"
+          min="0"
+          max="10000"
           step="50"
           value={filters.maxPrice}
           onChange={(e) =>
