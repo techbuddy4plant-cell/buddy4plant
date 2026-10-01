@@ -1,34 +1,41 @@
-import { Order } from '../types';
-
+/**
+ * Razorpay online payments (UPI, cards, netbanking, wallets).
+ * The order is created and the payment verified on our server (server.ts) - the secret key never
+ * reaches the browser, and a payment only counts once the server has confirmed it with Razorpay.
+ */
 declare global {
   interface Window {
     Razorpay?: any;
   }
 }
 
-// Load Razorpay official SDK script dynamically
 export function loadRazorpayScript(): Promise<boolean> {
   return new Promise((resolve) => {
-    if (window.Razorpay) {
-      resolve(true);
-      return;
-    }
-    const script = document.createElement('script');
+    if (window.Razorpay) return resolve(true);
+    const existing = document.querySelector<HTMLScriptElement>('script[data-razorpay]');
+    const script = existing || document.createElement('script');
     script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-    script.onload = () => resolve(true);
+    script.dataset.razorpay = '1';
+    script.onload = () => resolve(!!window.Razorpay);
     script.onerror = () => resolve(false);
-    document.body.appendChild(script);
+    if (!existing) document.body.appendChild(script);
   });
 }
 
-export interface RazorpayOrderResponse {
-  success: boolean;
-  orderId?: string;
-  amount?: number;
-  currency?: string;
-  keyId?: string;
-  isMock?: boolean;
-  error?: string;
+export interface PaymentConfig {
+  enabled: boolean;
+  keyId: string;
+  mode: 'test' | 'live';
+}
+
+export async function getPaymentConfig(): Promise<PaymentConfig> {
+  try {
+    const res = await fetch('/api/razorpay/config');
+    if (res.ok) return await res.json();
+  } catch {
+    /* server not reachable */
+  }
+  return { enabled: false, keyId: '', mode: 'test' };
 }
 
 export interface RazorpayPaymentSuccessData {
@@ -37,53 +44,16 @@ export interface RazorpayPaymentSuccessData {
   razorpay_signature: string;
 }
 
-export async function createServerRazorpayOrder(amountInINR: number, receiptId: string): Promise<RazorpayOrderResponse> {
-  try {
-    const res = await fetch('/api/razorpay/create-order', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ amount: amountInINR, receipt: receiptId }),
-    });
-
-    if (res.ok) {
-      const data = await res.json();
-      return data;
-    }
-  } catch (err) {
-    console.warn('Backend Razorpay order creation call failed, using client fallback:', err);
-  }
-
-  // Safe fallback if server endpoint isn't reached or keys aren't set in env
-  return {
-    success: true,
-    orderId: `order_sim_${Date.now()}`,
-    amount: amountInINR * 100,
-    currency: 'INR',
-    keyId: 'rzp_test_VanaBotanicaKey',
-    isMock: true
-  };
+export interface VerifiedPayment {
+  paymentId: string;
+  orderId: string;
+  method?: string;
+  amount?: number;
 }
 
-export async function verifyServerRazorpayPayment(paymentData: RazorpayPaymentSuccessData): Promise<{ verified: boolean; error?: string }> {
-  try {
-    const res = await fetch('/api/razorpay/verify-payment', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(paymentData),
-    });
-
-    if (res.ok) {
-      const data = await res.json();
-      return { verified: Boolean(data.verified) };
-    }
-  } catch (err) {
-    console.warn('Backend payment verification fallback:', err);
-  }
-
-  // Simulated verification
-  return { verified: true };
-}
-
+/**
+ * Opens Razorpay Checkout. Calls onSuccess only after our server has verified the payment.
+ */
 export async function processRazorpayCheckout({
   amount,
   orderNumber,
@@ -92,71 +62,96 @@ export async function processRazorpayCheckout({
   customerPhone,
   onSuccess,
   onFailure,
+  onDismiss,
 }: {
   amount: number;
   orderNumber: string;
   customerName: string;
   customerEmail: string;
   customerPhone: string;
-  onSuccess: (paymentId: string, orderId: string) => void;
+  onSuccess: (payment: VerifiedPayment) => void;
   onFailure: (errorMsg: string) => void;
+  onDismiss?: () => void;
 }): Promise<void> {
   const loaded = await loadRazorpayScript();
-  const serverOrder = await createServerRazorpayOrder(amount, orderNumber);
-
-  if (!serverOrder.success || !serverOrder.orderId) {
-    onFailure(serverOrder.error || 'Failed to initialize payment gateway');
+  if (!loaded || !window.Razorpay) {
+    onFailure('Could not load the payment window. Check your internet connection and try again.');
     return;
   }
 
-  // If Razorpay script failed to load or in mock simulator mode
-  if (!loaded || !window.Razorpay || serverOrder.isMock) {
-    console.log('Simulating Razorpay Payment Gateway modal...');
-    // Provide a clean UI confirmation modal or proceed
-    setTimeout(() => {
-      onSuccess(`pay_sim_${Date.now()}`, serverOrder.orderId!);
-    }, 1200);
+  let order: { success: boolean; orderId?: string; amount?: number; currency?: string; keyId?: string; error?: string };
+  try {
+    const res = await fetch('/api/razorpay/create-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount, receipt: orderNumber }),
+    });
+    order = await res.json();
+  } catch {
+    order = { success: false, error: 'Could not reach the payment server. Please try again.' };
+  }
+  if (!order.success || !order.orderId || !order.keyId) {
+    onFailure(order.error || 'Could not start the payment.');
     return;
   }
+
+  const logo = window.location.protocol === 'https:' ? `${window.location.origin}/logo.png` : undefined;
+  const phone = customerPhone.replace(/\D/g, '').slice(-10);
 
   const options = {
-    key: serverOrder.keyId || 'rzp_test_VanaBotanicaKey',
-    amount: serverOrder.amount || amount * 100,
-    currency: 'INR',
-    name: 'Vana Botanica',
-    description: `Order ${orderNumber} - Premium Botanical Plants`,
-    image: 'https://images.unsplash.com/photo-1545241047-6083a3684587?auto=format&fit=crop&w=200&q=80',
-    order_id: serverOrder.orderId,
-    prefill: {
-      name: customerName,
-      email: customerEmail,
-      contact: customerPhone,
+    key: order.keyId,
+    order_id: order.orderId,
+    amount: order.amount,
+    currency: order.currency || 'INR',
+    name: 'Buddy4Plant',
+    description: `Order ${orderNumber}`,
+    ...(logo ? { image: logo } : {}),
+    prefill: { name: customerName, email: customerEmail, contact: phone },
+    notes: { order_number: orderNumber },
+    theme: { color: '#13301B' },
+    // UPI and cards shown first; netbanking and wallets stay available below
+    config: {
+      display: {
+        blocks: {
+          pref: { name: 'Pay using UPI or Card', instruments: [{ method: 'upi' }, { method: 'card' }] },
+        },
+        sequence: ['block.pref'],
+        preferences: { show_default_blocks: true },
+      },
     },
-    theme: {
-      color: '#1e392a', // Forest green theme
-    },
+    retry: { enabled: true, max_count: 3 },
     handler: async (response: RazorpayPaymentSuccessData) => {
-      const verification = await verifyServerRazorpayPayment(response);
-      if (verification.verified) {
-        onSuccess(response.razorpay_payment_id, response.razorpay_order_id);
-      } else {
-        onFailure(verification.error || 'Payment signature verification failed');
+      try {
+        const res = await fetch('/api/razorpay/verify-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(response),
+        });
+        const data = await res.json();
+        if (res.ok && data.verified) {
+          onSuccess({ paymentId: response.razorpay_payment_id, orderId: response.razorpay_order_id, method: data.method, amount: data.amount });
+        } else {
+          onFailure(
+            `${data.error || 'We could not confirm your payment'}. If money was deducted, contact us with payment ID ${response.razorpay_payment_id}.`
+          );
+        }
+      } catch {
+        onFailure(`We could not confirm your payment. If money was deducted, contact us with payment ID ${response.razorpay_payment_id}.`);
       }
     },
     modal: {
-      ondismiss: () => {
-        onFailure('Payment cancelled by user');
-      },
+      ondismiss: () => (onDismiss ? onDismiss() : onFailure('Payment was cancelled')),
+      confirm_close: true,
     },
   };
 
   try {
     const rzp = new window.Razorpay(options);
-    rzp.on('payment.failed', (resp: any) => {
-      onFailure(resp.error?.description || 'Payment transaction failed');
+    rzp.on('payment.failed', () => {
+      /* Razorpay shows the error and lets the customer retry inside the window */
     });
     rzp.open();
   } catch (err: any) {
-    onFailure(err?.message || 'Error launching Razorpay window');
+    onFailure(err?.message || 'Could not open the payment window');
   }
 }

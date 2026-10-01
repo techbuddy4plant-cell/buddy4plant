@@ -54,8 +54,10 @@ export async function createOrder(
         location: 'Buddy4Plant Nursery, Lucknow',
         note:
           orderData.paymentMethod === 'cod'
-            ? 'Order placed with Cash on Delivery. Preparing specimen potting inspection.'
-            : 'Order confirmed and paid. Botanical quality inspection initiated.'
+            ? 'Order placed with Cash on Delivery.'
+            : orderData.paymentStatus === 'paid'
+            ? 'Order confirmed - paid online.'
+            : 'Order placed - waiting for online payment.'
       }
     ]
   };

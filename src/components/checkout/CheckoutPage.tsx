@@ -17,7 +17,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useStoreSettings } from '../../context/StoreSettingsContext';
 import { Address, Order, OrderItem, PaymentMethod } from '../../types';
 import { createOrder, updatePaymentStatus } from '../../services/orderService';
-import { processRazorpayCheckout } from '../../services/paymentService';
+import { processRazorpayCheckout, getPaymentConfig, PaymentConfig } from '../../services/paymentService';
 import confetti from 'canvas-confetti';
 import { PlantImage } from '../../utils/imageFallback';
 
@@ -56,6 +56,16 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ navigate }) => {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('razorpay');
   const [orderNotes, setOrderNotes] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  // Online payment is offered only when the Razorpay keys are set on the server
+  const [payConfig, setPayConfig] = useState<PaymentConfig | null>(null);
+  useEffect(() => {
+    getPaymentConfig().then(setPayConfig);
+  }, []);
+  const onlineAvailable = !!payConfig?.enabled && paymentSettings.onlinePaymentsEnabled !== false;
+  useEffect(() => {
+    if (payConfig && !onlineAvailable && paymentMethod === 'razorpay' && paymentSettings.codEnabled) setPaymentMethod('cod');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [payConfig]);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // Pre-fill from profile addresses if available
@@ -273,52 +283,66 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ navigate }) => {
       return;
     }
 
-    // If Online Payment via Razorpay
+    // If Online Payment via Razorpay - the order is saved only after the payment is verified
     if (paymentMethod === 'razorpay') {
+      if (!onlineAvailable) {
+        setErrorMsg('Online payment is not available right now. Please choose Cash on Delivery.');
+        setIsProcessing(false);
+        return;
+      }
       try {
-        const preliminaryOrder = await createOrder({
-          orderNumber: tempOrderNumber,
-          customerId: user?.uid || profile?.uid || 'guest',
-          customerName: fullName,
-          customerEmail: email,
-          customerPhone: phone,
-          items: orderItems,
-          subtotal,
-          discount,
-          shippingCharge,
-          tax,
-          total,
-          couponCode: appliedCoupon?.code,
-          shippingAddress,
-          paymentMethod: 'razorpay',
-          paymentStatus: 'pending',
-          orderStatus: 'Pending',
-          notes: orderNotes,
-        });
-
         await processRazorpayCheckout({
           amount: total,
-          orderNumber: preliminaryOrder.orderNumber,
+          orderNumber: tempOrderNumber,
           customerName: fullName,
           customerEmail: email,
           customerPhone: phone,
-          onSuccess: async (paymentId, orderId) => {
-            await updatePaymentStatus(preliminaryOrder.id, 'paid', paymentId);
-            // Re-ensure address saved upon successful payment
+          onSuccess: async (payment) => {
             try {
-              await saveAddress(shippingAddress);
-            } catch (e) {}
-            confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
-            clearCart();
-            navigate(`/order-success/${preliminaryOrder.orderNumber}`);
+              const paidOrder = await createOrder({
+                orderNumber: tempOrderNumber,
+                customerId: user?.uid || profile?.uid || 'guest',
+                customerName: fullName,
+                customerEmail: email,
+                customerPhone: phone,
+                items: orderItems,
+                subtotal,
+                discount,
+                shippingCharge,
+                tax,
+                total,
+                couponCode: appliedCoupon?.code,
+                shippingAddress,
+                paymentMethod: 'razorpay',
+                paymentStatus: 'paid',
+                orderStatus: 'Confirmed',
+                razorpayOrderId: payment.orderId,
+                razorpayPaymentId: payment.paymentId,
+                notes: [orderNotes, payment.method ? `Paid online (${payment.method.toUpperCase()})` : ''].filter(Boolean).join(' | '),
+              });
+              // Re-ensure the address is saved after a successful payment
+              try {
+                await saveAddress(shippingAddress);
+              } catch (e) {}
+              confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+              clearCart();
+              navigate(`/order-success/${paidOrder.orderNumber}`);
+            } catch {
+              setErrorMsg(`Your payment was received (ID ${payment.paymentId}) but the order could not be saved. Please contact us on WhatsApp with this ID.`);
+              setIsProcessing(false);
+            }
           },
           onFailure: (errMsg) => {
-            setErrorMsg(`Payment error: ${errMsg}. You can retry or choose Cash on Delivery.`);
+            setErrorMsg(`${errMsg} You can try again or choose Cash on Delivery.`);
+            setIsProcessing(false);
+          },
+          onDismiss: () => {
+            setErrorMsg('Payment was cancelled. Your cart is saved - you can try again.');
             setIsProcessing(false);
           },
         });
       } catch (err: any) {
-        setErrorMsg(err.message || 'Payment initiation failed');
+        setErrorMsg(err.message || 'Payment could not be started');
         setIsProcessing(false);
       }
     }
@@ -538,7 +562,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ navigate }) => {
 
                 <div className="space-y-3">
                   {/* Razorpay Online */}
-                  {paymentSettings.onlinePaymentsEnabled && (
+                  {onlineAvailable && (
                     <label
                       className={`block p-4 border transition-all cursor-pointer ${
                         paymentMethod === 'razorpay'
@@ -557,11 +581,16 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ navigate }) => {
                           />
                           <div>
                             <span className="font-bold text-xs text-[#1A1A1A] block">
-                              Pay Online via Razorpay (UPI, Google Pay, Cards, NetBanking)
+                              Pay Online - UPI, Cards, NetBanking, Wallets
                             </span>
                             <span className="text-[11px] text-[#5A5A5A]">
-                              Instant checkout with UPI, RuPay, Visa, Mastercard, and NetBanking
+                              Google Pay, PhonePe, Paytm, any UPI app, Visa, Mastercard, RuPay - secured by Razorpay
                             </span>
+                            {payConfig?.mode === 'test' && (
+                              <span className="mt-1 inline-block rounded bg-[#FFF4D6] px-1.5 py-0.5 text-[10px] font-bold text-[#8A6A00]">
+                                TEST MODE - no real money is charged
+                              </span>
+                            )}
                           </div>
                         </div>
                         <CreditCard className="w-5 h-5 text-[#2D4A27] hidden sm:block" />
@@ -592,7 +621,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ navigate }) => {
                               Cash on Delivery (COD)
                             </span>
                             <span className="text-[11px] text-[#5A5A5A]">
-                              Pay in cash or UPI QR at your doorstep upon plant arrival
+                              Pay in cash or UPI when your order is delivered
                             </span>
                           </div>
                         </div>
@@ -632,11 +661,11 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ navigate }) => {
                 className="w-full py-4 bg-[#2D4A27] hover:bg-[#1F341C] text-white text-xs font-bold uppercase tracking-widest transition-all active:scale-98 disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {isProcessing ? (
-                  <span>Processing Order securely...</span>
+                  <span>{paymentMethod === 'cod' ? 'Placing your order...' : 'Waiting for payment...'}</span>
                 ) : (
                   <>
                     <Lock className="w-4 h-4" />
-                    Place Order & Pay ₹{total.toLocaleString('en-IN')}
+                    {paymentMethod === 'cod' ? `Confirm Order - ₹${total.toLocaleString('en-IN')} (Cash on Delivery)` : `Pay ₹${total.toLocaleString('en-IN')} & Place Order`}
                   </>
                 )}
               </button>
