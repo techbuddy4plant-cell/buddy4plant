@@ -28,6 +28,8 @@ type CardNavProps = {
   buttonLabel?: React.ReactNode;
   onButtonClick?: () => void;
   onNavigate: (href: string) => void;
+  /** when this value changes (e.g. the current page path) the menu closes */
+  closeKey?: string;
 };
 
 const CardNav: React.FC<CardNavProps> = ({
@@ -45,6 +47,7 @@ const CardNav: React.FC<CardNavProps> = ({
   buttonLabel,
   onButtonClick,
   onNavigate,
+  closeKey,
 }) => {
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -146,6 +149,24 @@ const CardNav: React.FC<CardNavProps> = ({
     };
   }, [isHamburgerOpen, close]);
 
+  // Close when the page changes, on Back, and on taps outside (touch screens)
+  useEffect(() => {
+    close();
+  }, [closeKey, close]);
+  useEffect(() => {
+    if (!isHamburgerOpen) return;
+    const onPop = () => close();
+    const onTouch = (e: TouchEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) close();
+    };
+    window.addEventListener('popstate', onPop);
+    document.addEventListener('touchstart', onTouch, { passive: true });
+    return () => {
+      window.removeEventListener('popstate', onPop);
+      document.removeEventListener('touchstart', onTouch);
+    };
+  }, [isHamburgerOpen, close]);
+
   const go = (href: string) => (e: React.MouseEvent) => {
     e.preventDefault();
     close();
@@ -217,7 +238,7 @@ const CardNav: React.FC<CardNavProps> = ({
           <span className="hamburger-label" onClick={toggleMenu} aria-hidden="true">
             {isHamburgerOpen ? 'Close' : 'Menu'}
           </span>
-          <div className="logo-container" onClick={onLogoClick}>
+          <div className="logo-container" onClick={() => { close(); onLogoClick?.(); }}>
             {logo}
           </div>
         </div>

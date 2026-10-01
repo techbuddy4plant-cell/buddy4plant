@@ -5,7 +5,7 @@ const ITEMS = [
   { icon: 'fa-solid fa-seedling', label: 'Nursery-Grown in Lucknow' },
   { icon: 'fa-solid fa-leaf', label: 'Organic Plant Food & Soil' },
   { icon: 'fa-solid fa-box-open', label: 'Carefully Packed Plants' },
-  { icon: 'fa-brands fa-whatsapp', label: 'Free Plant Care Help' },
+  { icon: 'fa-solid fa-tree', label: 'Landscaping & Garden Services' },
 ];
 
 const Pill: React.FC<{ icon: string; label: string }> = ({ icon, label }) => (

@@ -1,5 +1,6 @@
 import { addDoc, collection, doc, getDocs, orderBy, query, updateDoc } from 'firebase/firestore';
 import { db } from '../config/firebase';
+import { ENQUIRY_SHEET_URL } from '../config/integrations';
 
 export type EnquiryStatus = 'new' | 'contacted' | 'closed';
 
@@ -41,6 +42,34 @@ const writeLocal = (list: ServiceEnquiry[]) => {
   }
 };
 
+/** Also add the enquiry as a new row in the Google Sheet (if one is connected). Never blocks the form. */
+function sendToSheet(e: ServiceEnquiry) {
+  if (!ENQUIRY_SHEET_URL) return;
+  try {
+    fetch(ENQUIRY_SHEET_URL, {
+      method: 'POST',
+      mode: 'no-cors', // Apps Script web apps do not send CORS headers
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        date: new Date(e.createdAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+        name: e.fullName,
+        phone: e.phone,
+        email: e.email || '',
+        organisation: e.organisation || '',
+        need: e.enquiryType,
+        propertyType: e.propertyType,
+        city: e.city,
+        area: e.area || '',
+        message: e.message || '',
+        id: e.id,
+      }),
+      keepalive: true,
+    }).catch(() => {});
+  } catch {
+    /* the enquiry is already saved in the admin panel */
+  }
+}
+
 const withTimeout = <T,>(p: Promise<T>, ms = 7000) =>
   Promise.race([p, new Promise<never>((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
 
@@ -57,6 +86,7 @@ export async function saveServiceEnquiry(
     console.warn('Enquiry saved locally only (cloud save failed):', err);
   }
   writeLocal([entry, ...readLocal()]);
+  sendToSheet(entry);
   return entry;
 }
 

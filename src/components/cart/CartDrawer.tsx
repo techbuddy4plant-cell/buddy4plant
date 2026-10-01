@@ -1,3 +1,4 @@
+import { useBackClose } from '../../hooks/useBackClose';
 import React, { useState } from 'react';
 import {
   X,
@@ -40,6 +41,8 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ navigate }) => {
   const { settings } = useStoreSettings();
   const [couponInput, setCouponInput] = useState('');
   const [couponLoading, setCouponLoading] = useState(false);
+
+  useBackClose(isCartDrawerOpen, () => setIsCartDrawerOpen(false));
 
   if (!isCartDrawerOpen) return null;
 

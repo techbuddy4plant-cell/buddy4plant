@@ -10,6 +10,7 @@ import { Navbar } from './components/common/Navbar';
 import { Footer } from './components/common/Footer';
 import { WhatsAppFloat } from './components/common/WhatsAppFloat';
 import { CartDrawer } from './components/cart/CartDrawer';
+import { useBackClose } from './hooks/useBackClose';
 import { AuthModal } from './components/common/AuthModal';
 import { QuickViewModal } from './components/common/QuickViewModal';
 
@@ -43,6 +44,7 @@ import { Product } from './types';
 export default function App() {
   const [currentPath, setCurrentPath] = useState<string>(() => window.location.pathname || '/');
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
+  useBackClose(!!quickViewProduct, () => setQuickViewProduct(null));
 
   // Admin authentication state checked from sessionStorage
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(() => {
@@ -51,7 +53,9 @@ export default function App() {
 
   // Client-side router navigation helper
   const navigate = (path: string) => {
-    window.history.pushState({}, '', path);
+    // an open drawer/modal added its own history entry - reuse it instead of stacking another
+    if (window.history.state?.b4pOverlay) window.history.replaceState({}, '', path);
+    else window.history.pushState({}, '', path);
     setCurrentPath(path);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };

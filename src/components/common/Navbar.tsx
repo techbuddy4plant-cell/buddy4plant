@@ -256,6 +256,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
               items={NAV_CARDS}
               onNavigate={navigate}
               onLogoClick={() => navigate('/')}
+              closeKey={currentPath}
               logo={<Buddy4PlantLogo size={39} showText={false} />}
               center={searchBox}
               baseColor="#FAF5EE"
