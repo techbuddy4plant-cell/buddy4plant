@@ -480,3 +480,13 @@ body[data-buybar='1'] .b4p-wa-float { bottom: 156px; }
   scrollbar-color: #DDD5C7 transparent;
 }
 
+
+@keyframes b4pSlideIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes b4pTicker {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}

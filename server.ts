@@ -126,7 +126,7 @@ app.post(
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
-    store: 'Vana Botanica',
+    store: 'Buddy4Plant',
     timestamp: new Date().toISOString(),
   });
 });
@@ -283,7 +283,7 @@ async function start() {
   }
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Vana Botanica server running at http://localhost:${PORT}`);
+    console.log(`Buddy4Plant server running at http://localhost:${PORT}`);
   });
 }
 

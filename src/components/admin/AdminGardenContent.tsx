@@ -631,7 +631,6 @@ export const AdminGardenContent: React.FC = () => {
           <Field label='"Call us" label' value={c.contact.callLabel} onChange={(v) => upd('contact', { callLabel: v })} />
         </div>
         <Area label="Text" value={c.contact.text} onChange={(v) => upd('contact', { text: v })} />
-        <Lines label="Points with tick marks" rows={3} value={c.contact.bullets} onChange={(v) => upd('contact', { bullets: v })} />
       </Section>
 
       <Section title="Enquiry form" hint="Choices, labels, buttons and thank-you message" {...sec('form')}>

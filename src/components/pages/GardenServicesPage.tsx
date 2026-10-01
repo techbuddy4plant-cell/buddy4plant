@@ -566,6 +566,13 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
   const heroCards = [0, 1, 2].map((k) => heroPool[(heroIdx + k) % Math.max(heroPool.length, 1)]).filter(Boolean);
 
   const scrollToForm = () => document.getElementById('book-consultation')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // "Inquire Now" in the header links here with ?enquire=1
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('enquire') === '1') {
+      const t = setTimeout(scrollToForm, 400);
+      return () => clearTimeout(t);
+    }
+  }, []);
 
   const enquireFor = (p: BotanicalProject) => {
     setOpenProject(null);
@@ -1043,13 +1050,6 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
                 </div>
               </div>
 
-              <ul className="space-y-2.5 pt-4 border-t border-white/15 text-xs text-white/80 font-sans">
-                {C.contact.bullets.filter(Boolean).map((t) => (
-                  <li key={t} className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#B7D7A8] shrink-0" /> {t}
-                  </li>
-                ))}
-              </ul>
             </div>
 
             {/* form */}

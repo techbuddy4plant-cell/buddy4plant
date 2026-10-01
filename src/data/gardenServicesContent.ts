@@ -289,7 +289,7 @@ export const DEFAULT_GARDEN_CONTENT: GardenServicesContent = {
     title: 'Need gardening services or advice?',
     text: 'Tell us about your space - a campus, office, home garden or just one sick plant. Our team will call you back with the right solution.',
     callLabel: 'Call us',
-    bullets: ['Serving all of Uttar Pradesh & Delhi', 'Government & institutional AMCs', 'Homes, offices & balconies too'],
+    bullets: [],
   },
   form: {
     enquiryTypes: [

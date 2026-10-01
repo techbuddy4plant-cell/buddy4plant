@@ -43,9 +43,9 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
       {/* Header */}
       <div className="flex items-center justify-between pb-3 border-b border-[#E6DDD0]">
         <div>
-          <h3 className="font-editorial font-bold text-sm text-[#141C14]">Filter Flora</h3>
+          <h3 className="font-editorial font-bold text-sm text-[#141C14]">Filters</h3>
           <p className="text-[10px] text-[#7A746B]">
-            Showing {filteredCount} of {totalProductsCount} specimens
+            Showing {filteredCount} of {totalProductsCount} products
           </p>
         </div>
         <button
@@ -195,7 +195,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
             onChange={(e) => setFilters((prev) => ({ ...prev, inStockOnly: e.target.checked }))}
             className="w-3.5 h-3.5 accent-[#1A3824] rounded cursor-pointer"
           />
-          <span className="text-[11px]">In Stock Specimen Only</span>
+          <span className="text-[11px]">In stock only</span>
         </label>
       </div>
     </div>
@@ -219,7 +219,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
             <div className="w-screen max-w-sm bg-[#FAF5EE] p-6 flex flex-col justify-between overflow-y-auto">
               <div>
                 <div className="flex justify-between items-center mb-6">
-                  <h3 className="font-editorial text-lg font-bold text-[#141C14]">Filter Flora</h3>
+                  <h3 className="font-editorial text-lg font-bold text-[#141C14]">Filters</h3>
                   <button onClick={onMobileClose} className="p-1 text-[#7A746B]">
                     <X className="w-5 h-5" />
                   </button>

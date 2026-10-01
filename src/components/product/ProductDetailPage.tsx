@@ -130,7 +130,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
     return (
       <div className="min-h-screen bg-stone-50 py-20 text-center">
         <h2 className="font-serif font-bold text-2xl text-stone-900">Product Not Found</h2>
-        <p className="text-xs text-stone-500 mt-2">The botanical specimen you are looking for is currently unavailable.</p>
+        <p className="text-xs text-stone-500 mt-2">This product is not available right now - it may have been removed.</p>
         <button
           onClick={() => navigate('/collections/plant-care')}
           className="mt-6 px-6 py-2.5 bg-[#13301B] text-white rounded-full text-xs font-semibold"

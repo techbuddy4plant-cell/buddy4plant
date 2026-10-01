@@ -198,7 +198,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
   const searchBox = (
                 <div className="relative">
                   <form onSubmit={handleSearchSubmit} role="search">
-                    <Search className="w-4 h-4 text-[#7A7A7A] absolute left-3 lg:left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <Search className="w-4 h-4 text-[#7A7A7A] absolute left-2.5 lg:left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
                     <input
                       type="search"
                       value={searchQuery}
@@ -209,7 +209,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
                       onKeyDown={(e) => e.key === 'Escape' && setSearchQuery('')}
                       placeholder={isDesktop ? 'Search plants, pots, plant care...' : 'Search'}
                       aria-label="Search the store"
-                      className="w-full h-10 lg:h-11 pl-9 lg:pl-11 pr-3 lg:pr-4 rounded-full bg-[#F1ECE2] border border-transparent text-sm text-[#1A1A1A] placeholder-[#7A7A7A] focus:outline-none focus:bg-white focus:border-[#2D4A27] focus:ring-2 focus:ring-[#2D4A27]/15 transition-colors"
+                      className="w-full h-10 lg:h-11 pl-7 lg:pl-11 pr-1.5 lg:pr-4 rounded-full bg-[#F1ECE2] border border-transparent text-[13px] lg:text-sm text-[#1A1A1A] placeholder-[#7A7A7A] focus:outline-none focus:bg-white focus:border-[#2D4A27] focus:ring-2 focus:ring-[#2D4A27]/15 transition-colors"
                     />
                   </form>
                   {searchQuery.trim().length > 1 && !isSearchOpen && (
@@ -262,8 +262,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
               menuColor="#1F341C"
               buttonBgColor="#13301B"
               buttonTextColor="#F4EFE3"
-              buttonLabel={<><i className="fa-solid fa-seedling" aria-hidden="true" /> Book a Garden Visit</>}
-              onButtonClick={() => navigate('/garden-services')}
+              buttonLabel={<><i className="fa-regular fa-paper-plane" aria-hidden="true" /> <span>Inquire Now</span></>}
+              onButtonClick={() => navigate('/garden-services?enquire=1')}
               ease="power3.out"
               actions={
                 <>
@@ -332,7 +332,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
                 </button>
   
                 {/* Account Icon & Dropdown */}
-                <div className="relative" ref={accountMenuRef}>
+                <div className="relative hidden sm:block" ref={accountMenuRef}>
                   <button
                     id="account-menu-btn"
                     type="button"
@@ -1089,17 +1089,15 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
           <span className="text-[9px] uppercase tracking-tighter mt-0.5">Wishlist</span>
         </button>
 
+        {/* Account (the cart is already in the top bar on phones) */}
         <button
-          onClick={() => setIsCartDrawerOpen(true)}
-          className="flex flex-col items-center justify-center p-1 min-w-[54px] relative text-[#6A7B6B] hover:text-[#2D4A27]"
+          onClick={() => (user || isAdmin ? navigate('/profile') : openAuthModal('login'))}
+          className={`flex flex-col items-center justify-center p-1 min-w-[54px] relative hover:text-[#2D4A27] ${
+            currentPath.startsWith('/profile') || currentPath.startsWith('/orders') ? 'text-[#13301B] font-bold' : 'text-[#6A7B6B]'
+          }`}
         >
-          <ShoppingBag className="w-5 h-5" />
-          {itemCount > 0 && (
-            <span className="absolute top-0 right-3 bg-[#2D6A4F] text-white text-[8px] font-extrabold w-3.5 h-3.5 rounded-full flex items-center justify-center">
-              {itemCount}
-            </span>
-          )}
-          <span className="text-[9px] uppercase tracking-tighter mt-0.5">Cart</span>
+          <UserIcon className="w-5 h-5" />
+          <span className="text-[9px] uppercase tracking-tighter mt-0.5">{user || isAdmin ? 'Account' : 'Sign In'}</span>
         </button>
       </div>
     </>

@@ -47,7 +47,7 @@ interface PlantImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
  */
 export const PlantImage: React.FC<PlantImageProps> = ({
   src,
-  alt = 'buddy4plant Botanical Specimen',
+  alt = 'buddy4plant',
   className = '',
   fallbackSrc = DEFAULT_PLANT_IMAGE,
   ...rest

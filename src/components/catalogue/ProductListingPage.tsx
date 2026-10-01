@@ -354,7 +354,7 @@ export const ProductListingPage: React.FC<ProductListingPageProps> = ({
                 : isPotsSection
                 ? 'Handcrafted terracotta, artisanal glazed ceramics, and smart self-watering containers designed to let root systems breathe.'
                 : (currentCategory?.description ||
-                  'Ethically acclimatized houseplants and rare specimens, hand-nurtured to thrive effortlessly in contemporary living spaces.')}
+                  'Healthy, nursery-grown plants from our Lucknow nursery, packed with care and delivered to your door.')}
             </p>
           </div>
 

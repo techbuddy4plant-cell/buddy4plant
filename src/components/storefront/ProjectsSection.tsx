@@ -109,7 +109,7 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({ navigate }) =>
 
                 <div className="mt-5 pt-4 border-t border-[#E8E5DC] flex items-center justify-between text-xs">
                   <span className="text-[#1F3B22] font-bold">
-                    {project.speciesCount > 0 ? `${project.speciesCount} Live Flora Specimen` : project.location}
+                    {project.speciesCount > 0 ? `${project.speciesCount} plant species` : project.location}
                   </span>
                   <span className="text-[11px] font-semibold text-[#7A7A7A] group-hover:text-[#141414] group-hover:translate-x-0.5 transition-all">
                     View Case Study &rarr;

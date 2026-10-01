@@ -106,7 +106,7 @@ export const OrderTrackingPage: React.FC<OrderTrackingPageProps> = ({ initialOrd
     { label: 'Pending', desc: 'Order Placed & Queued', icon: 'fa-solid fa-clipboard-list' },
     { label: 'Confirmed', desc: 'Plant Inspected & Potted', icon: 'fa-solid fa-leaf' },
     { label: 'Packed', desc: 'Moisture-Lock Box Sealed', icon: 'fa-solid fa-box' },
-    { label: 'Shipped', desc: 'In Eco Express Transit', icon: 'fa-solid fa-truck-fast' },
+    { label: 'Shipped', desc: 'On the way', icon: 'fa-solid fa-truck-fast' },
     { label: 'Out for Delivery', desc: 'Out with Local Courier', icon: 'fa-solid fa-location-dot' },
     { label: 'Delivered', desc: 'Delivered to Doorstep', icon: 'fa-solid fa-house-chimney' },
   ];

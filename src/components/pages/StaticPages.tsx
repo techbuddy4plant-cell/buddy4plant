@@ -328,7 +328,7 @@ export const ContactUsPage: React.FC = () => {
               </div>
               <h3 className="font-editorial font-bold text-xl text-[#141C14] mb-1.5">Nursery Studio</h3>
               <p className="text-xs text-[#6B645A] leading-relaxed mb-4">
-                Walk through our lush greenhouses, touch artisanal pottery, and select healthy potted specimens.
+                Visit our nursery to see our plants and pots in person.
               </p>
             </div>
             <div className="pt-4 border-t border-[#EFE8DD] space-y-3">
@@ -668,14 +668,14 @@ export const TermsAndConditionsPage: React.FC<{ navigate?: (path: string) => voi
           <div className="pt-6 border-t border-[#EFE8DD]">
             <h2 className="font-editorial font-bold text-lg sm:text-xl text-[#141C14] mb-3">2. Products, Living Plants &amp; Pricing</h2>
             <p>
-              We specialize in living botanical specimens, indoor plants, planters, organic soils, and landscaping services. Because living plants naturally vary in leaf shape, variegation, and height, photographs displayed are representative of healthy, mature specimens. All prices are listed in Indian Rupees (INR ₹) inclusive of applicable GST unless explicitly noted otherwise.
+              We specialize in plants, indoor plants, planters, organic soils, and landscaping services. Because living plants naturally vary in leaf shape, variegation, and height, photographs displayed are representative of healthy, mature specimens. All prices are listed in Indian Rupees (INR ₹) inclusive of applicable GST unless explicitly noted otherwise.
             </p>
           </div>
 
           <div className="pt-6 border-t border-[#EFE8DD]">
-            <h2 className="font-editorial font-bold text-lg sm:text-xl text-[#141C14] mb-3">3. Payment &amp; Security (Stripe / Razorpay)</h2>
+            <h2 className="font-editorial font-bold text-lg sm:text-xl text-[#141C14] mb-3">3. Payment &amp; Security</h2>
             <p>
-              We provide secure 256-bit encrypted online payment processing through industry-standard certified payment gateways including Stripe and Razorpay. We accept all major Credit/Debit Cards (Visa, MasterCard, RuPay, American Express), UPI, Net Banking, and select digital wallets. Cardholder data is securely tokenized and never stored on our local servers.
+              Online payments are processed securely by Razorpay. We accept all major Credit/Debit Cards (Visa, MasterCard, RuPay, American Express), UPI, Net Banking, and select digital wallets. Cardholder data is securely tokenized and never stored on our local servers.
             </p>
           </div>
 
@@ -772,7 +772,7 @@ export const PrivacyPolicyPage: React.FC<{ navigate?: (path: string) => void }> 
           <div className="pt-6 border-t border-[#EFE8DD]">
             <h2 className="font-editorial font-bold text-lg sm:text-xl text-[#141C14] mb-3">3. Payment Gateway Security (PCI-DSS Compliance)</h2>
             <p>
-              All online card payments and UPI transactions are processed through certified Level-1 PCI-DSS compliant payment gateways (such as Stripe and Razorpay). Buddy4Plant does NOT store, log, or have access to your full credit/debit card numbers, CVVs, or bank PINs. All payment exchanges occur over 256-bit TLS/SSL encrypted communication channels.
+              All online card payments and UPI transactions are processed through our payment partner Razorpay. Buddy4Plant does NOT store, log, or have access to your full credit/debit card numbers, CVVs, or bank PINs.
             </p>
           </div>
 
@@ -836,7 +836,7 @@ export const RefundPolicyPage: React.FC<{ navigate?: (path: string) => void }> =
             <ol className="list-decimal pl-5 mt-2 space-y-1.5 text-[#5C554B]">
               <li>Take a clear photo or short unboxing video of the plant and packaging within <strong>7 days</strong> of delivery.</li>
               <li>Send the photo along with your Order Number to our WhatsApp support at <a href={`https://wa.me/${phone.replace(/\D/g, '')}`} className="text-[#1A3824] underline font-semibold">{phone}</a> or email <a href={`mailto:${email}`} className="text-[#1A3824] underline">{email}</a>.</li>
-              <li>Our team will immediately approve and dispatch a fresh replacement specimen free of cost, or initiate a full refund.</li>
+              <li>Our team will immediately approve and dispatch a fresh replacement plant free of cost, or initiate a full refund.</li>
             </ol>
           </div>
 
@@ -857,7 +857,7 @@ export const RefundPolicyPage: React.FC<{ navigate?: (path: string) => void }> =
           <div className="pt-6 border-t border-[#EFE8DD]">
             <h2 className="font-editorial font-bold text-lg sm:text-xl text-[#141C14] mb-3">4. Refund Processing &amp; Timeframe</h2>
             <p>
-              Approved refunds are credited directly back to the original method of payment (Stripe / Razorpay Credit Card, Debit Card, Net Banking, or UPI):
+              Approved refunds are credited directly back to the original method of payment (credit card, debit card, net banking or UPI):
             </p>
             <ul className="list-disc pl-5 mt-2 space-y-1 text-[#5C554B]">
               <li><strong>Online Card / UPI Payments:</strong> 5 to 7 business days depending on your issuing bank.</li>

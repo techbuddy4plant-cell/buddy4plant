@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { getUserWishlist, saveUserWishlist } from '../services/wishlistService';
+import { getAllProducts } from '../services/productService';
 
 interface WishlistContextType {
   wishlistIds: string[];
@@ -46,6 +47,25 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       // ignore
     }
   }, [wishlistIds, user]);
+
+  // Drop saved ids whose product no longer exists (or is hidden), so the heart count is always real
+  const [validIds, setValidIds] = useState<Set<string> | null>(null);
+  useEffect(() => {
+    const load = () =>
+      getAllProducts()
+        .then((list) => setValidIds(new Set(list.filter((p) => p.active !== false).map((p) => p.id))))
+        .catch(() => {});
+    load();
+    window.addEventListener('b4p_store_data_changed', load);
+    return () => window.removeEventListener('b4p_store_data_changed', load);
+  }, []);
+  useEffect(() => {
+    if (!validIds || validIds.size === 0) return;
+    setWishlistIds((prev) => {
+      const next = prev.filter((id) => validIds.has(id));
+      return next.length === prev.length ? prev : next;
+    });
+  }, [validIds, wishlistIds.length]);
 
   const isInWishlist = (productId: string) => wishlistIds.includes(productId);
 

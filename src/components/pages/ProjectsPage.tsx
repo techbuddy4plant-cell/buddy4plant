@@ -142,7 +142,7 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({ navigate }) => {
 
                   <div className="space-y-3">
                     <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#141414] block">
-                      Flora Specimen &amp; Care Implemented:
+                      What we did:
                     </span>
                     <div className="flex flex-wrap gap-2">
                       {project.plantHighlights.map((plant, pIdx) => (

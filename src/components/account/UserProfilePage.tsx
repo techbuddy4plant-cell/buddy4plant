@@ -121,25 +121,25 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
       return (
         <div className="min-h-screen bg-[#FDFCF9] py-10 sm:py-14 font-sans text-[#141414]">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-[#E2ECE0] shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-[22px] ring-1 ring-[#ECE6DA] shadow-xs">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-[#2D4A27]/10 text-[#2D4A27] flex items-center justify-center">
                   <Truck className="w-5 h-5" />
                 </div>
                 <div>
-                  <h1 className="font-serif font-bold text-lg text-[#182319]">Guest Order Tracking</h1>
-                  <p className="text-xs text-[#6B856B]">Track any shipment using your Order ID or phone number</p>
+                  <h1 className="font-serif font-bold text-lg text-[#13301B]">Guest Order Tracking</h1>
+                  <p className="text-xs text-[#6B6B6B]">Track any shipment using your Order ID or phone number</p>
                 </div>
               </div>
               <button
                 onClick={() => openAuthModal('login')}
-                className="px-4 py-2 border border-[#2D4A27] text-[#2D4A27] hover:bg-[#2D4A27] hover:text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-colors self-start sm:self-auto cursor-pointer"
+                className="px-4 py-2 border border-[#2D4A27] text-[#2D4A27] hover:bg-[#2D4A27] hover:text-white rounded-full text-xs font-semibold transition-colors self-start sm:self-auto cursor-pointer"
               >
                 Sign In to Account &rarr;
               </button>
             </div>
 
-            <div className="bg-white rounded-2xl border border-[#E2ECE0] p-6 sm:p-8 shadow-xs">
+            <div className="bg-white rounded-[22px] ring-1 ring-[#ECE6DA] shadow-[0_14px_32px_-26px_rgba(19,48,27,0.5)] p-5 sm:p-8 shadow-xs">
               <OrderTrackingPage embedded={true} />
             </div>
           </div>
@@ -159,13 +159,13 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
         <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
           <button
             onClick={() => openAuthModal('login')}
-            className="w-full sm:w-auto px-6 py-3 bg-[#2D4A27] hover:bg-[#1F341C] text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-md transition-all cursor-pointer"
+            className="w-full sm:w-auto px-6 py-3 bg-[#13301B] hover:bg-[#1F4A2B] text-white rounded-full text-xs font-semibold shadow-md transition-all cursor-pointer"
           >
             Sign In Now &rarr;
           </button>
           <button
             onClick={() => setActiveTab('track-order')}
-            className="w-full sm:w-auto px-6 py-3 bg-white border border-[#2D4A27] text-[#2D4A27] hover:bg-[#EBF5EC] rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2"
+            className="w-full sm:w-auto px-6 py-3 bg-white border border-[#2D4A27] text-[#2D4A27] hover:bg-[#EBF5EC] rounded-full text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-2"
           >
             <Truck className="w-4 h-4" />
             Track an Order
@@ -263,126 +263,19 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
   const defaultAddr = profile?.addresses?.find((a) => a.isDefault) || profile?.addresses?.[0];
 
   return (
-    <div className="bg-[#FBFDFB] min-h-screen py-8 sm:py-12 font-sans">
+    <div className="bg-[#FAF7F1] min-h-screen py-6 sm:py-12 font-sans">
       {/* Toast Alert */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-[#182319] text-white px-5 py-3.5 rounded-xl shadow-2xl border border-[#2D4A27] flex items-center gap-3 animate-fadeIn text-xs font-medium">
+        <div className="fixed bottom-24 lg:bottom-6 left-1/2 -translate-x-1/2 lg:left-auto lg:right-6 lg:translate-x-0 z-50 bg-[#13301B] text-white px-5 py-3.5 rounded-full shadow-2xl border border-[#2D4A27] flex items-center gap-3 animate-fadeIn text-xs font-medium">
           <i className="fa-solid fa-circle-check text-emerald-400 text-sm" />
           <span>{toastMessage}</span>
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-        {/* Profile Card Header */}
-        <div className="bg-white rounded-2xl border border-[#E2ECE0] p-6 sm:p-8 shadow-xs relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-80 h-80 bg-[#E8F5E9]/50 rounded-full blur-3xl pointer-events-none" />
-
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
-            {/* User Info */}
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#2D4A27] text-white flex items-center justify-center text-2xl sm:text-3xl font-bold font-serif shadow-md border-2 border-emerald-300/30 shrink-0">
-                {(profile?.displayName || user?.displayName || 'P')[0].toUpperCase()}
-              </div>
-
-              <div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="font-serif font-bold text-xl sm:text-2xl text-[#182319]">
-                    {profile?.displayName || user?.displayName || 'My Account'}
-                  </h1>
-                  <span className="px-2.5 py-0.5 bg-[#EBF5EC] border border-[#C5E1C9] text-[#2D6A4F] text-[10px] font-bold uppercase tracking-wider rounded-full flex items-center gap-1">
-                    <ShieldCheck className="w-3 h-3 text-[#2D6A4F]" /> Verified Customer Account
-                  </span>
-                </div>
-
-                <p className="text-xs text-[#556955] mt-1 flex items-center gap-2 flex-wrap">
-                  <span>{user?.email || profile?.email}</span>
-                  {profile?.phone && (
-                    <>
-                      <span>•</span>
-                      <span><i className="fa-solid fa-phone mr-1.5 text-[10px]" aria-hidden="true" />{profile.phone}</span>
-                    </>
-                  )}
-                </p>
-
-                {defaultAddr && (
-                  <p className="text-[11px] text-[#768C76] mt-1.5 flex items-center gap-1">
-                    <MapPin className="w-3.5 h-3.5 text-[#2D6A4F]" />
-                    <span>Default Address: <strong>{defaultAddr.city}, {defaultAddr.state} ({defaultAddr.pincode})</strong></span>
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex items-center gap-3 flex-wrap">
-              <button
-                onClick={() => setIsEditingProfile(true)}
-                className="px-4 py-2.5 bg-[#F0F7F1] hover:bg-[#E2F0E4] border border-[#C5E1C9] text-[#1F341C] text-xs font-bold rounded-xl transition-all flex items-center gap-2 cursor-pointer"
-              >
-                <Edit3 className="w-4 h-4 text-[#2D6A4F]" />
-                Edit Profile
-              </button>
-
-              <button
-                onClick={promptSignOut}
-                className="px-4 py-2.5 border border-stone-300 hover:border-rose-300 text-stone-700 hover:text-rose-700 hover:bg-rose-50 text-xs font-bold rounded-xl transition-all flex items-center gap-2 cursor-pointer"
-              >
-                <LogOut className="w-4 h-4" />
-                Sign Out
-              </button>
-            </div>
-          </div>
-
-          {/* Amazon-Style Quick Shortcuts Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8 pt-6 border-t border-[#E8F0E7]">
-            <div
-              onClick={() => setActiveTab('track-order')}
-              className="bg-[#F8FCF9] hover:bg-[#EBF5EC] p-4 rounded-xl border border-[#E2ECE0] cursor-pointer transition-all flex items-center justify-between group"
-            >
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-[#2D4A27]/10 rounded-lg text-[#2D4A27]">
-                  <Truck className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-xs text-[#182319] group-hover:text-[#2D4A27]">Track Order &amp; History</h4>
-                  <p className="text-[11px] text-[#6B856B]">{ordersCount} orders • Live tracking status</p>
-                </div>
-              </div>
-              <ArrowRight className="w-4 h-4 text-[#6B856B] group-hover:translate-x-1 transition-transform" />
-            </div>
-
-            <div
-              onClick={() => setActiveTab('addresses')}
-              className="bg-[#F8FCF9] hover:bg-[#EBF5EC] p-4 rounded-xl border border-[#E2ECE0] cursor-pointer transition-all flex items-center justify-between group"
-            >
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-[#2D4A27]/10 rounded-lg text-[#2D4A27]">
-                  <MapPin className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-xs text-[#182319] group-hover:text-[#2D4A27]">Saved Addresses</h4>
-                  <p className="text-[11px] text-[#6B856B]">{profile?.addresses?.length || 0} delivery locations</p>
-                </div>
-              </div>
-              <ArrowRight className="w-4 h-4 text-[#6B856B] group-hover:translate-x-1 transition-transform" />
-            </div>
-
-            <div
-              onClick={() => setActiveTab('wishlist')}
-              className="bg-[#F8FCF9] hover:bg-[#EBF5EC] p-4 rounded-xl border border-[#E2ECE0] cursor-pointer transition-all flex items-center justify-between group"
-            >
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-[#2D4A27]/10 rounded-lg text-[#2D4A27]">
-                  <Heart className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-xs text-[#182319] group-hover:text-[#2D4A27]">Saved Plants</h4>
-                  <p className="text-[11px] text-[#6B856B]">{wishlistIds.length} wishlist items</p>
-                </div>
-              </div>
-              <ArrowRight className="w-4 h-4 text-[#6B856B] group-hover:translate-x-1 transition-transform" />
-            </div>
-          </div>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mb-6 sm:mb-8">
+          <p className="text-xs text-[#7A7A7A]">Home / <span className="text-[#13301B] font-semibold">My Account</span></p>
+          <h1 className="mt-2 font-serif text-3xl sm:text-4xl font-semibold tracking-tight text-[#13301B]">My Account</h1>
         </div>
 
         {/* Modal: Edit Profile Info */}
@@ -412,7 +305,7 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
                     required
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
-                    className="w-full px-3.5 py-2.5 border border-stone-300 rounded-xl text-xs focus:ring-2 focus:ring-[#2D4A27]/20 focus:border-[#2D4A27] outline-none"
+                    className="w-full px-3.5 py-2.5 border border-[#E0D9CB] bg-white rounded-xl text-sm focus:ring-2 focus:ring-[#2D4A27]/20 focus:border-[#2D4A27] outline-none"
                   />
                 </div>
 
@@ -425,7 +318,7 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
                     placeholder="+91 80048 81668"
                     value={editPhone}
                     onChange={(e) => setEditPhone(e.target.value)}
-                    className="w-full px-3.5 py-2.5 border border-stone-300 rounded-xl text-xs focus:ring-2 focus:ring-[#2D4A27]/20 focus:border-[#2D4A27] outline-none"
+                    className="w-full px-3.5 py-2.5 border border-[#E0D9CB] bg-white rounded-xl text-sm focus:ring-2 focus:ring-[#2D4A27]/20 focus:border-[#2D4A27] outline-none"
                   />
                 </div>
 
@@ -452,7 +345,7 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
                   <button
                     type="submit"
                     disabled={savingProfile}
-                    className="px-5 py-2 bg-[#2D4A27] hover:bg-[#1F341C] text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-colors"
+                    className="px-5 py-2 bg-[#13301B] hover:bg-[#1F4A2B] text-white rounded-full text-xs font-semibold transition-colors"
                   >
                     {savingProfile ? 'Saving...' : 'Save Changes'}
                   </button>
@@ -462,106 +355,108 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
           </div>
         )}
 
-        {/* Tab Navigation Menu */}
-        <div className="flex border-b border-[#E2ECE0] gap-4 sm:gap-8 text-xs font-bold uppercase tracking-wider overflow-x-auto pb-1 scrollbar-none">
-          <button
-            onClick={() => setActiveTab('profile')}
-            className={`pb-4.5 flex items-center gap-2 transition-all shrink-0 cursor-pointer ${
-              activeTab === 'profile'
-                ? 'border-b-2 border-[#2D4A27] text-[#2D4A27] font-extrabold'
-                : 'text-[#6B856B] hover:text-[#182319]'
-            }`}
-          >
-            <User className="w-4 h-4" />
-            My Profile Information
-          </button>
+        <div className="grid grid-cols-1 lg:grid-cols-[290px_minmax(0,1fr)] gap-5 lg:gap-8 items-start">
+          {/* Sidebar: account card + navigation */}
+          <aside className="lg:sticky lg:top-28 space-y-4 min-w-0">
+            <div className="rounded-[22px] bg-white p-5 sm:p-6 ring-1 ring-[#ECE6DA] shadow-[0_14px_32px_-26px_rgba(19,48,27,0.5)]">
+              <div className="flex items-center gap-4">
+                <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#13301B] font-serif text-2xl font-semibold text-[#F4EFE3]">
+                  {(profile?.displayName || user?.displayName || 'My Account')[0].toUpperCase()}
+                </span>
+                <div className="min-w-0">
+                  <p className="truncate font-serif text-lg font-semibold text-[#13301B]">{(profile?.displayName || user?.displayName || 'My Account')}</p>
+                  <p className="truncate text-xs text-[#6B6B6B]">{user?.email || profile?.email}</p>
+                  {profile?.phone && <p className="truncate text-xs text-[#6B6B6B]">{profile.phone}</p>}
+                </div>
+              </div>
+              {defaultAddr && (
+                <p className="mt-4 flex items-start gap-2 rounded-xl bg-[#F6F2EA] px-3 py-2.5 text-xs text-[#4A4A4A]">
+                  <MapPin className="w-3.5 h-3.5 mt-0.5 text-[#2D6A4F]" />
+                  <span>Delivering to <strong className="text-[#13301B]">{defaultAddr.city}{defaultAddr.state ? `, ${defaultAddr.state}` : ''}</strong> {defaultAddr.pincode}</span>
+                </p>
+              )}
+              <button
+                onClick={() => setIsEditingProfile(true)}
+                className="mt-4 w-full rounded-full border border-[#13301B] py-2.5 text-xs font-semibold text-[#13301B] transition-colors hover:bg-[#13301B] hover:text-white"
+              >
+                Edit profile
+              </button>
+            </div>
 
-          <button
-            onClick={() => setActiveTab('track-order')}
-            className={`pb-4.5 flex items-center gap-2 transition-all shrink-0 cursor-pointer ${
-              activeTab === 'track-order'
-                ? 'border-b-2 border-[#2D4A27] text-[#2D4A27] font-extrabold'
-                : 'text-[#6B856B] hover:text-[#182319]'
-            }`}
-          >
-            <Truck className="w-4 h-4" />
-            Track Order &amp; Shipments {ordersCount > 0 && `(${ordersCount})`}
-          </button>
+            <nav aria-label="Account sections" className="rounded-[22px] bg-white p-2 ring-1 ring-[#ECE6DA] shadow-[0_14px_32px_-26px_rgba(19,48,27,0.5)]">
+              <ul className="flex gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:flex-col">
+                {([
+                  { id: 'profile', label: 'Overview', icon: User },
+                  { id: 'track-order', label: 'My Orders', icon: Truck, count: ordersCount },
+                  { id: 'addresses', label: 'Addresses', icon: MapPin, count: profile?.addresses?.length || 0 },
+                  { id: 'wishlist', label: 'Saved Plants', icon: Heart, count: wishlistIds.length },
+                  { id: 'settings', label: 'Settings', icon: Key },
+                ] as const).map((t) => (
+                  <li key={t.id} className="shrink-0 lg:shrink">
+                    <button
+                      onClick={() => setActiveTab(t.id)}
+                      className={`flex w-full items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-sm font-medium whitespace-nowrap transition-colors ${
+                        activeTab === t.id ? 'bg-[#13301B] text-white' : 'text-[#3F3F3F] hover:bg-[#F6F2EA]'
+                      }`}
+                    >
+                      <t.icon className="w-4 h-4" />
+                      <span className="flex-1 text-left">{t.label}</span>
+                      {'count' in t && t.count > 0 && (
+                        <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${activeTab === t.id ? 'bg-white/15 text-white' : 'bg-[#EEF3EC] text-[#2D4A27]'}`}>{t.count}</span>
+                      )}
+                    </button>
+                  </li>
+                ))}
+                <li className="hidden lg:block border-t border-[#F0EBDF] mt-1 pt-1">
+                  <button
+                    onClick={promptSignOut}
+                    className="flex w-full items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-sm font-medium text-[#B42318] hover:bg-rose-50"
+                  >
+                    <LogOut className="w-4 h-4" /> Sign out
+                  </button>
+                </li>
+              </ul>
+            </nav>
+          </aside>
 
-          <button
-            onClick={() => setActiveTab('addresses')}
-            className={`pb-4.5 flex items-center gap-2 transition-all shrink-0 cursor-pointer ${
-              activeTab === 'addresses'
-                ? 'border-b-2 border-[#2D4A27] text-[#2D4A27] font-extrabold'
-                : 'text-[#6B856B] hover:text-[#182319]'
-            }`}
-          >
-            <MapPin className="w-4 h-4" />
-            Saved Addresses ({profile?.addresses?.length || 0})
-          </button>
-
-          <button
-            onClick={() => setActiveTab('wishlist')}
-            className={`pb-4.5 flex items-center gap-2 transition-all shrink-0 cursor-pointer ${
-              activeTab === 'wishlist'
-                ? 'border-b-2 border-[#2D4A27] text-[#2D4A27] font-extrabold'
-                : 'text-[#6B856B] hover:text-[#182319]'
-            }`}
-          >
-            <Heart className="w-4 h-4" />
-            Saved Plants ({wishlistIds.length})
-          </button>
-
-          <button
-            onClick={() => setActiveTab('settings')}
-            className={`pb-4.5 flex items-center gap-2 transition-all shrink-0 cursor-pointer ${
-              activeTab === 'settings'
-                ? 'border-b-2 border-[#2D4A27] text-[#2D4A27] font-extrabold'
-                : 'text-[#6B856B] hover:text-[#182319]'
-            }`}
-          >
-            <Key className="w-4 h-4" />
-            Account Security &amp; Preferences
-          </button>
-        </div>
-
+          <main className="min-w-0 space-y-6">
         {/* TAB 1: MY PROFILE INFO */}
         {activeTab === 'profile' && (
-          <div className="bg-white rounded-2xl border border-[#E2ECE0] p-6 sm:p-8 space-y-6">
-            <div className="flex items-center justify-between pb-4 border-b border-[#E8F0E7]">
+          <div className="bg-white rounded-[22px] ring-1 ring-[#ECE6DA] shadow-[0_14px_32px_-26px_rgba(19,48,27,0.5)] p-5 sm:p-8 space-y-6">
+            <div className="flex items-center justify-between pb-4 border-b border-[#F0EBDF]">
               <div>
-                <h3 className="font-serif font-bold text-lg text-[#182319]">Personal Account Information</h3>
-                <p className="text-xs text-[#556955] mt-0.5">Manage your personal credentials and phone number.</p>
+                <h3 className="font-serif font-bold text-lg text-[#13301B]">Personal Information</h3>
+                <p className="text-xs text-[#5A5A5A] mt-0.5">Your name, email and phone number.</p>
               </div>
 
               <button
                 onClick={() => setIsEditingProfile(true)}
-                className="px-4 py-2 bg-[#2D4A27] text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-[#1F341C] transition-colors"
+                className="px-5 py-2.5 bg-[#13301B] text-white rounded-full text-xs font-semibold hover:bg-[#1F4A2B] transition-colors"
               >
                 Edit Info
               </button>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs">
-              <div className="p-4 bg-[#F8FCF9] rounded-xl border border-[#E2ECE0]">
-                <span className="font-bold text-[#6B856B] uppercase tracking-wider text-[10px]">Full Display Name</span>
-                <p className="font-bold text-sm text-[#182319] mt-1">{profile?.displayName || user?.displayName || 'Not specified'}</p>
+              <div className="p-4 bg-[#F6F2EA] rounded-2xl">
+                <span className="font-bold text-[#6B6B6B] uppercase tracking-wider text-[10px]">Full Display Name</span>
+                <p className="font-bold text-sm text-[#13301B] mt-1">{profile?.displayName || user?.displayName || 'Not specified'}</p>
               </div>
 
-              <div className="p-4 bg-[#F8FCF9] rounded-xl border border-[#E2ECE0]">
-                <span className="font-bold text-[#6B856B] uppercase tracking-wider text-[10px]">Primary Email</span>
-                <p className="font-bold text-sm text-[#182319] mt-1">{user?.email || profile?.email}</p>
+              <div className="p-4 bg-[#F6F2EA] rounded-2xl">
+                <span className="font-bold text-[#6B6B6B] uppercase tracking-wider text-[10px]">Primary Email</span>
+                <p className="font-bold text-sm text-[#13301B] mt-1">{user?.email || profile?.email}</p>
               </div>
 
-              <div className="p-4 bg-[#F8FCF9] rounded-xl border border-[#E2ECE0]">
-                <span className="font-bold text-[#6B856B] uppercase tracking-wider text-[10px]">Mobile Phone Number</span>
-                <p className="font-bold text-sm text-[#182319] mt-1">{profile?.phone || 'Not added yet'}</p>
+              <div className="p-4 bg-[#F6F2EA] rounded-2xl">
+                <span className="font-bold text-[#6B6B6B] uppercase tracking-wider text-[10px]">Mobile Phone Number</span>
+                <p className="font-bold text-sm text-[#13301B] mt-1">{profile?.phone || 'Not added yet'}</p>
               </div>
 
-              <div className="p-4 bg-[#F8FCF9] rounded-xl border border-[#E2ECE0]">
-                <span className="font-bold text-[#6B856B] uppercase tracking-wider text-[10px]">Account Verification</span>
-                <p className="font-bold text-sm text-[#2D6A4F] mt-1 flex items-center gap-1.5">
-                  <ShieldCheck className="w-4 h-4 text-[#2D6A4F]" /> Active Verified Customer
+              <div className="p-4 bg-[#F6F2EA] rounded-2xl">
+                <span className="font-bold text-[#6B6B6B] uppercase tracking-wider text-[10px]">Member Since</span>
+                <p className="font-bold text-sm text-[#13301B] mt-1">
+                  {profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }) : '-'}
                 </p>
               </div>
             </div>
@@ -571,14 +466,14 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
         {/* TAB: TRACK ORDER & SHIPMENTS */}
         {activeTab === 'track-order' && (
           <div className="space-y-6">
-            <div className="bg-white rounded-2xl border border-[#E2ECE0] p-6 sm:p-8 space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#E8F0E7]">
+            <div className="bg-white rounded-[22px] ring-1 ring-[#ECE6DA] shadow-[0_14px_32px_-26px_rgba(19,48,27,0.5)] p-5 sm:p-8 space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#F0EBDF]">
                 <div>
-                  <h3 className="font-serif font-bold text-lg text-[#182319] flex items-center gap-2">
+                  <h3 className="font-serif font-bold text-lg text-[#13301B] flex items-center gap-2">
                     <Truck className="w-5 h-5 text-[#2D4A27]" />
                     Live Shipment &amp; Order Tracker
                   </h3>
-                  <p className="text-xs text-[#556955] mt-0.5">
+                  <p className="text-xs text-[#5A5A5A] mt-0.5">
                     Monitor real-time dispatch, transit milestones, courier AWB, and doorstep delivery for all your plant orders.
                   </p>
                 </div>
@@ -595,18 +490,18 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
               {/* If customer has past orders, show order cards with 1-click track button */}
               {customerOrders.length > 0 && (
                 <div className="pt-6 border-t border-[#E8F0E7] space-y-4">
-                  <h4 className="font-bold text-xs uppercase tracking-wider text-[#6B856B]">
+                  <h4 className="font-bold text-xs uppercase tracking-wider text-[#6B6B6B]">
                     Your Recent Orders
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {customerOrders.map((ord) => (
                       <div
                         key={ord.id}
-                        className="p-4 bg-[#F8FCF9] rounded-xl border border-[#E2ECE0] flex flex-col justify-between space-y-3 hover:border-[#2D4A27]/40 transition-colors"
+                        className="p-4 bg-[#F6F2EA] rounded-2xl flex flex-col justify-between space-y-3 hover:border-[#2D4A27]/40 transition-colors"
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div>
-                            <span className="font-bold text-xs text-[#182319] block">{ord.orderNumber}</span>
+                            <span className="font-bold text-xs text-[#13301B] block">{ord.orderNumber}</span>
                             <span className="text-[11px] text-[#7A7A7A]">
                               {new Date(ord.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                             </span>
@@ -626,7 +521,7 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
                           <p className="font-medium text-[#1A1A1A]">
                             ₹{Number(ord.total ?? ord.totalAmount ?? 0).toLocaleString('en-IN')} • {(ord.items || []).length} item{(ord.items || []).length === 1 ? '' : 's'}
                           </p>
-                          <p className="text-[11px] text-[#768C76] truncate">
+                          <p className="text-[11px] text-[#7A7A7A] truncate">
                             Shipping to: {ord.shippingAddress?.city || '-'}, {ord.shippingAddress?.state || ''}
                           </p>
                         </div>
@@ -637,7 +532,7 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
                             setSelectedOrderToTrack(ord.orderNumber);
                             window.scrollTo({ top: 380, behavior: 'smooth' });
                           }}
-                          className="w-full py-2 bg-[#2D4A27] hover:bg-[#1F341C] text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                          className="w-full py-2 bg-[#13301B] hover:bg-[#1F4A2B] text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                         >
                           <Truck className="w-3.5 h-3.5" />
                           <span>Track This Package Live</span>
@@ -654,10 +549,10 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
         {/* TAB 2: SAVED ADDRESSES */}
         {activeTab === 'addresses' && (
           <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-[#E2ECE0]">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-[22px] ring-1 ring-[#ECE6DA]">
               <div>
-                <h3 className="font-serif font-bold text-base text-[#182319]">Saved Delivery Addresses</h3>
-                <p className="text-xs text-[#556955] mt-0.5">Manage your shipping destinations for 1-click checkout.</p>
+                <h3 className="font-serif font-bold text-base text-[#13301B]">Saved Delivery Addresses</h3>
+                <p className="text-xs text-[#5A5A5A] mt-0.5">Manage your shipping destinations for 1-click checkout.</p>
               </div>
 
               <button
@@ -676,7 +571,7 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
                   });
                   setShowAddressForm(!showAddressForm);
                 }}
-                className="px-4 py-2.5 bg-[#2D4A27] hover:bg-[#1F341C] text-white rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer shadow-xs shrink-0"
+                className="px-4 py-2.5 bg-[#13301B] hover:bg-[#1F4A2B] text-white rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer shadow-xs shrink-0"
               >
                 <Plus className="w-4 h-4" />
                 {showAddressForm ? 'Close Address Form' : 'Add New Address'}
@@ -687,7 +582,7 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
             {showAddressForm && (
               <form onSubmit={handleSaveAddressForm} className="bg-white p-6 sm:p-8 rounded-2xl border border-[#C5E1C9] space-y-4 animate-fadeIn shadow-md">
                 <div className="flex items-center justify-between pb-3 border-b border-stone-100">
-                  <h4 className="font-serif font-bold text-sm text-[#182319]">
+                  <h4 className="font-serif font-bold text-sm text-[#13301B]">
                     {editingAddressId ? 'Edit Shipping Address' : 'Add New Delivery Address'}
                   </h4>
                   <button
@@ -701,74 +596,74 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                   <div>
-                    <label className="block font-bold text-[#556955] uppercase tracking-wider mb-1">Full Receiver Name *</label>
+                    <label className="block font-bold text-[#5A5A5A] uppercase tracking-wider mb-1">Full Receiver Name *</label>
                     <input
                       type="text"
                       required
                       value={addrForm.fullName}
                       onChange={(e) => setAddrForm({ ...addrForm, fullName: e.target.value })}
-                      className="w-full px-3.5 py-2.5 border border-stone-300 rounded-xl text-xs focus:ring-1 focus:ring-[#2D4A27] outline-none"
+                      className="w-full px-3.5 py-2.5 border border-[#E0D9CB] bg-white rounded-xl text-sm focus:ring-1 focus:ring-[#2D4A27] outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block font-bold text-[#556955] uppercase tracking-wider mb-1">Contact Phone Number *</label>
+                    <label className="block font-bold text-[#5A5A5A] uppercase tracking-wider mb-1">Contact Phone Number *</label>
                     <input
                       type="tel"
                       required
                       value={addrForm.phone}
                       onChange={(e) => setAddrForm({ ...addrForm, phone: e.target.value })}
-                      className="w-full px-3.5 py-2.5 border border-stone-300 rounded-xl text-xs focus:ring-1 focus:ring-[#2D4A27] outline-none"
+                      className="w-full px-3.5 py-2.5 border border-[#E0D9CB] bg-white rounded-xl text-sm focus:ring-1 focus:ring-[#2D4A27] outline-none"
                     />
                   </div>
 
                   <div className="sm:col-span-2">
-                    <label className="block font-bold text-[#556955] uppercase tracking-wider mb-1">Street Address / House No. *</label>
+                    <label className="block font-bold text-[#5A5A5A] uppercase tracking-wider mb-1">Street Address / House No. *</label>
                     <input
                       type="text"
                       required
                       placeholder="House No, Apartment, Street name"
                       value={addrForm.street}
                       onChange={(e) => setAddrForm({ ...addrForm, street: e.target.value })}
-                      className="w-full px-3.5 py-2.5 border border-stone-300 rounded-xl text-xs focus:ring-1 focus:ring-[#2D4A27] outline-none"
+                      className="w-full px-3.5 py-2.5 border border-[#E0D9CB] bg-white rounded-xl text-sm focus:ring-1 focus:ring-[#2D4A27] outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block font-bold text-[#556955] uppercase tracking-wider mb-1">Landmark (Optional)</label>
+                    <label className="block font-bold text-[#5A5A5A] uppercase tracking-wider mb-1">Landmark (Optional)</label>
                     <input
                       type="text"
                       placeholder="Near metro station, park, etc."
                       value={addrForm.landmark || ''}
                       onChange={(e) => setAddrForm({ ...addrForm, landmark: e.target.value })}
-                      className="w-full px-3.5 py-2.5 border border-stone-300 rounded-xl text-xs focus:ring-1 focus:ring-[#2D4A27] outline-none"
+                      className="w-full px-3.5 py-2.5 border border-[#E0D9CB] bg-white rounded-xl text-sm focus:ring-1 focus:ring-[#2D4A27] outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block font-bold text-[#556955] uppercase tracking-wider mb-1">City / District *</label>
+                    <label className="block font-bold text-[#5A5A5A] uppercase tracking-wider mb-1">City / District *</label>
                     <input
                       type="text"
                       required
                       value={addrForm.city}
                       onChange={(e) => setAddrForm({ ...addrForm, city: e.target.value })}
-                      className="w-full px-3.5 py-2.5 border border-stone-300 rounded-xl text-xs focus:ring-1 focus:ring-[#2D4A27] outline-none"
+                      className="w-full px-3.5 py-2.5 border border-[#E0D9CB] bg-white rounded-xl text-sm focus:ring-1 focus:ring-[#2D4A27] outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block font-bold text-[#556955] uppercase tracking-wider mb-1">State *</label>
+                    <label className="block font-bold text-[#5A5A5A] uppercase tracking-wider mb-1">State *</label>
                     <input
                       type="text"
                       required
                       value={addrForm.state}
                       onChange={(e) => setAddrForm({ ...addrForm, state: e.target.value })}
-                      className="w-full px-3.5 py-2.5 border border-stone-300 rounded-xl text-xs focus:ring-1 focus:ring-[#2D4A27] outline-none"
+                      className="w-full px-3.5 py-2.5 border border-[#E0D9CB] bg-white rounded-xl text-sm focus:ring-1 focus:ring-[#2D4A27] outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block font-bold text-[#556955] uppercase tracking-wider mb-1">Postal Pincode *</label>
+                    <label className="block font-bold text-[#5A5A5A] uppercase tracking-wider mb-1">Postal Pincode *</label>
                     <input
                       type="text"
                       required
@@ -787,7 +682,7 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
                           } else setPinStatus('fail');
                         } else setPinStatus('idle');
                       }}
-                      className="w-full px-3.5 py-2.5 border border-stone-300 rounded-xl text-xs focus:ring-1 focus:ring-[#2D4A27] outline-none"
+                      className="w-full px-3.5 py-2.5 border border-[#E0D9CB] bg-white rounded-xl text-sm focus:ring-1 focus:ring-[#2D4A27] outline-none"
                     />
                     <p className="mt-1 text-[10px] text-[#7A7A7A]">
                       {pinStatus === 'loading' ? 'Finding city and state...' : pinStatus === 'done' ? 'City and state filled from the pincode.' : pinStatus === 'fail' ? 'Pincode not found - please check it.' : 'City and state fill in automatically.'}
@@ -802,7 +697,7 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
                       onChange={(e) => setAddrForm({ ...addrForm, isDefault: e.target.checked })}
                       className="rounded accent-[#2D4A27]"
                     />
-                    <label htmlFor="isDefaultAddrCheck" className="text-xs text-[#182319] font-medium cursor-pointer">
+                    <label htmlFor="isDefaultAddrCheck" className="text-xs text-[#13301B] font-medium cursor-pointer">
                       Set as my default primary shipping address
                     </label>
                   </div>
@@ -818,7 +713,7 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-2.5 bg-[#2D4A27] text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-xs"
+                    className="px-6 py-2.5 bg-[#2D4A27] text-white rounded-full text-xs font-semibold shadow-xs"
                   >
                     {editingAddressId ? 'Update Address' : 'Save Address'}
                   </button>
@@ -828,10 +723,10 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
 
             {/* List of Saved Address Cards */}
             {!profile?.addresses || profile.addresses.length === 0 ? (
-              <div className="bg-white rounded-2xl p-12 text-center border border-[#E2ECE0]">
+              <div className="bg-white rounded-2xl p-12 text-center border border-[#ECE6DA]">
                 <MapPin className="w-12 h-12 text-[#95D5B2] mx-auto mb-3" />
-                <h3 className="font-serif font-bold text-base text-[#182319]">No saved addresses</h3>
-                <p className="text-xs text-[#556955] mt-1">Add your shipping details for 1-click checkout experience.</p>
+                <h3 className="font-serif font-bold text-base text-[#13301B]">No saved addresses</h3>
+                <p className="text-xs text-[#5A5A5A] mt-1">Add your shipping details for 1-click checkout experience.</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -844,7 +739,7 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
                   >
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <span className="font-bold text-[#182319] text-sm">{addr.fullName}</span>
+                        <span className="font-bold text-[#13301B] text-sm">{addr.fullName}</span>
                         {addr.isDefault ? (
                           <span className="text-[10px] font-bold bg-[#2D6A4F] text-white px-2.5 py-0.5 rounded-full uppercase tracking-wider">
                             Default Address
@@ -859,10 +754,10 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
                         )}
                       </div>
 
-                      <p className="text-[#556955] leading-relaxed">{addr.street}</p>
-                      {addr.landmark && <p className="text-[#6B856B] text-[11px]">Landmark: {addr.landmark}</p>}
-                      <p className="text-[#556955] font-medium">{addr.city}, {addr.state} - {addr.pincode}</p>
-                      <p className="text-[#6B856B] mt-2"><i className="fa-solid fa-phone mr-1.5 text-[10px]" aria-hidden="true" />{addr.phone}</p>
+                      <p className="text-[#5A5A5A] leading-relaxed">{addr.street}</p>
+                      {addr.landmark && <p className="text-[#6B6B6B] text-[11px]">Landmark: {addr.landmark}</p>}
+                      <p className="text-[#5A5A5A] font-medium">{addr.city}, {addr.state} - {addr.pincode}</p>
+                      <p className="text-[#6B6B6B] mt-2"><i className="fa-solid fa-phone mr-1.5 text-[10px]" aria-hidden="true" />{addr.phone}</p>
                     </div>
 
                     <div className="pt-3 border-t border-[#E8F0E7] flex items-center justify-between">
@@ -893,13 +788,13 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
         {activeTab === 'wishlist' && (
           <div>
             {wishlistProducts.length === 0 ? (
-              <div className="bg-white rounded-2xl p-12 text-center border border-[#E2ECE0]">
+              <div className="bg-white rounded-2xl p-12 text-center border border-[#ECE6DA]">
                 <Heart className="w-12 h-12 text-[#95D5B2] mx-auto mb-3" />
-                <h3 className="font-serif font-bold text-base text-[#182319]">Your plant wishlist is empty</h3>
-                <p className="text-xs text-[#556955] mt-1">Tap the heart icon on any live plant or pot to save it here.</p>
+                <h3 className="font-serif font-bold text-base text-[#13301B]">Your plant wishlist is empty</h3>
+                <p className="text-xs text-[#5A5A5A] mt-1">Tap the heart icon on any live plant or pot to save it here.</p>
                 <button
                   onClick={() => navigate('/plants')}
-                  className="mt-5 px-6 py-2.5 bg-[#2D4A27] text-white rounded-xl text-xs font-bold uppercase tracking-wider"
+                  className="mt-5 px-6 py-2.5 bg-[#2D4A27] text-white rounded-full text-xs font-semibold"
                 >
                   Browse Catalogue &rarr;
                 </button>
@@ -916,20 +811,20 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
 
         {/* TAB 4: ACCOUNT SECURITY & SETTINGS */}
         {activeTab === 'settings' && (
-          <div className="bg-white rounded-2xl border border-[#E2ECE0] p-6 sm:p-8 space-y-8">
+          <div className="bg-white rounded-[22px] ring-1 ring-[#ECE6DA] shadow-[0_14px_32px_-26px_rgba(19,48,27,0.5)] p-5 sm:p-8 space-y-8">
             <div>
-              <h3 className="font-serif font-bold text-lg text-[#182319] flex items-center gap-2">
+              <h3 className="font-serif font-bold text-lg text-[#13301B] flex items-center gap-2">
                 <Key className="w-5 h-5 text-[#2D4A27]" />
                 Account Security & Preferences
               </h3>
-              <p className="text-xs text-[#556955] mt-1">Manage password resets, notifications, and store settings.</p>
+              <p className="text-xs text-[#5A5A5A] mt-1">Manage password resets, notifications, and store settings.</p>
             </div>
 
             {/* Password Reset Section */}
-            <div className="p-5 bg-[#F8FCF9] rounded-xl border border-[#E2ECE0] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="p-5 bg-[#F6F2EA] rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h4 className="font-bold text-xs text-[#182319] uppercase tracking-wider">Account Password</h4>
-                <p className="text-xs text-[#556955] mt-0.5">
+                <h4 className="font-bold text-xs text-[#13301B] uppercase tracking-wider">Account Password</h4>
+                <p className="text-xs text-[#5A5A5A] mt-0.5">
                   Request a secure password reset link to be sent to your registered email address.
                 </p>
               </div>
@@ -937,7 +832,7 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
               <button
                 onClick={handleRequestPasswordReset}
                 disabled={passwordResetSent}
-                className="px-4 py-2 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-bold uppercase tracking-wider shrink-0 transition-colors cursor-pointer"
+                className="px-4 py-2 bg-stone-900 hover:bg-stone-800 text-white rounded-full text-xs font-semibold shrink-0 transition-colors cursor-pointer"
               >
                 {passwordResetSent ? 'Reset Email Sent' : 'Send Password Reset Email'}
               </button>
@@ -945,14 +840,14 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
 
             {/* Notifications Preferences */}
             <div className="space-y-4">
-              <h4 className="font-bold text-xs text-[#182319] uppercase tracking-wider">Communication Preferences</h4>
+              <h4 className="font-bold text-xs text-[#13301B] uppercase tracking-wider">Communication Preferences</h4>
 
-              <div className="p-4 border border-[#E2ECE0] rounded-xl flex items-center justify-between">
+              <div className="p-4 border border-[#ECE6DA] rounded-xl flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <Bell className="w-5 h-5 text-[#2D6A4F]" />
                   <div>
-                    <p className="text-xs font-bold text-[#182319]">WhatsApp Order & Delivery Tracking Alerts</p>
-                    <p className="text-[11px] text-[#6B856B]">Receive instant delivery notifications on your phone.</p>
+                    <p className="text-xs font-bold text-[#13301B]">WhatsApp Order & Delivery Tracking Alerts</p>
+                    <p className="text-[11px] text-[#6B6B6B]">Receive instant delivery notifications on your phone.</p>
                   </div>
                 </div>
 
@@ -964,12 +859,12 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
                 />
               </div>
 
-              <div className="p-4 border border-[#E2ECE0] rounded-xl flex items-center justify-between">
+              <div className="p-4 border border-[#ECE6DA] rounded-xl flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <Sparkles className="w-5 h-5 text-[#2D6A4F]" />
                   <div>
-                    <p className="text-xs font-bold text-[#182319]">Seasonal Plant Care Reminders & Guides</p>
-                    <p className="text-[11px] text-[#6B856B]">Get monthly watering & organic fertilizing tips.</p>
+                    <p className="text-xs font-bold text-[#13301B]">Seasonal Plant Care Reminders & Guides</p>
+                    <p className="text-[11px] text-[#6B6B6B]">Get monthly watering & organic fertilizing tips.</p>
                   </div>
                 </div>
 
@@ -983,6 +878,15 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
             </div>
           </div>
         )}
+
+            <button
+              onClick={promptSignOut}
+              className="lg:hidden flex w-full items-center justify-center gap-2 rounded-full border border-[#E3D4D4] bg-white py-3 text-sm font-semibold text-[#B42318]"
+            >
+              <LogOut className="w-4 h-4" /> Sign out
+            </button>
+          </main>
+        </div>
       </div>
     </div>
   );

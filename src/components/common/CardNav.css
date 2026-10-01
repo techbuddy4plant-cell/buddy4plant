@@ -234,7 +234,12 @@
   }
 
   .card-nav-cta-button {
-    display: none;
+    height: 34px;
+    padding: 0 0.7rem;
+    margin-left: 0.2rem;
+    font-size: 11.5px;
+    gap: 0.35rem;
+    border-radius: 999px;
   }
 
   .nav-card {
@@ -264,8 +269,8 @@
   }
 }
 
-@media (max-width: 1023px) {
-  .card-nav-cta-button {
+@media (max-width: 380px) {
+  .card-nav-cta-button i {
     display: none;
   }
 }
@@ -300,4 +305,19 @@
 .card-nav-top.has-center .card-nav-left,
 .card-nav-top.has-center .logo-container {
   flex-shrink: 0;
+}
+
+/* Phones: a little more room for the search box */
+@media (max-width: 640px) {
+  .card-nav-top.has-center .logo-container img {
+    height: 38px !important;
+    width: 48px !important;
+  }
+  .card-nav-top.has-center .card-nav-center {
+    margin: 0 0.15rem 0 0.25rem;
+  }
+  .card-nav-top.has-center .card-nav-cta-button {
+    padding: 0 0.6rem;
+    margin-left: 0.1rem;
+  }
 }

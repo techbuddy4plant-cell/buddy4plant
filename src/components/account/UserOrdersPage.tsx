@@ -295,7 +295,7 @@ export const UserOrdersPage: React.FC<UserOrdersPageProps> = ({ navigate }) => {
           <table>
             <thead>
               <tr>
-                <th>Plant Specimen Item</th>
+                <th>Item</th>
                 <th style="text-align: center;">Qty</th>
                 <th style="text-align: right;">Unit Price</th>
                 <th style="text-align: right;">Total Amount</th>
@@ -557,7 +557,7 @@ export const UserOrdersPage: React.FC<UserOrdersPageProps> = ({ navigate }) => {
                       />
                       <h3 className="font-serif font-bold text-base text-[#182319]">
                         {ord.orderStatus === 'Delivered'
-                          ? 'Delivered Botanical Order'
+                          ? 'Delivered'
                           : ord.orderStatus === 'Cancelled'
                           ? 'Cancelled Order'
                           : `Status: ${ord.orderStatus}`}

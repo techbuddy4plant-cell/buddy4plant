@@ -40,7 +40,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ navigate }) => {
   }, [paused, next, index]);
 
   return (
-    <section className="b4p-fixed-theme px-3 sm:px-5 lg:px-8 pt-1 pb-6 sm:pb-8" aria-roledescription="carousel" aria-label="Featured">
+    <section className="b4p-fixed-theme px-1.5 sm:px-5 lg:px-8 pt-1 pb-4 sm:pb-8" aria-roledescription="carousel" aria-label="Featured">
       <div
         className="group relative mx-auto max-w-7xl overflow-hidden rounded-2xl sm:rounded-[28px] bg-[#EFE8DA] shadow-[0_18px_40px_-24px_rgba(19,48,27,0.45)]"
         onKeyDown={(e) => {
@@ -73,7 +73,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ navigate }) => {
                 e.preventDefault();
                 navigate(s.link);
               }}
-              className="relative block w-full shrink-0 aspect-[1672/940] max-h-[640px]"
+              className="relative block w-full shrink-0 aspect-[16/10.5] sm:aspect-[1672/940] max-h-[640px]"
               aria-roledescription="slide"
               aria-label={`${i + 1} of ${count}: ${s.alt}`}
               aria-hidden={i !== index}

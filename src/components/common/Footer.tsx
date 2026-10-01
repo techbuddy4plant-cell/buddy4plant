@@ -218,10 +218,6 @@ export const Footer: React.FC<FooterProps> = ({ navigate }) => {
             ))}
           </ul>
           <div className="flex items-center gap-4">
-            <span className="inline-flex items-center gap-2 rounded-full bg-white/[0.07] px-4 py-2 text-xs text-[#D5E2D0]">
-              <i className="fa-solid fa-shield-check text-[#9CCB8F]" aria-hidden="true" />
-              Stripe &amp; 256-Bit SSL Encrypted
-            </span>
             <button
               type="button"
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
