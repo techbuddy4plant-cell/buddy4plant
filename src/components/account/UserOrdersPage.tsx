@@ -157,7 +157,7 @@ export const UserOrdersPage: React.FC<UserOrdersPageProps> = ({ navigate }) => {
         productName: reviewItem.name,
         userId: user?.uid || profile?.uid || 'verified_buyer',
         userName: profile?.displayName || user?.displayName || 'Verified Plant Parent',
-        userEmail: user?.email || profile?.email || 'care@buddy4plant.com',
+        userEmail: user?.email || profile?.email || 'buddy4plant@gmail.com',
         rating: reviewRating,
         title: `Verified Delivery Review: ${reviewItem.name}`,
         comment: reviewComment.trim() || 'Plant arrived vibrant, fresh, and securely packaged. Highly recommend!',
@@ -314,7 +314,7 @@ export const UserOrdersPage: React.FC<UserOrdersPageProps> = ({ navigate }) => {
           </div>
 
           <div style="margin-top: 40px; text-align: center; border-top: 1px solid #eee; padding-top: 16px; font-size: 11px; color: #777;">
-            Thank you for nurturing nature with buddy4plant! Support: support@buddy4plant.com
+            Thank you for nurturing nature with buddy4plant! Support: buddy4plant@gmail.com
           </div>
           <script>
             window.onload = function() { window.print(); }

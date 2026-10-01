@@ -4,7 +4,7 @@ export const INITIAL_STORE_SETTINGS: StoreSettings = {
   storeName: 'buddy4plant',
   tagline: 'Your Botanical Buddy & Green Sanctuary',
   logoText: 'buddy4plant',
-  contactEmail: 'care@buddy4plant.com',
+  contactEmail: 'buddy4plant@gmail.com',
   contactPhone: '+91 80048 81668',
   whatsappSupportNumber: '+91 80048 81668',
   storeAddress: 'Lucknow, Uttar Pradesh, India',
@@ -19,7 +19,7 @@ export const INITIAL_STORE_SETTINGS: StoreSettings = {
   announcementBarText: 'Welcome to buddy4plant: Free Ceramic Pot with Orders above ₹1,499 | Free Express Delivery over ₹999',
   announcementBarActive: true,
   socialLinks: {
-    instagram: 'https://instagram.com/buddy4plant',
+    instagram: 'https://www.instagram.com/buddy4plant',
     facebook: 'https://facebook.com/buddy4plant',
     pinterest: 'https://pinterest.com/buddy4plant',
     youtube: 'https://youtube.com/buddy4plant'

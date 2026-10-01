@@ -200,7 +200,7 @@ export const ContactUsPage: React.FC = () => {
   const { settings } = useStoreSettings();
   const wa = (settings.whatsappSupportNumber || settings.contactPhone || '918004881668').replace(/\D/g, '');
   const displayPhone = settings.whatsappSupportNumber || settings.contactPhone || '+91 80048 81668';
-  const email = settings.contactEmail || 'care@buddy4plant.com';
+  const email = settings.contactEmail || 'buddy4plant@gmail.com';
 
   const [formData, setFormData] = useState({
     name: '',
@@ -638,7 +638,7 @@ export const CareGuidePage: React.FC<{ navigate?: (path: string) => void }> = ({
 
 export const TermsAndConditionsPage: React.FC<{ navigate?: (path: string) => void }> = ({ navigate }) => {
   const { settings } = useStoreSettings();
-  const email = settings.contactEmail || 'support@buddy4plant.com';
+  const email = settings.contactEmail || 'buddy4plant@gmail.com';
   const phone = settings.contactPhone || '+91 80048 81668';
   const address = settings.storeAddress || 'Buddy4Plant Nursery & Botanical Sanctuary, Lucknow, Uttar Pradesh, India';
 
@@ -724,7 +724,7 @@ export const TermsAndConditionsPage: React.FC<{ navigate?: (path: string) => voi
 
 export const PrivacyPolicyPage: React.FC<{ navigate?: (path: string) => void }> = ({ navigate }) => {
   const { settings } = useStoreSettings();
-  const email = settings.contactEmail || 'privacy@buddy4plant.com';
+  const email = settings.contactEmail || 'buddy4plant@gmail.com';
   const address = settings.storeAddress || 'Buddy4Plant Nursery, Lucknow, Uttar Pradesh, India';
 
   return (
@@ -806,7 +806,7 @@ export const PrivacyPolicyPage: React.FC<{ navigate?: (path: string) => void }> 
 
 export const RefundPolicyPage: React.FC<{ navigate?: (path: string) => void }> = ({ navigate }) => {
   const { settings } = useStoreSettings();
-  const email = settings.contactEmail || 'support@buddy4plant.com';
+  const email = settings.contactEmail || 'buddy4plant@gmail.com';
   const phone = settings.contactPhone || '+91 80048 81668';
 
   return (
@@ -911,7 +911,7 @@ export const ShippingPolicyPage: React.FC<{ navigate?: (path: string) => void }>
               Zero-Risk Transit Guarantee
             </h2>
             <p>
-              If your plant arrives damaged, snapped, or excessively wilted during transit, send a photo to our WhatsApp Helpline (+91 80048 81668) or email support@buddy4plant.com within 7 days of delivery. We will immediately dispatch a fresh replacement plant free of cost—no questions asked!
+              If your plant arrives damaged, snapped, or excessively wilted during transit, send a photo to our WhatsApp Helpline (+91 80048 81668) or email buddy4plant@gmail.com within 7 days of delivery. We will immediately dispatch a fresh replacement plant free of cost—no questions asked!
             </p>
           </div>
 

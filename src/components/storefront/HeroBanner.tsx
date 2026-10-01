@@ -73,7 +73,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ navigate }) => {
                 e.preventDefault();
                 navigate(s.link);
               }}
-              className="relative block w-full shrink-0 aspect-[16/10.5] sm:aspect-[1672/940] max-h-[640px]"
+              className="relative block w-full shrink-0 aspect-[1672/940] max-h-[640px]"
               aria-roledescription="slide"
               aria-label={`${i + 1} of ${count}: ${s.alt}`}
               aria-hidden={i !== index}

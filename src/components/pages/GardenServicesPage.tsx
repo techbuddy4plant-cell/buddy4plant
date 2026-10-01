@@ -45,6 +45,7 @@ import { BotanicalProject } from '../../types';
 import { setSeo, breadcrumbLd, ORG_ID } from '../../utils/seo';
 import { ProjectMediaSection, ProjectMediaBadge } from './ProjectMedia';
 import { resolveGardenContent } from '../../data/gardenServicesContent';
+import OptionWheel from '../common/OptionWheel';
 
 const GARDEN_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   Landmark, CalendarCheck, Home, Building2, Trees, MapPin, Sprout, Leaf, Flower2, ShieldCheck, Sun, CloudRain, Snowflake, Droplets, Wrench, Sparkles,
@@ -469,6 +470,62 @@ const prettyPhone = (n: string) => {
   return m ? `+91 ${m[1]} ${m[2]}` : `+${d}`;
 };
 
+
+/** "Trusted by" list shown as a slowly turning wheel (React Bits OptionWheel). */
+const TrustedWheel: React.FC<{ label: string; names: string[] }> = ({ label, names }) => {
+  const [wide, setWide] = useState(() => typeof window !== 'undefined' && window.matchMedia('(min-width: 640px)').matches);
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 640px)');
+    const on = () => setWide(mq.matches);
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, []);
+  const items = names.filter((n, i) => n && names.indexOf(n) === i);
+  if (items.length === 0) return null;
+  return (
+    <section className="-mt-6 sm:-mt-10">
+      <div className="relative grid lg:grid-cols-12 items-center gap-6 lg:gap-10 rounded-3xl bg-white border border-[#E8DFD3] overflow-hidden px-5 pt-7 pb-2 sm:px-10 sm:py-4">
+        <div className="lg:col-span-4 font-sans">
+          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#486B44]">{label}</p>
+          <h2 className="font-editorial text-2xl sm:text-3xl font-bold text-[#141C14] leading-tight mt-2">
+            Gardens we look after
+          </h2>
+          <p className="text-sm text-[#6B645A] mt-2 leading-relaxed max-w-xs">
+            Government offices, training institutes, defence units and campuses across Uttar Pradesh.
+          </p>
+        </div>
+        <div className="lg:col-span-8 relative h-[260px] sm:h-[320px]">
+          {/* centre marker */}
+          <span className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 h-9 w-[3px] rounded-full bg-[#2D6A4F]" />
+          <OptionWheel
+            items={items}
+            defaultSelected={0}
+            textColor="#B5AEA2"
+            activeColor="#142817"
+            side="left"
+            fontSize={wide ? 1.55 : 0.92}
+            spacing={wide ? 1.75 : 2}
+            curve={1}
+            tilt={wide ? 7 : 9}
+            blur={1.2}
+            fade={0.22}
+            minOpacity={0.08}
+            smoothing={320}
+            inset={wide ? 28 : 14}
+            loop
+            draggable={false}
+            captureWheel={false}
+            autoPlay={2400}
+            className="font-sans"
+          />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-white to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white to-transparent" />
+        </div>
+      </div>
+    </section>
+  );
+};
+
 const emptyForm = {
   fullName: '',
   phone: '',
@@ -738,19 +795,11 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
           </div>
         </div>
 
-        {/* ---------------- CLIENT MARQUEE ---------------- */}
-        <div className="-mt-8 sm:-mt-14">
-          <p className="text-center text-[10px] font-bold uppercase tracking-[0.16em] text-[#7A746B] mb-3 font-sans">
-            {C.trustedByLabel || 'TRUSTED BY INSTITUTIONS & CAMPUSES'}
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-x-7 gap-y-2">
-            {[...clientNames.slice(0, 8), ...C.trustedByExtra.filter(Boolean)].map((name, i) => (
-              <span key={i} className="text-sm font-medium text-[#3E4A3F] font-sans">
-                {name}
-              </span>
-            ))}
-          </div>
-        </div>
+        {/* ---------------- TRUSTED BY (option wheel) ---------------- */}
+        <TrustedWheel
+          label={C.trustedByLabel || 'Trusted by institutions & campuses'}
+          names={[...clientNames.slice(0, 8), ...C.trustedByExtra.filter(Boolean)]}
+        />
 
         {/* ---------------- PROJECTS ---------------- */}
         <section id="projects" className="scroll-mt-24 space-y-8">

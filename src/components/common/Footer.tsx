@@ -23,7 +23,6 @@ const COLUMNS: { title: string; links: LinkItem[] }[] = [
     links: [
       { label: 'Gardening Services', path: '/garden-services' },
       { label: 'Landscaping Projects', path: '/projects' },
-      { label: 'Plant Doctor Guide', path: '/care-guide' },
       { label: 'Botanical Blog', path: '/blog' },
       { label: 'Customer Reviews', path: '/reviews' },
     ],
@@ -45,41 +44,28 @@ export const Footer: React.FC<FooterProps> = ({ navigate }) => {
   const phone = settings.contactPhone || settings.whatsappSupportNumber || '+91 80048 81668';
   const phoneDigits = phone.replace(/\D/g, '');
   const wa = (settings.whatsappSupportNumber || phone).replace(/\D/g, '') || '918004881668';
-  const email = settings.contactEmail || 'contact@buddy4plant.com';
+  const email = settings.contactEmail || 'buddy4plant@gmail.com';
   const address = settings.storeAddress || 'Buddy4Plant Nursery, Lucknow, Uttar Pradesh, India';
 
   // Social & contact channels with reliable fallbacks
-  const rawSocials = (settings.socialLinks as unknown as Record<string, string>) || {};
   const socials = [
     {
       key: 'instagram',
       icon: 'fa-brands fa-instagram',
       label: 'Instagram',
-      url: rawSocials.instagram || 'https://instagram.com/buddy4plant',
+      url: 'https://www.instagram.com/buddy4plant',
     },
     {
-      key: 'x',
-      icon: 'fa-brands fa-x-twitter',
-      label: 'X (Twitter)',
-      url: rawSocials.twitter || rawSocials.x || 'https://x.com/buddy4plant',
+      key: 'whatsapp-channel',
+      icon: 'fa-brands fa-whatsapp',
+      label: 'WhatsApp Channel',
+      url: 'https://whatsapp.com/channel/0029VaPulYg7IUYYvXmx4w0L',
     },
     {
       key: 'mail',
       icon: 'fa-regular fa-envelope',
       label: 'Email Us',
       url: `mailto:${email}`,
-    },
-    {
-      key: 'facebook',
-      icon: 'fa-brands fa-facebook-f',
-      label: 'Facebook',
-      url: rawSocials.facebook || 'https://facebook.com/buddy4plant',
-    },
-    {
-      key: 'youtube',
-      icon: 'fa-brands fa-youtube',
-      label: 'YouTube',
-      url: rawSocials.youtube || 'https://youtube.com/@buddy4plant',
     },
   ];
 

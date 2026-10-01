@@ -134,11 +134,13 @@ export const StoreSettingsProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const loadAllSettings = async () => {
     try {
-      const [s, p, h] = await Promise.all([
+      let [s, p, h] = await Promise.all([
         getStoreSettings(),
         getPaymentSettings(),
         getHomepageCMS(),
       ]);
+      // Old placeholder addresses on the unused buddy4plant.com domain -> real inbox
+      if (!s.contactEmail || /@buddy4plant\.com$/i.test(s.contactEmail)) s = { ...s, contactEmail: 'buddy4plant@gmail.com' };
       setSettings(s);
       setPaymentSettings(p);
       setHomepageCMS(h);

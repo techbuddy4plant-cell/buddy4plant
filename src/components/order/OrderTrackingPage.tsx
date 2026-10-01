@@ -459,7 +459,7 @@ export const OrderTrackingPage: React.FC<OrderTrackingPageProps> = ({ initialOrd
                       productName: reviewModalItem.name,
                       userId: order?.userId || 'verified_buyer',
                       userName: order?.customerName || 'Verified Plant Parent',
-                      userEmail: order?.customerEmail || 'care@buddy4plant.com',
+                      userEmail: order?.customerEmail || 'buddy4plant@gmail.com',
                       rating: reviewRating,
                       title: `Verified Delivery Review: ${reviewModalItem.name}`,
                       comment: reviewComment.trim() || 'Plant arrived fresh, healthy, and securely packed!',
