@@ -312,7 +312,7 @@ const ProjectCard: React.FC<{ project: BotanicalProject; index: number; onOpen: 
   return (
     <div
       onClick={onOpen}
-      className="group cursor-pointer text-left bg-white rounded-[24px] ring-1 ring-[#E8DFD3] overflow-hidden shadow-[0_4px_20px_-8px_rgba(20,40,25,0.08)] hover:shadow-[0_16px_36px_-12px_rgba(20,40,25,0.16)] hover:-translate-y-1.5 transition-all duration-300 flex flex-col focus:outline-none"
+      className="group cursor-pointer text-left bg-white rounded-[24px] ring-1 ring-[#E8DFD3] overflow-hidden shadow-[0_4px_20px_-8px_rgba(20,40,25,0.08)] hover:shadow-[0_16px_36px_-12px_rgba(20,40,25,0.16)] transition-all duration-300 flex flex-col focus:outline-none"
     >
       <div className="relative aspect-[16/10] overflow-hidden bg-[#EEF3EA]">
         <img
@@ -449,7 +449,7 @@ const ProjectModal: React.FC<{ project: BotanicalProject; onClose: () => void; o
           </div>
           <button
             onClick={onEnquire}
-            className="w-full pill-btn-dark py-3.5 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2"
+            className="w-full pill-btn-dark py-3.5 text-sm font-semibold flex items-center justify-center gap-2"
           >
             Enquire About a Similar Space <ArrowRight className="w-4 h-4" />
           </button>
@@ -462,6 +462,12 @@ const ProjectModal: React.FC<{ project: BotanicalProject; onClose: () => void; o
 /* ------------------------------------------------------------------ */
 /* Page                                                                */
 /* ------------------------------------------------------------------ */
+
+const prettyPhone = (n: string) => {
+  const d = String(n).replace(/\D/g, '');
+  const m = d.match(/^91(\d{5})(\d{5})$/);
+  return m ? `+91 ${m[1]} ${m[2]}` : `+${d}`;
+};
 
 const emptyForm = {
   fullName: '',
@@ -645,21 +651,6 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
     <div className="min-h-screen bg-[#FAF5EE] font-sans text-[#182018] overflow-x-hidden">
       {/* ---------------- HERO ---------------- */}
       <section className="relative bg-[#142817] text-white overflow-hidden py-12 sm:py-20">
-        {/* Botanical leaf foliage illustrations in corners */}
-        <div className="pointer-events-none absolute -top-8 -left-10 w-48 sm:w-72 lg:w-88 h-64 sm:h-96 opacity-60 z-0 select-none hidden sm:block overflow-hidden">
-          <svg viewBox="0 0 320 380" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-            <path d="M-20 40C40 30 110 90 140 160C110 140 50 120 -20 110" fill="#3D5A42" fillOpacity="0.75" />
-            <path d="M-10 80C60 80 130 150 160 230C130 200 60 170 -10 160" fill="#4B6E52" fillOpacity="0.8" />
-            <path d="M-30 0C50 -10 150 40 200 120C150 90 60 70 -30 60" fill="#2E4833" fillOpacity="0.85" />
-          </svg>
-        </div>
-        <div className="pointer-events-none absolute -top-8 -right-10 w-48 sm:w-72 lg:w-88 h-64 sm:h-96 opacity-60 z-0 select-none hidden sm:block overflow-hidden">
-          <svg viewBox="0 0 320 380" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full scale-x-[-1]">
-            <path d="M-20 40C40 30 110 90 140 160C110 140 50 120 -20 110" fill="#3D5A42" fillOpacity="0.75" />
-            <path d="M-10 80C60 80 130 150 160 230C130 200 60 170 -10 160" fill="#4B6E52" fillOpacity="0.8" />
-            <path d="M-30 0C50 -10 150 40 200 120C150 90 60 70 -30 60" fill="#2E4833" fillOpacity="0.85" />
-          </svg>
-        </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
           {/* Breadcrumb */}
@@ -673,10 +664,9 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
 
           <div className="grid lg:grid-cols-12 gap-10 lg:gap-14 items-center">
             <div className="lg:col-span-7 space-y-6">
-              <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 text-[11px] font-bold uppercase tracking-[0.24em] text-[#B7D7A8] font-sans">
-                <Sparkles className="w-3.5 h-3.5 text-[#B7D7A8]" />
-                {C.hero.badge || 'BOTANICAL SANCTUARY & LANDSCAPING'}
-              </span>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#B7D7A8] font-sans">
+                {C.hero.badge || 'Gardening · Landscaping · AMC'}
+              </p>
 
               <h1 className="font-editorial text-4xl sm:text-5xl lg:text-[3.5rem] font-bold text-white leading-[1.1] tracking-tight">
                 {C.hero.headline}
@@ -689,7 +679,7 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
               <div className="flex flex-wrap gap-3.5 pt-2 font-sans">
                 <button
                   onClick={scrollToForm}
-                  className="px-7 py-3.5 rounded-full bg-[#B7D7A8] hover:bg-[#A3C893] text-[#142817] text-xs font-bold uppercase tracking-wider inline-flex items-center gap-2 shadow-lg transition-all"
+                  className="px-7 py-3.5 rounded-full bg-[#B7D7A8] hover:bg-[#A3C893] text-[#142817] text-sm font-semibold inline-flex items-center gap-2 shadow-lg transition-all"
                 >
                   {C.hero.primaryButton || 'Book Site Visit & Quote'} <ArrowRight className="w-4 h-4" />
                 </button>
@@ -697,39 +687,28 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
                   href={`https://wa.me/${whatsappNum}?text=${encodeURIComponent(C.hero.whatsappMessage || 'Hi Buddy4Plant, I want to book a gardening consultation')}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="px-6 py-3.5 rounded-full border border-white/30 hover:bg-white/10 text-white text-xs font-bold uppercase tracking-wider inline-flex items-center gap-2 transition-colors"
+                  className="px-6 py-3.5 rounded-full border border-white/30 hover:bg-white/10 text-white text-sm font-semibold inline-flex items-center gap-2 transition-colors"
                 >
                   <MessageCircle className="w-4 h-4 text-[#25D366]" /> {C.hero.whatsappButton || 'WhatsApp Consultation'}
                 </a>
-              </div>
-
-              <div className="pt-4 flex items-center gap-6 text-xs text-white/70 font-sans">
-                <span className="flex items-center gap-1.5">
-                  <ShieldCheck className="w-4 h-4 text-[#B7D7A8]" /> Free On-Site Inspection
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <Leaf className="w-4 h-4 text-[#B7D7A8]" /> 100% Organic Soil Nutrition
-                </span>
               </div>
             </div>
 
             {/* Clean Editorial Showcase Banner */}
             <div className="lg:col-span-5 relative">
-              <div className="relative aspect-[4/3] rounded-[32px] overflow-hidden border-2 border-white/20 shadow-2xl bg-white/5">
+              <div className="relative aspect-[4/3] rounded-3xl overflow-hidden bg-white/5">
                 <img
                   src={projects[0]?.image || '/projects/giti-campuses.jpg'}
                   alt="Landscaping Projects by Buddy4Plant"
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#142817]/85 via-transparent to-transparent" />
-                <div className="absolute bottom-6 left-6 right-6 p-4 rounded-2xl bg-[#142817]/80 backdrop-blur-sm border border-white/15">
-                  <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#B7D7A8] block mb-1 font-sans">
-                    PROVEN EXPERTISE
-                  </span>
-                  <p className="font-editorial text-lg font-bold text-white leading-snug">
-                    Over 18+ Landscaping Campuses &amp; Private Residences Across UP &amp; Delhi
-                  </p>
-                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                {projects[0] && (
+                  <div className="absolute bottom-5 left-5 right-5 font-sans">
+                    <p className="text-white font-semibold text-sm leading-snug">{projects[0].title}</p>
+                    <p className="text-white/70 text-xs mt-0.5">{projects[0].location}</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -739,7 +718,7 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-20 sm:space-y-28 py-14">
         {/* ---------------- STATS ---------------- */}
         <div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 bg-white rounded-3xl border border-[#E8DFD3] overflow-hidden">
             {C.stats.map((raw) => ({
               n: raw.value === 'auto:projects' ? workProjects.length : raw.value === 'auto:sites' ? siteCount : raw.value === 'auto:multisite' ? multiSite : Number(raw.value) || 0,
               s: raw.suffix,
@@ -748,32 +727,25 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
             })).map((st, i) => (
               <div
                 key={i}
-                className="bg-white rounded-3xl border border-[#E8DFD3] p-6 sm:p-7 shadow-[0_4px_20px_-8px_rgba(20,40,25,0.06)] hover:shadow-md hover:-translate-y-1 transition-all"
+                className={`px-5 py-6 sm:px-8 sm:py-8 border-[#EFE8DD] ${i % 2 === 1 ? 'border-l' : ''} ${i >= 2 ? 'border-t lg:border-t-0' : ''} ${i === 2 ? 'lg:border-l' : ''}`}
               >
-                <div className="w-10 h-10 rounded-xl bg-[#EBF5EC] text-[#1A3824] flex items-center justify-center mb-3.5 border border-[#C5E1C9]">
-                  <st.icon className="w-5 h-5 text-[#1A3824]" />
-                </div>
                 <span className="font-editorial text-3xl sm:text-4xl font-bold text-[#141C14] block tracking-tight">
                   <CountUp to={st.n} suffix={st.s} />
                 </span>
-                <span className="text-xs font-semibold text-[#6B645A] mt-1 block font-sans">{st.label}</span>
+                <span className="text-xs sm:text-sm text-[#6B645A] mt-1 block font-sans">{st.label}</span>
               </div>
             ))}
           </div>
         </div>
 
         {/* ---------------- CLIENT MARQUEE ---------------- */}
-        <div className="-mt-6 sm:-mt-10">
-          <p className="text-center text-[10px] font-bold uppercase tracking-[0.26em] text-[#7A746B] mb-3 font-sans">
+        <div className="-mt-8 sm:-mt-14">
+          <p className="text-center text-[10px] font-bold uppercase tracking-[0.16em] text-[#7A746B] mb-3 font-sans">
             {C.trustedByLabel || 'TRUSTED BY INSTITUTIONS & CAMPUSES'}
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-2.5">
+          <div className="flex flex-wrap items-center justify-center gap-x-7 gap-y-2">
             {[...clientNames.slice(0, 8), ...C.trustedByExtra.filter(Boolean)].map((name, i) => (
-              <span
-                key={i}
-                className="px-4 py-2 rounded-full bg-white border border-[#E8DFD3] text-xs font-semibold text-[#1A3824] flex items-center gap-1.5 shadow-xs font-sans"
-              >
-                <Leaf className="w-3.5 h-3.5 text-[#1A3824]" />
+              <span key={i} className="text-sm font-medium text-[#3E4A3F] font-sans">
                 {name}
               </span>
             ))}
@@ -784,7 +756,7 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
         <section id="projects" className="scroll-mt-24 space-y-8">
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
             <div className="max-w-2xl">
-              <span className="text-[11px] font-bold text-[#486B44] uppercase tracking-[0.26em] block mb-2 font-sans">{C.projectsSection.eyebrow}</span>
+              <span className="text-[11px] font-bold text-[#486B44] uppercase tracking-[0.16em] block mb-2 font-sans">{C.projectsSection.eyebrow}</span>
               <h2 className="font-editorial text-3xl sm:text-4xl lg:text-5xl font-bold text-[#141C14] leading-tight">
                 {C.projectsSection.title}
               </h2>
@@ -827,7 +799,7 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
           <section id="private-projects" className="scroll-mt-24 space-y-8">
             <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
               <div className="max-w-2xl">
-                <span className="text-[11px] font-bold text-[#C4661F] uppercase tracking-[0.24em] mb-2 inline-flex items-center gap-1.5 font-sans">
+                <span className="text-[11px] font-bold text-[#C4661F] uppercase tracking-[0.16em] mb-2 inline-flex items-center gap-1.5 font-sans">
                   <Home className="w-3.5 h-3.5" /> {C.privateSection.eyebrow}
                 </span>
                 <h2 className="font-editorial text-3xl sm:text-4xl lg:text-5xl font-bold text-[#141C14] leading-tight">
@@ -843,7 +815,7 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
                   setForm((f) => ({ ...f, enquiryType: 'Balcony & terrace garden', propertyType: 'Home / Villa' }));
                   setTimeout(scrollToForm, 50);
                 }}
-                className="self-start lg:self-auto pill-btn-dark px-6 py-3 text-xs font-bold uppercase tracking-wider inline-flex items-center gap-2"
+                className="self-start lg:self-auto pill-btn-dark px-6 py-3 text-sm font-semibold inline-flex items-center gap-2"
               >
                 {C.privateSection.button} <ArrowRight className="w-4 h-4" />
               </button>
@@ -859,7 +831,7 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
         {/* ---------------- SERVICES ---------------- */}
         <section className="space-y-8">
           <div className="text-center max-w-2xl mx-auto">
-            <span className="text-[11px] font-bold text-[#486B44] uppercase tracking-[0.26em] block mb-2 font-sans">{C.servicesSection.eyebrow}</span>
+            <span className="text-[11px] font-bold text-[#486B44] uppercase tracking-[0.16em] block mb-2 font-sans">{C.servicesSection.eyebrow}</span>
             <h2 className="font-editorial text-3xl sm:text-4xl lg:text-5xl font-bold text-[#141C14] tracking-tight">{C.servicesSection.title}</h2>
             {C.servicesSection.subtitle && <p className="text-xs sm:text-sm text-[#5C554B] mt-3 leading-relaxed font-normal">{C.servicesSection.subtitle}</p>}
           </div>
@@ -867,7 +839,7 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
             {SERVICES.map((s) => (
               <div
                 key={s.id}
-                className="group bg-white rounded-3xl ring-1 ring-[#E8DFD3] shadow-[0_4px_20px_-8px_rgba(20,40,25,0.06)] p-7 sm:p-9 hover:shadow-xl hover:-translate-y-1.5 transition-all flex flex-col justify-between"
+                className="group bg-white rounded-3xl ring-1 ring-[#E8DFD3] shadow-[0_4px_20px_-8px_rgba(20,40,25,0.06)] p-7 sm:p-9 hover:shadow-xl transition-all flex flex-col justify-between"
               >
                 <div className="space-y-4">
                   {s.image && (
@@ -875,15 +847,17 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
                       <img src={s.image} alt={s.title} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                     </div>
                   )}
-                  <div className="w-13 h-13 rounded-2xl bg-[#1A3824] text-white flex items-center justify-center shadow-xs">
-                    <s.icon className="w-6 h-6 text-white" />
-                  </div>
+                  {!s.image && (
+                    <div className="w-12 h-12 rounded-2xl bg-[#EBF5EC] flex items-center justify-center">
+                      <s.icon className="w-6 h-6 text-[#1A3824]" />
+                    </div>
+                  )}
                   <h3 className="font-editorial text-xl sm:text-2xl font-bold text-[#141C14]">{s.title}</h3>
-                  <p className="text-xs sm:text-sm text-[#5C554B] leading-relaxed">{s.text}</p>
+                  <p className="text-sm text-[#5C554B] leading-relaxed">{s.text}</p>
                   <ul className="space-y-2 pt-2">
                     {s.points.map((pt) => (
-                      <li key={pt} className="flex items-start gap-2 text-xs text-[#332E27] font-sans">
-                        <CheckCircle2 className="w-4 h-4 text-[#1A3824] shrink-0 mt-0.5" />
+                      <li key={pt} className="flex items-start gap-2.5 text-sm text-[#332E27] font-sans">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#2D6A4F] shrink-0 mt-[7px]" />
                         {pt}
                       </li>
                     ))}
@@ -895,7 +869,7 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
                       setForm((f) => ({ ...f, enquiryType: s.enquiryType || ENQUIRY_TYPES[0] }));
                       scrollToForm();
                     }}
-                    className="pill-btn-light px-5 py-2.5 text-xs font-bold uppercase tracking-wider inline-flex items-center gap-2 border border-[#DDD5C7] group-hover:border-[#1A3824] transition-colors"
+                    className="pill-btn-light px-5 py-2.5 text-sm font-semibold inline-flex items-center gap-2 border border-[#DDD5C7] group-hover:border-[#1A3824] transition-colors"
                   >
                     {C.servicesSection.quoteButton} <ArrowRight className="w-3.5 h-3.5 text-[#1A3824]" />
                   </button>
@@ -908,7 +882,7 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
         {/* ---------------- PROCESS ---------------- */}
         <section className="bg-[#142817] text-white rounded-4xl p-8 sm:p-14 relative overflow-hidden shadow-xl">
           <div className="relative text-center max-w-xl mx-auto mb-12">
-            <span className="text-[11px] font-bold text-[#B7D7A8] uppercase tracking-[0.26em] block mb-2 font-sans">{C.process.eyebrow}</span>
+            <span className="text-[11px] font-bold text-[#B7D7A8] uppercase tracking-[0.16em] block mb-2 font-sans">{C.process.eyebrow}</span>
             <h2 className="font-editorial text-3xl sm:text-4xl font-bold tracking-tight">{C.process.title}</h2>
           </div>
           <div ref={stepsRef} className="relative">
@@ -930,7 +904,7 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
         {/* ---------------- TIPS ---------------- */}
         <section className="space-y-8">
           <div className="text-center max-w-2xl mx-auto">
-            <span className="text-[11px] font-bold text-[#486B44] uppercase tracking-[0.26em] inline-flex items-center gap-1.5 mb-2 font-sans">
+            <span className="text-[11px] font-bold text-[#486B44] uppercase tracking-[0.16em] inline-flex items-center gap-1.5 mb-2 font-sans">
               <Lightbulb className="w-3.5 h-3.5" /> {C.tips.eyebrow}
             </span>
             <h2 className="font-editorial text-3xl sm:text-4xl lg:text-5xl font-bold text-[#141C14] tracking-tight">{C.tips.title}</h2>
@@ -964,13 +938,11 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
               {activeSeason.tips.map((tp, i) => (
                 <div
                   key={i}
-                  className="bg-white rounded-3xl border border-[#E8DFD3] p-6 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all"
+                  className="bg-white rounded-3xl border border-[#E8DFD3] p-6 shadow-sm hover:shadow-md transition-all"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-[#EBF5EC] text-[#1A3824] flex items-center justify-center mb-3.5 border border-[#C5E1C9]">
-                    {i === 0 ? <Droplets className="w-4 h-4" /> : i === 1 ? <Leaf className="w-4 h-4" /> : i === 2 ? <Flower2 className="w-4 h-4" /> : <Wrench className="w-4 h-4" />}
-                  </div>
+                  <span className="font-editorial text-sm font-bold text-[#2D6A4F] block mb-3">{String(i + 1).padStart(2, '0')}</span>
                   <h4 className="font-editorial font-bold text-base text-[#141C14]">{tp.t}</h4>
-                  <p className="text-xs text-[#5C554B] leading-relaxed mt-2 font-sans">{tp.d}</p>
+                  <p className="text-sm text-[#5C554B] leading-relaxed mt-2 font-sans">{tp.d}</p>
                 </div>
               ))}
             </div>
@@ -986,7 +958,7 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
                   setForm((f) => ({ ...f, enquiryType: HELP }));
                   scrollToForm();
                 }}
-                className="pill-btn-light px-5 py-3 text-xs font-bold uppercase tracking-wider inline-flex items-center gap-2 border border-[#DDD5C7]"
+                className="pill-btn-light px-5 py-3 text-sm font-semibold inline-flex items-center gap-2 border border-[#DDD5C7]"
               >
                 <Lightbulb className="w-4 h-4 text-[#1A3824]" /> {C.faq.button}
               </button>
@@ -1020,40 +992,14 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
 
         {/* ---------------- ENQUIRY FORM ---------------- */}
         <section id="book-consultation" className="scroll-mt-24">
-          <div className="grid lg:grid-cols-12 rounded-4xl overflow-hidden border border-[#E8DFD3] shadow-sm bg-white">
-            {/* side panel */}
-            <div className="lg:col-span-5 bg-[#142817] text-white p-8 sm:p-12 relative overflow-hidden flex flex-col justify-between space-y-8">
-              <div className="space-y-5">
-                <span className="text-[11px] font-bold text-[#B7D7A8] uppercase tracking-[0.26em] block font-sans">{C.contact.eyebrow}</span>
-                <h2 className="font-editorial text-3xl sm:text-4xl font-bold leading-tight">{C.contact.title}</h2>
-                <p className="text-xs sm:text-sm text-white/80 leading-relaxed font-normal">{C.contact.text}</p>
-                <div className="space-y-3 pt-3 font-sans">
-                  <a
-                    href={`https://wa.me/${whatsappNum}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center gap-3 p-3.5 rounded-2xl bg-white/10 hover:bg-white/15 transition-colors border border-white/10"
-                  >
-                    <MessageCircle className="w-5 h-5 text-[#25D366]" />
-                    <span className="text-xs font-bold uppercase tracking-wider">WhatsApp: +{whatsappNum}</span>
-                  </a>
-                  <a href={`tel:+${whatsappNum}`} className="flex items-center gap-3 p-3.5 rounded-2xl bg-white/10 hover:bg-white/15 transition-colors border border-white/10">
-                    <Phone className="w-5 h-5 text-[#B7D7A8]" />
-                    <span className="text-xs font-bold uppercase tracking-wider">{C.contact.callLabel}</span>
-                  </a>
-                  {settings.contactEmail && (
-                    <a href={`mailto:${settings.contactEmail}`} className="flex items-center gap-3 p-3.5 rounded-2xl bg-white/10 hover:bg-white/15 transition-colors border border-white/10">
-                      <Mail className="w-5 h-5 text-[#B7D7A8]" />
-                      <span className="text-xs font-bold uppercase tracking-wider break-all">{settings.contactEmail}</span>
-                    </a>
-                  )}
-                </div>
-              </div>
-
+          <div className="max-w-3xl mx-auto">
+            <div className="text-center mb-8 sm:mb-10">
+              <span className="text-[11px] font-bold text-[#486B44] uppercase tracking-[0.16em] block mb-2 font-sans">{C.contact.eyebrow}</span>
+              <h2 className="font-editorial text-3xl sm:text-4xl lg:text-5xl font-bold text-[#141C14] tracking-tight">{C.contact.title}</h2>
+              <p className="text-sm text-[#5C554B] mt-3 leading-relaxed max-w-xl mx-auto">{C.contact.text}</p>
             </div>
 
-            {/* form */}
-            <div className="lg:col-span-7 bg-[#FAF5EE] p-8 sm:p-12">
+            <div className="bg-white rounded-3xl border border-[#E8DFD3] shadow-[0_18px_50px_-28px_rgba(20,40,25,0.28)] p-6 sm:p-10">
               <AnimatePresence mode="wait">
                 {status === 'done' ? (
                   <div className="h-full flex flex-col items-center justify-center text-center py-10 space-y-5 animate-fadeIn">
@@ -1081,7 +1027,7 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
                         href={`https://wa.me/${whatsappNum}?text=${waText}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="pill-btn-dark px-6 py-3 text-xs font-bold uppercase tracking-wider inline-flex items-center gap-2 shadow-md"
+                        className="pill-btn-dark px-6 py-3 text-sm font-semibold inline-flex items-center gap-2 shadow-md"
                       >
                         <MessageCircle className="w-4 h-4 text-[#25D366]" /> Also send on WhatsApp
                       </a>
@@ -1090,7 +1036,7 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
                           setForm(emptyForm);
                           setStatus('idle');
                         }}
-                        className="pill-btn-light px-6 py-3 text-xs font-bold uppercase tracking-wider text-[#1A3824] border border-[#DDD5C7]"
+                        className="pill-btn-light px-6 py-3 text-sm font-semibold text-[#1A3824] border border-[#DDD5C7]"
                       >
                         New enquiry
                       </button>
@@ -1099,7 +1045,7 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
                 ) : (
                   <form onSubmit={handleSubmit} noValidate className="space-y-5 font-sans">
                     <div>
-                      <span className="block text-[11px] font-bold text-[#141C14] uppercase tracking-wider mb-2 font-sans">{C.form.labels.need}</span>
+                      <span className="block text-[13px] font-semibold text-[#2B2A26] mb-2 font-sans">{C.form.labels.need}</span>
                       <div className="flex flex-wrap gap-2">
                         {ENQUIRY_TYPES.map((t) => {
                           const active = form.enquiryType === t;
@@ -1123,7 +1069,7 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
 
                     <div className="grid sm:grid-cols-2 gap-4">
                       <label className="block">
-                        <span className="block text-[11px] font-bold text-[#141C14] uppercase tracking-wider mb-1.5 font-sans">{C.form.labels.name}</span>
+                        <span className="block text-[13px] font-semibold text-[#2B2A26] mb-1.5 font-sans">{C.form.labels.name}</span>
                         <input
                           className={inputCls(errors.fullName)}
                           value={form.fullName}
@@ -1134,7 +1080,7 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
                         {errors.fullName && <span className="text-[11px] text-[#D64545] mt-1 block">{errors.fullName}</span>}
                       </label>
                       <label className="block">
-                        <span className="block text-[11px] font-bold text-[#141C14] uppercase tracking-wider mb-1.5 font-sans">{C.form.labels.phone}</span>
+                        <span className="block text-[13px] font-semibold text-[#2B2A26] mb-1.5 font-sans">{C.form.labels.phone}</span>
                         <input
                           type="tel"
                           className={inputCls(errors.phone)}
@@ -1146,7 +1092,7 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
                         {errors.phone && <span className="text-[11px] text-[#D64545] mt-1 block">{errors.phone}</span>}
                       </label>
                       <label className="block">
-                        <span className="block text-[11px] font-bold text-[#141C14] uppercase tracking-wider mb-1.5 font-sans">{C.form.labels.email}</span>
+                        <span className="block text-[13px] font-semibold text-[#2B2A26] mb-1.5 font-sans">{C.form.labels.email}</span>
                         <input
                           type="email"
                           className={inputCls(errors.email)}
@@ -1158,7 +1104,7 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
                         {errors.email && <span className="text-[11px] text-[#D64545] mt-1 block">{errors.email}</span>}
                       </label>
                       <label className="block">
-                        <span className="block text-[11px] font-bold text-[#141C14] uppercase tracking-wider mb-1.5 font-sans">{C.form.labels.organisation}</span>
+                        <span className="block text-[13px] font-semibold text-[#2B2A26] mb-1.5 font-sans">{C.form.labels.organisation}</span>
                         <input
                           className={inputCls()}
                           value={form.organisation}
@@ -1167,7 +1113,7 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
                         />
                       </label>
                       <label className="block">
-                        <span className="block text-[11px] font-bold text-[#141C14] uppercase tracking-wider mb-1.5 font-sans">{C.form.labels.propertyType}</span>
+                        <span className="block text-[13px] font-semibold text-[#2B2A26] mb-1.5 font-sans">{C.form.labels.propertyType}</span>
                         <select className={inputCls()} value={form.propertyType} onChange={(e) => setForm({ ...form, propertyType: e.target.value })}>
                           {PROPERTY_TYPES.map((p) => (
                             <option key={p}>{p}</option>
@@ -1175,7 +1121,7 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
                         </select>
                       </label>
                       <label className="block">
-                        <span className="block text-[11px] font-bold text-[#141C14] uppercase tracking-wider mb-1.5 font-sans">{C.form.labels.city}</span>
+                        <span className="block text-[13px] font-semibold text-[#2B2A26] mb-1.5 font-sans">{C.form.labels.city}</span>
                         <select className={inputCls()} value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })}>
                           {CITIES.map((c) => (
                             <option key={c}>{c}</option>
@@ -1186,7 +1132,7 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
 
                     {!isHelp && (
                       <label className="block">
-                        <span className="block text-[11px] font-bold text-[#141C14] uppercase tracking-wider mb-1.5 font-sans">{C.form.labels.area}</span>
+                        <span className="block text-[13px] font-semibold text-[#2B2A26] mb-1.5 font-sans">{C.form.labels.area}</span>
                         <select className={inputCls()} value={form.area} onChange={(e) => setForm({ ...form, area: e.target.value })}>
                           {AREAS.map((a) => (
                             <option key={a}>{a}</option>
@@ -1196,7 +1142,7 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
                     )}
 
                     <label className="block">
-                      <span className="block text-[11px] font-bold text-[#141C14] uppercase tracking-wider mb-1.5 font-sans">
+                      <span className="block text-[13px] font-semibold text-[#2B2A26] mb-1.5 font-sans">
                         {isHelp ? C.form.labels.question : C.form.labels.message}
                       </span>
                       <textarea
@@ -1216,7 +1162,7 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
                     <button
                       type="submit"
                       disabled={status === 'saving'}
-                      className="w-full pill-btn-dark py-4 text-xs font-bold uppercase tracking-wider shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                      className="w-full pill-btn-dark py-4 text-sm font-semibold shadow-md hover:shadow-lg flex items-center justify-center gap-2"
                     >
                       {status === 'saving' ? (
                         <>
@@ -1232,6 +1178,53 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
                   </form>
                 )}
               </AnimatePresence>
+            </div>
+
+            {/* direct contact, below the form */}
+            <div className="mt-8">
+              <p className="text-center text-sm text-[#6B645A] mb-4 font-sans">Prefer to talk to us directly?</p>
+              <div className={`grid gap-3 font-sans ${settings.contactEmail ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
+                <a
+                  href={`https://wa.me/${whatsappNum}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-3 p-4 rounded-2xl bg-white border border-[#E8DFD3] hover:border-[#1A3824]/40 transition-colors"
+                >
+                  <span className="w-10 h-10 rounded-full bg-[#E9F8EE] flex items-center justify-center shrink-0">
+                    <MessageCircle className="w-5 h-5 text-[#1FA855]" />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-xs text-[#7A746B]">WhatsApp</span>
+                    <span className="block text-sm font-semibold text-[#141C14] truncate">{prettyPhone(whatsappNum)}</span>
+                  </span>
+                </a>
+                <a
+                  href={`tel:+${whatsappNum}`}
+                  className="flex items-center gap-3 p-4 rounded-2xl bg-white border border-[#E8DFD3] hover:border-[#1A3824]/40 transition-colors"
+                >
+                  <span className="w-10 h-10 rounded-full bg-[#EBF5EC] flex items-center justify-center shrink-0">
+                    <Phone className="w-[18px] h-[18px] text-[#1A3824]" />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-xs text-[#7A746B]">{C.contact.callLabel || 'Call us'}</span>
+                    <span className="block text-sm font-semibold text-[#141C14] truncate">{prettyPhone(whatsappNum)}</span>
+                  </span>
+                </a>
+                {settings.contactEmail && (
+                  <a
+                    href={`mailto:${settings.contactEmail}`}
+                    className="flex items-center gap-3 p-4 rounded-2xl bg-white border border-[#E8DFD3] hover:border-[#1A3824]/40 transition-colors"
+                  >
+                    <span className="w-10 h-10 rounded-full bg-[#EBF5EC] flex items-center justify-center shrink-0">
+                      <Mail className="w-[18px] h-[18px] text-[#1A3824]" />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-xs text-[#7A746B]">Email</span>
+                      <span className="block text-sm font-semibold text-[#141C14] truncate">{settings.contactEmail}</span>
+                    </span>
+                  </a>
+                )}
+              </div>
             </div>
           </div>
         </section>
