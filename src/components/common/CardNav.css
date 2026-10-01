@@ -321,3 +321,19 @@
     margin-left: 0.1rem;
   }
 }
+
+/* Phones: small dots instead of arrows in the menu cards */
+@media (max-width: 768px) {
+  .nav-card-link-icon {
+    display: none;
+  }
+  .nav-card-link::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 999px;
+    background: currentColor;
+    opacity: 0.55;
+    flex-shrink: 0;
+  }
+}
