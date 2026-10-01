@@ -117,6 +117,8 @@ export async function processRazorpayCheckout({
         },
         sequence: ['block.pref'],
         preferences: { show_default_blocks: true },
+        // Test-mode QR codes can't be paid with real UPI apps - hide them until live keys are used
+        ...(order.keyId.startsWith('rzp_test_') ? { hide: [{ method: 'upi', flows: ['qr'] }] } : {}),
       },
     },
     retry: { enabled: true, max_count: 3 },
