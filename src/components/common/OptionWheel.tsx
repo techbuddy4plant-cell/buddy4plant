@@ -1,5 +1,5 @@
 // OptionWheel - adapted from React Bits (https://reactbits.dev), TypeScript port.
-// Added: `autoPlay` (ms between steps, pauses on hover/focus) and `captureWheel`
+// Added: `autoPlay` (ms between steps) and `captureWheel`
 // (set false so the wheel never swallows normal page scrolling).
 import React, { useRef, useState, useCallback, useEffect } from 'react';
 import './OptionWheel.css';
@@ -189,7 +189,7 @@ const OptionWheel: React.FC<OptionWheelProps> = ({
     };
   }, [applyTarget, captureWheel]);
 
-  // Auto-advance; pauses while hovered/focused, only runs when on screen.
+  // Auto-advance continuously while the wheel is on screen.
   useEffect(() => {
     if (!autoPlay || items.length < 2) return;
     const el = rootRef.current;
@@ -299,10 +299,6 @@ const OptionWheel: React.FC<OptionWheelProps> = ({
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerEnd}
       onPointerCancel={handlePointerEnd}
-      onMouseEnter={() => (pausedRef.current = true)}
-      onMouseLeave={() => (pausedRef.current = false)}
-      onFocus={() => (pausedRef.current = true)}
-      onBlur={() => (pausedRef.current = false)}
       onKeyDown={handleKeyDown}
     >
       {items.map((label, index) => (

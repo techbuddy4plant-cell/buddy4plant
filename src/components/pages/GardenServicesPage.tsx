@@ -471,9 +471,10 @@ const prettyPhone = (n: string) => {
 };
 
 
-/** "Trusted by" list shown as a slowly turning wheel (React Bits OptionWheel). */
+/** "Trusted by" list shown as an auto-turning wheel (React Bits OptionWheel). */
 const TrustedWheel: React.FC<{ label: string; names: string[] }> = ({ label, names }) => {
   const [wide, setWide] = useState(() => typeof window !== 'undefined' && window.matchMedia('(min-width: 640px)').matches);
+  const [current, setCurrent] = useState(0);
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 640px)');
     const on = () => setWide(mq.matches);
@@ -482,44 +483,50 @@ const TrustedWheel: React.FC<{ label: string; names: string[] }> = ({ label, nam
   }, []);
   const items = names.filter((n, i) => n && names.indexOf(n) === i);
   if (items.length === 0) return null;
+  const pad = (n: number) => String(n).padStart(2, '0');
   return (
     <section className="-mt-6 sm:-mt-10">
-      <div className="relative grid lg:grid-cols-12 items-center gap-6 lg:gap-10 rounded-3xl bg-white border border-[#E8DFD3] overflow-hidden px-5 pt-7 pb-2 sm:px-10 sm:py-4">
-        <div className="lg:col-span-4 font-sans">
-          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#486B44]">{label}</p>
-          <h2 className="font-editorial text-2xl sm:text-3xl font-bold text-[#141C14] leading-tight mt-2">
+      <div className="grid lg:grid-cols-12 items-center rounded-[36px] sm:rounded-[44px] bg-white shadow-[0_1px_0_rgba(20,40,25,0.04),0_24px_60px_-36px_rgba(20,40,25,0.35)] overflow-hidden">
+        <div className="lg:col-span-4 px-7 pt-8 sm:px-12 sm:pt-12 lg:py-12 font-sans">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#486B44]">{label}</p>
+          <h2 className="font-editorial text-[1.75rem] sm:text-4xl font-bold text-[#141C14] leading-[1.1] mt-3">
             Gardens we look after
           </h2>
-          <p className="text-sm text-[#6B645A] mt-2 leading-relaxed max-w-xs">
+          <p className="text-sm text-[#6B645A] mt-3 leading-relaxed max-w-xs">
             Government offices, training institutes, defence units and campuses across Uttar Pradesh.
           </p>
+          <p className="mt-6 hidden lg:flex items-baseline gap-1.5 text-[#141C14]">
+            <span className="font-editorial text-2xl font-bold tabular-nums">{pad(current + 1)}</span>
+            <span className="text-sm text-[#A59F94] tabular-nums">/ {pad(items.length)}</span>
+          </p>
         </div>
-        <div className="lg:col-span-8 relative h-[260px] sm:h-[320px]">
-          {/* centre marker */}
-          <span className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 h-9 w-[3px] rounded-full bg-[#2D6A4F]" />
+        <div className="lg:col-span-8 relative h-[250px] sm:h-[340px] lg:border-l lg:border-[#F0EADF]">
+          {/* soft band behind the active name */}
+          <span className="pointer-events-none absolute left-3 right-3 sm:left-6 sm:right-6 top-1/2 -translate-y-1/2 h-11 sm:h-14 rounded-full bg-[#F4F0E8]" />
           <OptionWheel
             items={items}
             defaultSelected={0}
-            textColor="#B5AEA2"
+            onChange={(i) => setCurrent(i)}
+            textColor="#BDB6AA"
             activeColor="#142817"
             side="left"
-            fontSize={wide ? 1.55 : 0.92}
-            spacing={wide ? 1.75 : 2}
-            curve={1}
-            tilt={wide ? 7 : 9}
-            blur={1.2}
-            fade={0.22}
-            minOpacity={0.08}
-            smoothing={320}
-            inset={wide ? 28 : 14}
+            fontSize={wide ? 1.5 : 0.95}
+            spacing={wide ? 1.9 : 2.2}
+            curve={0.8}
+            tilt={wide ? 6 : 8}
+            blur={1}
+            fade={0.24}
+            minOpacity={0.06}
+            smoothing={240}
+            inset={wide ? 48 : 30}
             loop
             draggable={false}
             captureWheel={false}
-            autoPlay={2400}
+            autoPlay={1600}
             className="font-sans"
           />
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-white to-transparent" />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-white via-white/70 to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-white via-white/70 to-transparent" />
         </div>
       </div>
     </section>
