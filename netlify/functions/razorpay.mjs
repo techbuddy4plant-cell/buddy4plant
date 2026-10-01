@@ -2,9 +2,16 @@
 // Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in Netlify > Site configuration > Environment variables.
 import crypto from 'node:crypto';
 
+// Read a variable from Netlify (Functions v2) or process.env, trimming stray spaces/quotes
+const env = (name) => {
+  let v = '';
+  try { v = (globalThis.Netlify && globalThis.Netlify.env.get(name)) || ''; } catch { v = ''; }
+  if (!v) v = process.env[name] || '';
+  return String(v).trim().replace(/^['"]+|['"]+$/g, '').trim();
+};
 const keys = () => {
-  const keyId = (process.env.RAZORPAY_KEY_ID || '').trim();
-  const keySecret = (process.env.RAZORPAY_KEY_SECRET || '').trim();
+  const keyId = env('RAZORPAY_KEY_ID');
+  const keySecret = env('RAZORPAY_KEY_SECRET');
   const ok = /^rzp_(test|live)_/.test(keyId) && keySecret.length > 10;
   return { keyId, keySecret, ok, mode: keyId.startsWith('rzp_live_') ? 'live' : 'test' };
 };
@@ -20,7 +27,15 @@ export default async (req) => {
 
   if (action === 'config' && req.method === 'GET') {
     const { ok, keyId, mode } = keys();
-    return json({ enabled: ok, keyId: ok ? keyId : '', mode });
+    const { keySecret } = keys();
+    // Setup check (never reveals the secret): which variables this function can see
+    const check = ok ? undefined : {
+      keyIdFound: Boolean(keyId),
+      keyIdLooksRight: /^rzp_(test|live)_/.test(keyId),
+      secretFound: Boolean(keySecret),
+      similarNames: Object.keys(process.env).filter((k) => /RAZ|RZR|RZP/i.test(k)),
+    };
+    return json({ enabled: ok, keyId: ok ? keyId : '', mode, ...(check ? { check } : {}) });
   }
 
   if (action === 'create-order' && req.method === 'POST') {
