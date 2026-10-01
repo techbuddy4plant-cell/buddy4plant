@@ -337,3 +337,8 @@
     flex-shrink: 0;
   }
 }
+
+/* Links sit right under the card title (no empty gap in shorter cards) */
+.nav-card-links {
+  margin-top: 0;
+}
