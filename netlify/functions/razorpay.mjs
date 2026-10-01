@@ -26,6 +26,24 @@ export default async (req) => {
   const action = new URL(req.url).pathname.replace(/\/+$/, '').split('/').pop();
 
   if (action === 'config' && req.method === 'GET') {
+    // Credentials test: /api/razorpay/config?test=1 asks Razorpay whether the key pair is accepted
+    if (new URL(req.url).searchParams.get('test') === '1') {
+      const k = keys();
+      let razorpayStatus = 0, razorpayError = '';
+      try {
+        const r = await fetch('https://api.razorpay.com/v1/orders?count=1', { headers: { Authorization: auth() } });
+        razorpayStatus = r.status;
+        if (!r.ok) razorpayError = (await r.json().catch(() => ({})))?.error?.description || '';
+      } catch (e) { razorpayError = 'Could not reach Razorpay'; }
+      return json({
+        keysAccepted: razorpayStatus === 200,
+        razorpayStatus,
+        razorpayError,
+        keyIdUsed: k.keyId,
+        secretLength: k.keySecret.length, // Razorpay secrets are normally 24 characters
+        secretHasSpaces: /\s/.test(k.keySecret),
+      });
+    }
     const { ok, keyId, mode } = keys();
     const { keySecret } = keys();
     // Setup check (never reveals the secret): which variables this function can see
@@ -51,7 +69,10 @@ export default async (req) => {
         body: JSON.stringify({ amount: Math.round(amount * 100), currency: 'INR', receipt, payment_capture: 1, notes: { receipt, store: 'Buddy4Plant' } }),
       });
       const order = await r.json();
-      if (!r.ok) return json({ success: false, error: order?.error?.description || 'Could not start the payment' }, 400);
+      if (!r.ok) {
+        console.error('Razorpay create-order failed', r.status, order?.error);
+        return json({ success: false, error: order?.error?.description || 'Could not start the payment', code: order?.error?.code }, 400);
+      }
       return json({ success: true, orderId: order.id, amount: order.amount, currency: order.currency, keyId: keys().keyId });
     } catch (e) {
       console.error('create-order', e);
