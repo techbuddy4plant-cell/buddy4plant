@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { realShipping } from '../../utils/shipping';
+import { pushOrderToShiprocket, syncShiprocket } from '../../services/shiprocketService';
 import {
   Search,
   Filter,
@@ -94,7 +95,23 @@ export const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, onRefresh }) =
     await handleStatusChange(orderId, targetStatus);
   };
 
+  const [srBusy, setSrBusy] = useState(false);
+  const [srMsg, setSrMsg] = useState('');
+  const handleShiprocket = async (ord: Order) => {
+    setSrBusy(true);
+    setSrMsg('');
+    if (!ord.shiprocketOrderId) {
+      const r = await pushOrderToShiprocket(ord);
+      setSrMsg(r.ok ? 'Sent to Shiprocket. Close and reopen to see the details.' : r.error || 'Could not send');
+    } else {
+      const t = await syncShiprocket(ord, true);
+      setSrMsg(t ? `Updated: ${t.status || 'no status yet'}${t.awb ? ` · AWB ${t.awb}` : ''}${t.courier ? ` · ${t.courier}` : ''}` : 'No update available yet');
+    }
+    setSrBusy(false);
+  };
+
   const openTrackingModal = (ord: Order) => {
+    setSrMsg('');
     setTrackingModalOrder(ord);
     setEditStatus(ord.orderStatus);
     const ship = realShipping(ord);
@@ -418,6 +435,39 @@ export const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, onRefresh }) =
               >
                 <X className="w-5 h-5" />
               </button>
+            </div>
+
+            {/* Shiprocket */}
+            <div className="p-3.5 bg-[#F5F2EB] border border-[#E5E2D9] text-xs flex flex-wrap items-center justify-between gap-3">
+              <div className="space-y-0.5">
+                <p className="font-bold text-[#1A1A1A]">Shiprocket</p>
+                {trackingModalOrder.shiprocketOrderId ? (
+                  <p className="text-[#4A4A4A]">
+                    Order ID {trackingModalOrder.shiprocketOrderId}
+                    {trackingModalOrder.shiprocketStatus ? ` · ${trackingModalOrder.shiprocketStatus}` : ''}
+                  </p>
+                ) : (
+                  <p className="text-[#7A7A7A]">
+                    {trackingModalOrder.shiprocketError
+                      ? `Not sent: ${trackingModalOrder.shiprocketError}`
+                      : trackingModalOrder.paymentMethod === 'razorpay' && trackingModalOrder.paymentStatus === 'paid'
+                      ? 'Not sent yet'
+                      : 'Only orders paid online are sent automatically'}
+                  </p>
+                )}
+                {srMsg && <p className="text-[#2D4A27] font-semibold">{srMsg}</p>}
+              </div>
+              {(trackingModalOrder.shiprocketOrderId ||
+                (trackingModalOrder.paymentMethod === 'razorpay' && trackingModalOrder.paymentStatus === 'paid')) && (
+                <button
+                  type="button"
+                  disabled={srBusy}
+                  onClick={() => handleShiprocket(trackingModalOrder)}
+                  className="px-3 py-2 bg-[#2D4A27] text-white font-semibold disabled:opacity-60"
+                >
+                  {srBusy ? 'Working...' : trackingModalOrder.shiprocketOrderId ? 'Refresh from Shiprocket' : 'Send to Shiprocket'}
+                </button>
+              )}
             </div>
 
             <form onSubmit={handleSaveTracking} className="space-y-4 text-xs">

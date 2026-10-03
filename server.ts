@@ -131,6 +131,26 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// ---------------- Shiprocket (same code the Netlify site uses) ----------------
+app.all('/api/shiprocket/*', async (req, res) => {
+  try {
+    const file = './netlify/functions/shiprocket.mjs';
+    const mod: any = await import(file);
+    const hasBody = req.method !== 'GET' && req.method !== 'HEAD';
+    const r: Response = await mod.default(
+      new Request(`http://localhost${req.originalUrl}`, {
+        method: req.method,
+        headers: { 'Content-Type': 'application/json' },
+        body: hasBody ? JSON.stringify(req.body || {}) : undefined,
+      })
+    );
+    res.status(r.status).type('application/json').send(await r.text());
+  } catch (e) {
+    console.error('Shiprocket route error:', e);
+    res.status(500).json({ success: false, error: 'Shiprocket error' });
+  }
+});
+
 // ---------------- Razorpay (online payments: UPI, cards, netbanking, wallets) ----------------
 // Keys live only in .env (RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET). The secret never reaches the browser.
 const rzpKeys = () => {

@@ -44,7 +44,7 @@ export const Footer: React.FC<FooterProps> = ({ navigate }) => {
   const phone = settings.contactPhone || settings.whatsappSupportNumber || '+91 80048 81668';
   const phoneDigits = phone.replace(/\D/g, '');
   const wa = (settings.whatsappSupportNumber || phone).replace(/\D/g, '') || '918004881668';
-  const email = settings.contactEmail || 'buddy4plant@gmail.com';
+  const email = settings.contactEmail || 'contactus@buddy4plant.in';
   const address = settings.storeAddress || 'Buddy4Plant Nursery, Lucknow, Uttar Pradesh, India';
 
   // Social & contact channels with reliable fallbacks

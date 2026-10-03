@@ -171,6 +171,12 @@ export interface Order {
   courierPartner?: string;
   currentLocation?: string;
   estimatedDeliveryDate?: string;
+  /** Shiprocket: filled automatically once a paid order is sent there */
+  shiprocketOrderId?: string;
+  shiprocketShipmentId?: string;
+  shiprocketStatus?: string;
+  shiprocketTrackUrl?: string;
+  shiprocketError?: string;
   notes?: string;
   createdAt: number;
   updatedAt: number;

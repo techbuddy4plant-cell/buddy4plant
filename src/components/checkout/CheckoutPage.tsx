@@ -17,6 +17,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useStoreSettings } from '../../context/StoreSettingsContext';
 import { Address, Order, OrderItem, PaymentMethod } from '../../types';
 import { createOrder, updatePaymentStatus } from '../../services/orderService';
+import { pushOrderToShiprocket } from '../../services/shiprocketService';
 import { processRazorpayCheckout, getPaymentConfig, PaymentConfig } from '../../services/paymentService';
 import confetti from 'canvas-confetti';
 import { PlantImage } from '../../utils/imageFallback';
@@ -320,6 +321,8 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ navigate }) => {
                 razorpayPaymentId: payment.paymentId,
                 notes: [orderNotes, payment.method ? `Paid online (${payment.method.toUpperCase()})` : ''].filter(Boolean).join(' | '),
               });
+              // Send the paid order to Shiprocket straight away (never blocks the customer)
+              void pushOrderToShiprocket(paidOrder);
               // Re-ensure the address is saved after a successful payment
               try {
                 await saveAddress(shippingAddress);

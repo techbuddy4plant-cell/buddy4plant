@@ -139,8 +139,8 @@ export const StoreSettingsProvider: React.FC<{ children: React.ReactNode }> = ({
         getPaymentSettings(),
         getHomepageCMS(),
       ]);
-      // Old placeholder addresses on the unused buddy4plant.com domain -> real inbox
-      if (!s.contactEmail || /@buddy4plant\.com$/i.test(s.contactEmail)) s = { ...s, contactEmail: 'buddy4plant@gmail.com' };
+      // Old placeholder / previous addresses -> current inbox
+      if (!s.contactEmail || /@buddy4plant\.com$/i.test(s.contactEmail) || /^buddy4plant@gmail\.com$/i.test(s.contactEmail)) s = { ...s, contactEmail: 'contactus@buddy4plant.in' };
       setSettings(s);
       setPaymentSettings(p);
       setHomepageCMS(h);

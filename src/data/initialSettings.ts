@@ -4,7 +4,7 @@ export const INITIAL_STORE_SETTINGS: StoreSettings = {
   storeName: 'buddy4plant',
   tagline: 'Your Botanical Buddy & Green Sanctuary',
   logoText: 'buddy4plant',
-  contactEmail: 'buddy4plant@gmail.com',
+  contactEmail: 'contactus@buddy4plant.in',
   contactPhone: '+91 80048 81668',
   whatsappSupportNumber: '+91 80048 81668',
   storeAddress: 'Lucknow, Uttar Pradesh, India',

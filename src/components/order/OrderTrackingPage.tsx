@@ -23,6 +23,7 @@ import {
 import { Order, OrderStatus } from '../../types';
 import { getOrderByNumberOrPhone, subscribeToOrder } from '../../services/orderService';
 import { submitReview } from '../../services/reviewService';
+import { pushOrderToShiprocket, syncShiprocket, ShiprocketTracking } from '../../services/shiprocketService';
 import { useStoreSettings } from '../../context/StoreSettingsContext';
 import { PlantImage } from '../../utils/imageFallback';
 
@@ -35,6 +36,24 @@ export const OrderTrackingPage: React.FC<OrderTrackingPageProps> = ({ initialOrd
   const [query, setQuery] = useState(initialOrderNumber || '');
   const [activeTrackingNumber, setActiveTrackingNumber] = useState(initialOrderNumber || '');
   const [order, setOrder] = useState<Order | null>(null);
+  const [courierTrack, setCourierTrack] = useState<ShiprocketTracking | null>(null);
+
+  // Live courier details from Shiprocket (and a retry if a paid order has not reached Shiprocket yet)
+  useEffect(() => {
+    if (!order) return;
+    let alive = true;
+    (async () => {
+      if (!order.shiprocketOrderId && order.paymentMethod === 'razorpay' && order.paymentStatus === 'paid') {
+        await pushOrderToShiprocket(order);
+        return; // the live order update re-runs this effect with the Shiprocket ids
+      }
+      const t = await syncShiprocket(order);
+      if (alive && t) setCourierTrack(t);
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [order?.id, order?.shiprocketOrderId, order?.shiprocketShipmentId]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copiedAWB, setCopiedAWB] = useState(false);
@@ -320,6 +339,53 @@ export const OrderTrackingPage: React.FC<OrderTrackingPageProps> = ({ initialOrd
               </div>
             </div>
 
+            {/* Live courier updates from Shiprocket */}
+            {(order.shiprocketOrderId || courierTrack) && (
+              <div className="pt-4 border-t border-[#E5E2D9] text-xs">
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                  <h4 className="font-serif font-bold text-sm text-[#1A1A1A] flex items-center gap-2">
+                    <Truck className="w-4 h-4 text-[#2D4A27]" />
+                    Courier Updates
+                  </h4>
+                  {(courierTrack?.trackUrl || order.shiprocketTrackUrl) && (
+                    <a
+                      href={courierTrack?.trackUrl || order.shiprocketTrackUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-semibold text-[#2D4A27] underline underline-offset-2"
+                    >
+                      Open courier tracking page
+                    </a>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-x-8 gap-y-2 mb-3">
+                  <div>
+                    <span className="text-[#7A7A7A] text-[11px] block">Shipment status</span>
+                    <p className="font-semibold text-[#1A1A1A]">{courierTrack?.status || order.shiprocketStatus || 'Order received - getting ready to ship'}</p>
+                  </div>
+                  {(courierTrack?.etd || order.estimatedDeliveryDate) && (
+                    <div>
+                      <span className="text-[#7A7A7A] text-[11px] block">Expected delivery</span>
+                      <p className="font-semibold text-[#1A1A1A]">{(courierTrack?.etd || order.estimatedDeliveryDate || '').slice(0, 16)}</p>
+                    </div>
+                  )}
+                </div>
+                {courierTrack && courierTrack.activities.length > 0 ? (
+                  <ol className="space-y-2.5 border-l border-[#D9D3C5] pl-4">
+                    {courierTrack.activities.map((a, i) => (
+                      <li key={i} className="relative">
+                        <span className={`absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full ${i === 0 ? 'bg-[#2D4A27]' : 'bg-[#C9C2B3]'}`} />
+                        <p className={`${i === 0 ? 'font-semibold text-[#1A1A1A]' : 'text-[#4A4A4A]'}`}>{a.activity}</p>
+                        <p className="text-[11px] text-[#7A7A7A]">{[a.location, a.date].filter(Boolean).join(' · ')}</p>
+                      </li>
+                    ))}
+                  </ol>
+                ) : (
+                  <p className="text-[#5A5A5A]">Step-by-step courier updates will show here once the parcel is picked up.</p>
+                )}
+              </div>
+            )}
+
             {/* Real-time Status History Timeline */}
             {order.statusHistory && order.statusHistory.length > 0 && (
               <div className="pt-4 border-t border-[#E5E2D9]">
@@ -459,7 +525,7 @@ export const OrderTrackingPage: React.FC<OrderTrackingPageProps> = ({ initialOrd
                       productName: reviewModalItem.name,
                       userId: order?.userId || 'verified_buyer',
                       userName: order?.customerName || 'Verified Plant Parent',
-                      userEmail: order?.customerEmail || 'buddy4plant@gmail.com',
+                      userEmail: order?.customerEmail || 'contactus@buddy4plant.in',
                       rating: reviewRating,
                       title: `Verified Delivery Review: ${reviewModalItem.name}`,
                       comment: reviewComment.trim() || 'Plant arrived fresh, healthy, and securely packed!',
