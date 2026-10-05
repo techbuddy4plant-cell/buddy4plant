@@ -17,6 +17,7 @@ import {
 } from '../common/Icons';
 import { Order, OrderStatus } from '../../types';
 import { subscribeToOrder } from '../../services/orderService';
+import { CancelOrderModal, canCancelOrder } from './CancelOrderModal';
 import { useStoreSettings } from '../../context/StoreSettingsContext';
 import { PlantImage } from '../../utils/imageFallback';
 
@@ -28,6 +29,7 @@ interface OrderSuccessProps {
 export const OrderSuccess: React.FC<OrderSuccessProps> = ({ orderNumber, navigate }) => {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
+  const [cancelOpen, setCancelOpen] = useState(false);
   const [copiedAWB, setCopiedAWB] = useState(false);
   const { settings } = useStoreSettings();
 
@@ -258,6 +260,20 @@ export const OrderSuccess: React.FC<OrderSuccessProps> = ({ orderNumber, navigat
               Continue Shopping
             </button>
           </div>
+
+          {/* Cancel */}
+          {order && canCancelOrder(order) && (
+            <p className="mt-5 text-center text-xs text-[#5A5A5A]">
+              Ordered by mistake?{' '}
+              <button onClick={() => setCancelOpen(true)} className="font-semibold text-[#B42318] underline underline-offset-2">
+                Cancel this order
+              </button>
+            </p>
+          )}
+          {order && order.orderStatus === 'Cancelled' && (
+            <p className="mt-5 text-center text-xs font-semibold text-[#B42318]">This order has been cancelled.</p>
+          )}
+          {order && cancelOpen && <CancelOrderModal order={order} onClose={() => setCancelOpen(false)} />}
         </div>
       </div>
     </div>

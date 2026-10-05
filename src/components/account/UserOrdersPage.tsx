@@ -21,8 +21,8 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import { Order, OrderItem, Product } from '../../types';
-import { getCustomerOrders, cancelOrder, requestOrderReturn } from '../../services/orderService';
-import { cancelOnShiprocket } from '../../services/shiprocketService';
+import { getCustomerOrders, requestOrderReturn } from '../../services/orderService';
+import { CancelOrderModal } from '../order/CancelOrderModal';
 import { getProductById, getProductBySlug } from '../../services/productService';
 import { submitReview } from '../../services/reviewService';
 import { PlantImage } from '../../utils/imageFallback';
@@ -44,8 +44,6 @@ export const UserOrdersPage: React.FC<UserOrdersPageProps> = ({ navigate }) => {
 
   // Modals State
   const [cancelModalOrder, setCancelModalOrder] = useState<Order | null>(null);
-  const [cancelReason, setCancelReason] = useState('Order placed by mistake');
-  const [cancellingOrder, setCancellingOrder] = useState(false);
 
   const [returnModalOrder, setReturnModalOrder] = useState<Order | null>(null);
   const [returnReason, setReturnReason] = useState('Plant damaged or leaves wilted');
@@ -112,26 +110,6 @@ export const UserOrdersPage: React.FC<UserOrdersPageProps> = ({ navigate }) => {
       </div>
     );
   }
-
-  // Cancel Order
-  const handleConfirmCancelOrder = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!cancelModalOrder) return;
-    setCancellingOrder(true);
-    try {
-      // stop the shipment first; if the courier already has it, the order cannot be cancelled online
-      const sr = await cancelOnShiprocket(cancelModalOrder);
-      if (!sr.ok && /shipped/i.test(sr.error || '')) throw new Error('This order has already been shipped, so it cannot be cancelled here. Please contact us on WhatsApp.');
-      await cancelOrder(cancelModalOrder.id, cancelReason);
-      setCancelModalOrder(null);
-      fetchOrders();
-      showToast(`Order #${cancelModalOrder.orderNumber} has been cancelled.`);
-    } catch (err: any) {
-      showToast(err.message || 'Could not cancel order');
-    } finally {
-      setCancellingOrder(false);
-    }
-  };
 
   // Return Request
   const handleConfirmReturnOrder = async (e: React.FormEvent) => {
@@ -680,59 +658,11 @@ export const UserOrdersPage: React.FC<UserOrdersPageProps> = ({ navigate }) => {
 
       {/* MODAL: Cancel Order */}
       {cancelModalOrder && (
-        <div className="fixed inset-0 z-50 bg-[#0F1710]/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 sm:p-8 border border-stone-200 shadow-2xl animate-fadeIn">
-            <div className="flex items-center justify-between pb-3 border-b border-stone-100">
-              <h3 className="font-serif font-bold text-lg text-rose-900 flex items-center gap-2">
-                <AlertCircle className="w-5 h-5 text-rose-600" />
-                Cancel Order #{cancelModalOrder.orderNumber}
-              </h3>
-              <button onClick={() => setCancelModalOrder(null)} className="text-stone-400 hover:text-stone-700">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleConfirmCancelOrder} className="mt-4 space-y-4 text-xs">
-              <p className="text-stone-600">
-                Are you sure you want to cancel this order? This cannot be undone. If you paid online, our team will refund the amount to your original payment method.
-              </p>
-
-              <div>
-                <label className="block font-bold text-stone-700 uppercase tracking-wider mb-1">
-                  Select Cancellation Reason *
-                </label>
-                <select
-                  value={cancelReason}
-                  onChange={(e) => setCancelReason(e.target.value)}
-                  className="w-full px-3 py-2.5 border border-stone-300 rounded-xl text-xs focus:ring-1 focus:ring-rose-500 outline-none"
-                >
-                  <option value="Order placed by mistake">Order placed by mistake</option>
-                  <option value="Item would not arrive in time">Item would not arrive in time</option>
-                  <option value="Found a better price elsewhere">Found a better price elsewhere</option>
-                  <option value="Need to change delivery address">Need to change delivery address</option>
-                  <option value="Other reason">Other reason</option>
-                </select>
-              </div>
-
-              <div className="pt-3 flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setCancelModalOrder(null)}
-                  className="px-4 py-2 border border-stone-300 text-stone-700 rounded-xl font-semibold"
-                >
-                  Keep Order
-                </button>
-                <button
-                  type="submit"
-                  disabled={cancellingOrder}
-                  className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold uppercase tracking-wider rounded-xl transition-colors"
-                >
-                  {cancellingOrder ? 'Cancelling...' : 'Confirm Cancellation'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <CancelOrderModal
+          order={cancelModalOrder}
+          onClose={() => setCancelModalOrder(null)}
+          onCancelled={() => fetchOrders()}
+        />
       )}
 
       {/* MODAL: Return / Replacement Request */}
