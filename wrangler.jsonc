@@ -11,6 +11,11 @@
     "not_found_handling": "single-page-application",
     "run_worker_first": ["/api/*"]
   },
-  // keep variables that were added in the Cloudflare dashboard when deploying
+  // non-secret settings (same as in the Cloudflare dashboard); secrets are never stored here
+  "vars": {
+    "SHIPROCKET_EMAIL": "tech.buddy4plant@gmail.com",
+    "SHIPROCKET_PICKUP_LOCATION": "Home"
+  },
+  // keep variables and secrets that were added in the Cloudflare dashboard when deploying
   "keep_vars": true
 }
