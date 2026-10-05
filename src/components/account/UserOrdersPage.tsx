@@ -387,6 +387,7 @@ export const UserOrdersPage: React.FC<UserOrdersPageProps> = ({ navigate }) => {
           filteredOrders.map((ord) => {
             const canCancel = ['Pending', 'Confirmed', 'Processing'].includes(ord.orderStatus);
             const canReturn = ord.orderStatus === 'Delivered';
+            const isCancelled = ord.orderStatus === 'Cancelled' || ord.orderStatus === 'Refunded';
 
             return (
               <div key={ord.id} className="bg-white rounded-2xl border border-[#E2ECE0] overflow-hidden shadow-xs animate-fadeIn space-y-0">
@@ -426,12 +427,16 @@ export const UserOrdersPage: React.FC<UserOrdersPageProps> = ({ navigate }) => {
                   <div className="sm:text-right">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-[#6B856B]">ORDER # {ord.orderNumber}</span>
                     <div className="mt-0.5 flex items-center justify-start sm:justify-end gap-2 text-xs">
-                      <button
-                        onClick={() => handlePrintInvoice(ord)}
-                        className="text-[#2D6A4F] font-bold hover:underline"
-                      >
-                        View Invoice
-                      </button>
+                      {isCancelled ? (
+                        <span className="font-bold text-rose-700">Cancelled</span>
+                      ) : (
+                        <button
+                          onClick={() => handlePrintInvoice(ord)}
+                          className="text-[#2D6A4F] font-bold hover:underline"
+                        >
+                          View Invoice
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -452,13 +457,16 @@ export const UserOrdersPage: React.FC<UserOrdersPageProps> = ({ navigate }) => {
                       <h3 className="font-serif font-bold text-base text-[#182319]">
                         {ord.orderStatus === 'Delivered'
                           ? 'Delivered'
-                          : ord.orderStatus === 'Cancelled'
-                          ? 'Cancelled Order'
+                          : isCancelled
+                          ? 'Order Cancelled'
                           : `Status: ${ord.orderStatus}`}
                       </h3>
                     </div>
 
-                    {realShipping(ord).courier && (
+                    {isCancelled && ord.cancelReason && (
+                      <span className="text-xs text-[#6B645A]">Reason: {ord.cancelReason}</span>
+                    )}
+                    {!isCancelled && realShipping(ord).courier && (
                       <span className="text-xs text-[#6B856B] font-mono">
                         Logistics Carrier: <strong>{realShipping(ord).courier}</strong>
                       </span>
@@ -481,9 +489,11 @@ export const UserOrdersPage: React.FC<UserOrdersPageProps> = ({ navigate }) => {
                             <p className="text-xs text-[#6B856B] mt-0.5">
                               Qty: {item.quantity} × ₹{item.price.toLocaleString('en-IN')}
                             </p>
-                            <p className="text-[11px] text-[#768C76] mt-1">
-                              Return window open for 7 days after delivery.
-                            </p>
+                            {!isCancelled && (
+                              <p className="text-[11px] text-[#768C76] mt-1">
+                                Return window open for 7 days after delivery.
+                              </p>
+                            )}
                           </div>
                         </div>
 
@@ -514,7 +524,14 @@ export const UserOrdersPage: React.FC<UserOrdersPageProps> = ({ navigate }) => {
                   {/* Order Footer Action Bar */}
                   <div className="pt-4 border-t border-[#E8F0E7] flex flex-wrap items-center justify-between gap-3 bg-[#F8FCF9] p-4 rounded-xl">
                     <div className="flex items-center gap-3 flex-wrap">
+                      {isCancelled && (
+                        <span className="text-xs font-semibold text-rose-700">
+                          This order was cancelled and will not be shipped.
+                          {ord.paymentMethod === 'razorpay' && ord.paymentStatus === 'paid' ? ' Our team will refund the amount.' : ''}
+                        </span>
+                      )}
                       <button
+                        hidden={isCancelled}
                         onClick={() => setTrackingModalOrder(ord)}
                         className="px-4 py-2 bg-[#EBF5EC] text-[#2D6A4F] hover:bg-[#D8EEDB] text-xs font-bold rounded-xl transition-colors flex items-center gap-1.5"
                       >

@@ -18,6 +18,7 @@ import {
 import { Order, OrderStatus } from '../../types';
 import { subscribeToOrder } from '../../services/orderService';
 import { CancelOrderModal, canCancelOrder } from './CancelOrderModal';
+import { CancelledOrderCard, isOrderCancelled } from './CancelledOrderCard';
 import { useStoreSettings } from '../../context/StoreSettingsContext';
 import { PlantImage } from '../../utils/imageFallback';
 import { printInvoice } from '../../utils/invoice';
@@ -77,6 +78,17 @@ export const OrderSuccess: React.FC<OrderSuccessProps> = ({ orderNumber, navigat
   };
 
   const currentStepIdx = order ? getStepIndex(order.orderStatus) : 0;
+
+  // A cancelled order shows only that it is cancelled - no tracker, invoice or other actions
+  if (order && isOrderCancelled(order)) {
+    return (
+      <div className="bg-[#FDFCF9] min-h-screen py-10 sm:py-14">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6">
+          <CancelledOrderCard order={order} navigate={navigate} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-[#FDFCF9] min-h-screen py-10 sm:py-14">

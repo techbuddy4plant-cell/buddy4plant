@@ -509,6 +509,8 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
                           <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
                             ord.orderStatus === 'Delivered'
                               ? 'bg-emerald-100 text-emerald-800'
+                              : ord.orderStatus === 'Cancelled' || ord.orderStatus === 'Refunded'
+                              ? 'bg-rose-100 text-rose-800'
                               : ord.orderStatus === 'Shipped' || ord.orderStatus === 'Out for Delivery'
                               ? 'bg-blue-100 text-blue-800'
                               : 'bg-amber-100 text-amber-800'
@@ -535,7 +537,7 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
                           className="w-full py-2 bg-[#13301B] hover:bg-[#1F4A2B] text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                         >
                           <Truck className="w-3.5 h-3.5" />
-                          <span>Track This Package Live</span>
+                          <span>{ord.orderStatus === 'Cancelled' || ord.orderStatus === 'Refunded' ? 'View Cancelled Order' : 'Track This Package Live'}</span>
                         </button>
                       </div>
                     ))}

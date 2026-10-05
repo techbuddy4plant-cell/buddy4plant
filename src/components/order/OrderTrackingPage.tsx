@@ -23,6 +23,7 @@ import {
 import { Order, OrderStatus } from '../../types';
 import { getOrderByNumberOrPhone, subscribeToOrder } from '../../services/orderService';
 import { CancelOrderModal, canCancelOrder } from './CancelOrderModal';
+import { CancelledOrderCard, isOrderCancelled } from './CancelledOrderCard';
 import { submitReview } from '../../services/reviewService';
 import { pushOrderToShiprocket, syncShiprocket, ShiprocketTracking } from '../../services/shiprocketService';
 import { useStoreSettings } from '../../context/StoreSettingsContext';
@@ -45,7 +46,7 @@ export const OrderTrackingPage: React.FC<OrderTrackingPageProps> = ({ initialOrd
 
   // Live courier details from Shiprocket (and a retry if a paid order has not reached Shiprocket yet)
   useEffect(() => {
-    if (!order) return;
+    if (!order || isOrderCancelled(order)) return;
     let alive = true;
     (async () => {
       if (!order.shiprocketOrderId && order.paymentMethod === 'razorpay' && order.paymentStatus === 'paid') {
@@ -58,7 +59,7 @@ export const OrderTrackingPage: React.FC<OrderTrackingPageProps> = ({ initialOrd
     return () => {
       alive = false;
     };
-  }, [order?.id, order?.shiprocketOrderId, order?.shiprocketShipmentId]);
+  }, [order?.id, order?.orderStatus, order?.shiprocketOrderId, order?.shiprocketShipmentId]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copiedAWB, setCopiedAWB] = useState(false);
@@ -198,8 +199,22 @@ export const OrderTrackingPage: React.FC<OrderTrackingPageProps> = ({ initialOrd
           </div>
         )}
 
+        {/* Cancelled order: nothing to track */}
+        {order && isOrderCancelled(order) && (
+          <div className="mt-8 animate-fadeIn">
+            <CancelledOrderCard
+              order={order}
+              navigate={(path) => {
+                window.history.pushState({}, '', path);
+                window.dispatchEvent(new PopStateEvent('popstate'));
+                window.scrollTo({ top: 0 });
+              }}
+            />
+          </div>
+        )}
+
         {/* Tracking Details View */}
-        {order && (
+        {order && !isOrderCancelled(order) && (
           <div className="mt-8 bg-white border border-[#E5E2D9] p-6 sm:p-10 space-y-8 animate-fadeIn">
             {/* Top Bar with Live Indicator */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[#E5E2D9]">
