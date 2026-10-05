@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, initializeFirestore, Firestore } from 'firebase/firestore';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 import { getStorage } from 'firebase/storage';
 import { getAnalytics, isSupported } from 'firebase/analytics';
@@ -21,7 +21,14 @@ export const firebaseConfig = {
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 
 // Initialize Firebase Services
-export const db = getFirestore(app);
+// ignoreUndefinedProperties: an empty optional field (e.g. no coupon code) must never stop a save
+let firestore: Firestore;
+try {
+  firestore = initializeFirestore(app, { ignoreUndefinedProperties: true });
+} catch {
+  firestore = getFirestore(app); // already initialised (hot reload)
+}
+export const db = firestore;
 export const auth = getAuth(app);
 export const storage = getStorage(app);
 

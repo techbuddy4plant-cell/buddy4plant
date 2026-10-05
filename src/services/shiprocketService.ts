@@ -118,3 +118,23 @@ export async function syncShiprocket(order: Order, force = false): Promise<Shipr
     return null;
   }
 }
+
+/** Cancels the shipment on Shiprocket too (only possible before it ships). */
+export async function cancelOnShiprocket(order: Order): Promise<{ ok: boolean; error?: string }> {
+  if (!order.shiprocketOrderId) return { ok: true };
+  try {
+    const res = await fetch('/api/shiprocket/cancel', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ shiprocketOrderId: order.shiprocketOrderId, orderNumber: order.orderNumber }),
+    });
+    const d = await res.json();
+    if (res.ok && d.success) {
+      await patchOrder({ ...order }, { shiprocketStatus: 'CANCELED' });
+      return { ok: true };
+    }
+    return { ok: false, error: d.error };
+  } catch {
+    return { ok: false, error: 'Could not reach the server' };
+  }
+}

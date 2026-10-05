@@ -28,6 +28,37 @@ function notifyLocalOrderUpdate(order: Order) {
   }
 }
 
+/** Firestore refuses `undefined` values - drop them (deeply) before saving. */
+const stripUndefined = <T,>(v: T): T => JSON.parse(JSON.stringify(v));
+
+/**
+ * Orders that could only be saved in this browser (cloud save failed at the time) are
+ * uploaded now, so they show in the admin panel.
+ */
+export async function syncLocalOrdersToCloud(): Promise<number> {
+  let uploaded = 0;
+  try {
+    const local: Order[] = JSON.parse(localStorage.getItem('vb_local_orders') || '[]');
+    if (!Array.isArray(local) || !local.length) return 0;
+    for (const o of local) {
+      if (!o?.id || !o.orderNumber) continue;
+      const ref = doc(db, ORDERS_COLLECTION, o.id);
+      const snap = await getDoc(ref);
+      if (!snap.exists()) {
+        await setDoc(ref, stripUndefined(o));
+        uploaded++;
+      }
+    }
+    localStorage.removeItem('vb_local_orders');
+  } catch (e) {
+    console.warn('Could not upload locally saved orders yet:', e);
+  }
+  return uploaded;
+}
+if (typeof window !== 'undefined') {
+  window.setTimeout(() => void syncLocalOrdersToCloud(), 4000);
+}
+
 export async function createOrder(
   orderData: Omit<Order, 'id' | 'orderNumber' | 'createdAt' | 'updatedAt' | 'statusHistory'> & {
     id?: string;
@@ -64,7 +95,7 @@ export async function createOrder(
 
   try {
     const docRef = doc(db, ORDERS_COLLECTION, id);
-    await setDoc(docRef, newOrder);
+    await setDoc(docRef, stripUndefined(newOrder));
 
     // Deduct stock for all items
     for (const item of newOrder.items) {

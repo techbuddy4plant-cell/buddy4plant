@@ -22,6 +22,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import { Order, OrderItem, Product } from '../../types';
 import { getCustomerOrders, cancelOrder, requestOrderReturn } from '../../services/orderService';
+import { cancelOnShiprocket } from '../../services/shiprocketService';
 import { getProductById, getProductBySlug } from '../../services/productService';
 import { submitReview } from '../../services/reviewService';
 import { PlantImage } from '../../utils/imageFallback';
@@ -118,6 +119,9 @@ export const UserOrdersPage: React.FC<UserOrdersPageProps> = ({ navigate }) => {
     if (!cancelModalOrder) return;
     setCancellingOrder(true);
     try {
+      // stop the shipment first; if the courier already has it, the order cannot be cancelled online
+      const sr = await cancelOnShiprocket(cancelModalOrder);
+      if (!sr.ok && /shipped/i.test(sr.error || '')) throw new Error('This order has already been shipped, so it cannot be cancelled here. Please contact us on WhatsApp.');
       await cancelOrder(cancelModalOrder.id, cancelReason);
       setCancelModalOrder(null);
       fetchOrders();
@@ -690,7 +694,7 @@ export const UserOrdersPage: React.FC<UserOrdersPageProps> = ({ navigate }) => {
 
             <form onSubmit={handleConfirmCancelOrder} className="mt-4 space-y-4 text-xs">
               <p className="text-stone-600">
-                Are you sure you want to cancel this order? If paid online, your refund will be credited back to your payment account.
+                Are you sure you want to cancel this order? This cannot be undone. If you paid online, our team will refund the amount to your original payment method.
               </p>
 
               <div>

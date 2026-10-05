@@ -21,9 +21,9 @@ import {
   X
 } from '../common/Icons';
 import { Order, OrderStatus } from '../../types';
-import { getOrderByNumberOrPhone, subscribeToOrder } from '../../services/orderService';
+import { getOrderByNumberOrPhone, subscribeToOrder, cancelOrder } from '../../services/orderService';
 import { submitReview } from '../../services/reviewService';
-import { pushOrderToShiprocket, syncShiprocket, ShiprocketTracking } from '../../services/shiprocketService';
+import { pushOrderToShiprocket, syncShiprocket, cancelOnShiprocket, ShiprocketTracking } from '../../services/shiprocketService';
 import { useStoreSettings } from '../../context/StoreSettingsContext';
 import { PlantImage } from '../../utils/imageFallback';
 
@@ -37,6 +37,27 @@ export const OrderTrackingPage: React.FC<OrderTrackingPageProps> = ({ initialOrd
   const [activeTrackingNumber, setActiveTrackingNumber] = useState(initialOrderNumber || '');
   const [order, setOrder] = useState<Order | null>(null);
   const [courierTrack, setCourierTrack] = useState<ShiprocketTracking | null>(null);
+
+  // Cancel order (with confirmation)
+  const [cancelOpen, setCancelOpen] = useState(false);
+  const [cancelReason, setCancelReason] = useState('Order placed by mistake');
+  const [cancelBusy, setCancelBusy] = useState(false);
+  const [cancelMsg, setCancelMsg] = useState('');
+  const canCancel = !!order && ['Pending', 'Confirmed', 'Processing'].includes(order.orderStatus);
+  const confirmCancel = async () => {
+    if (!order) return;
+    setCancelBusy(true);
+    setCancelMsg('');
+    const sr = await cancelOnShiprocket(order);
+    if (!sr.ok && /shipped/i.test(sr.error || '')) {
+      setCancelMsg('This order has already been shipped, so it cannot be cancelled here. Please contact us on WhatsApp.');
+      setCancelBusy(false);
+      return;
+    }
+    await cancelOrder(order.id, cancelReason);
+    setCancelBusy(false);
+    setCancelOpen(false);
+  };
 
   // Live courier details from Shiprocket (and a retry if a paid order has not reached Shiprocket yet)
   useEffect(() => {
@@ -338,6 +359,69 @@ export const OrderTrackingPage: React.FC<OrderTrackingPageProps> = ({ initialOrd
                 </div>
               </div>
             </div>
+
+            {/* Cancel order */}
+            {canCancel && (
+              <div className="pt-4 border-t border-[#E5E2D9] flex flex-wrap items-center justify-between gap-3 text-xs">
+                <p className="text-[#5A5A5A]">Changed your mind? You can cancel this order until it is packed.</p>
+                <button
+                  type="button"
+                  onClick={() => { setCancelMsg(''); setCancelOpen(true); }}
+                  className="px-4 py-2 rounded-full border border-rose-300 text-rose-700 font-semibold hover:bg-rose-50 transition-colors"
+                >
+                  Cancel Order
+                </button>
+              </div>
+            )}
+            {order.orderStatus === 'Cancelled' && (
+              <div className="pt-4 border-t border-[#E5E2D9] text-xs">
+                <p className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800">
+                  This order was cancelled{order.cancelReason ? ` - ${order.cancelReason}` : ''}.
+                  {order.paymentMethod === 'razorpay' && order.paymentStatus === 'paid' ? ' Our team will refund the amount to your original payment method.' : ''}
+                </p>
+              </div>
+            )}
+            {cancelOpen && (
+              <div className="fixed inset-0 z-50 bg-[#0F1710]/70 flex items-center justify-center p-4" role="dialog" aria-modal="true">
+                <div className="bg-white rounded-2xl max-w-md w-full p-6 sm:p-8 shadow-2xl text-xs space-y-4">
+                  <h3 className="font-serif font-bold text-lg text-[#1A1A1A]">Cancel order #{order.orderNumber}?</h3>
+                  <p className="text-[#5A5A5A] text-sm leading-relaxed">
+                    This cannot be undone.
+                    {order.paymentMethod === 'razorpay' && order.paymentStatus === 'paid'
+                      ? ' Since you paid online, our team will refund the amount to your original payment method.'
+                      : ''}
+                  </p>
+                  <label className="block">
+                    <span className="block font-semibold text-[#1A1A1A] mb-1">Reason</span>
+                    <select
+                      value={cancelReason}
+                      onChange={(e) => setCancelReason(e.target.value)}
+                      className="w-full px-3 py-2.5 border border-[#D9D3C5] rounded-xl text-sm outline-none focus:border-[#13301B]"
+                    >
+                      <option>Order placed by mistake</option>
+                      <option>Item would not arrive in time</option>
+                      <option>Found a better price elsewhere</option>
+                      <option>Need to change delivery address</option>
+                      <option>Other reason</option>
+                    </select>
+                  </label>
+                  {cancelMsg && <p className="text-rose-700 font-semibold">{cancelMsg}</p>}
+                  <div className="flex justify-end gap-3 pt-1">
+                    <button type="button" onClick={() => setCancelOpen(false)} className="px-4 py-2.5 rounded-full border border-[#D9D3C5] font-semibold text-[#1A1A1A]">
+                      Keep Order
+                    </button>
+                    <button
+                      type="button"
+                      disabled={cancelBusy}
+                      onClick={confirmCancel}
+                      className="px-5 py-2.5 rounded-full bg-rose-600 hover:bg-rose-700 text-white font-semibold disabled:opacity-60"
+                    >
+                      {cancelBusy ? 'Cancelling...' : 'Yes, Cancel Order'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Live courier updates from Shiprocket */}
             {(order.shiprocketOrderId || courierTrack) && (

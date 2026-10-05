@@ -158,6 +158,29 @@ export default async (req) => {
     }
   }
 
+  // Cancel an order that has not shipped yet. The website order number must match the Shiprocket order.
+  if (action === 'cancel' && req.method === 'POST') {
+    try {
+      const b = await req.json().catch(() => ({}));
+      const id = String(b.shiprocketOrderId || '').replace(/\D/g, '');
+      const orderNumber = clean(b.orderNumber, 45);
+      if (!id || !orderNumber) return json({ success: false, error: 'Missing order' }, 400);
+      const o = await sr(`/orders/show/${id}`);
+      const d = o.data?.data || {};
+      if (!o.ok || String(d.channel_order_id || '') !== orderNumber) return json({ success: false, error: 'Order not found' }, 404);
+      if (/CANCEL/i.test(String(d.status || ''))) return json({ success: true, already: true });
+      if (/SHIPPED|TRANSIT|OUT FOR DELIVERY|DELIVERED|PICKED/i.test(String(d.status || ''))) {
+        return json({ success: false, error: 'This order has already been shipped' }, 409);
+      }
+      const r = await sr('/orders/cancel', { method: 'POST', body: JSON.stringify({ ids: [Number(id)] }) });
+      if (!r.ok) return json({ success: false, error: clean(r.data?.message, 200) || 'Shiprocket could not cancel the order' }, 400);
+      return json({ success: true });
+    } catch (e) {
+      console.error('shiprocket cancel', e);
+      return json({ success: false, error: 'Could not reach Shiprocket' }, 500);
+    }
+  }
+
   // Live shipping details of one order: /api/shiprocket/track?order=<shiprocketOrderId>&shipment=<shipmentId>
   if (action === 'track' && req.method === 'GET') {
     try {
