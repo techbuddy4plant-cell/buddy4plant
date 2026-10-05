@@ -1,3 +1,5 @@
+import { printInvoice } from '../../utils/invoice';
+import { useStoreSettings } from '../../context/StoreSettingsContext';
 import React, { useState } from 'react';
 import { realShipping } from '../../utils/shipping';
 import { pushOrderToShiprocket, syncShiprocket } from '../../services/shiprocketService';
@@ -35,6 +37,7 @@ interface AdminOrdersProps {
 }
 
 export const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, onRefresh }) => {
+  const { settings: invoiceSettings } = useStoreSettings();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -629,11 +632,11 @@ export const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, onRefresh }) =
                   </button>
                 )}
                 <button
-                  onClick={() => window.print()}
+                  onClick={() => selectedOrder && printInvoice(selectedOrder, invoiceSettings)}
                   className="px-3 py-1.5 bg-[#F5F2EB] hover:bg-[#E5E2D9] text-[#1A1A1A] text-xs font-semibold flex items-center gap-1"
                 >
                   <Printer className="w-3.5 h-3.5" />
-                  Print Slip
+                  Print Invoice
                 </button>
                 <button
                   onClick={() => setSelectedOrder(null)}

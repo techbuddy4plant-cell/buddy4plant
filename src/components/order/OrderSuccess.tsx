@@ -20,6 +20,7 @@ import { subscribeToOrder } from '../../services/orderService';
 import { CancelOrderModal, canCancelOrder } from './CancelOrderModal';
 import { useStoreSettings } from '../../context/StoreSettingsContext';
 import { PlantImage } from '../../utils/imageFallback';
+import { printInvoice } from '../../utils/invoice';
 
 interface OrderSuccessProps {
   orderNumber: string;
@@ -46,7 +47,7 @@ export const OrderSuccess: React.FC<OrderSuccessProps> = ({ orderNumber, navigat
   }, [orderNumber]);
 
   const handlePrintInvoice = () => {
-    window.print();
+    if (order) printInvoice(order, settings);
   };
 
   const handleCopyAWB = (awb: string) => {

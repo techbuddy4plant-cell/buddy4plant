@@ -1,3 +1,5 @@
+import { printInvoice } from '../../utils/invoice';
+import { useStoreSettings as useInvoiceSettings } from '../../context/StoreSettingsContext';
 import React, { useState, useEffect } from 'react';
 import { realShipping, COURIER_PENDING_TEXT } from '../../utils/shipping';
 import {
@@ -32,6 +34,7 @@ interface UserOrdersPageProps {
 }
 
 export const UserOrdersPage: React.FC<UserOrdersPageProps> = ({ navigate }) => {
+  const { settings } = useInvoiceSettings();
   const { user, profile, openAuthModal } = useAuth();
   const { addToCart, setIsCartDrawerOpen } = useCart();
 
@@ -214,98 +217,7 @@ export const UserOrdersPage: React.FC<UserOrdersPageProps> = ({ navigate }) => {
   };
 
   // Print Invoice
-  const handlePrintInvoice = (order: Order) => {
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
-
-    const itemsHtml = order.items
-      .map(
-        (it) => `
-      <tr>
-        <td style="padding: 8px; border-bottom: 1px solid #eee;">${it.name} (SKU: ${it.sku || 'N/A'})</td>
-        <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">${it.quantity}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">₹${it.price.toLocaleString('en-IN')}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">₹${(it.price * it.quantity).toLocaleString('en-IN')}</td>
-      </tr>
-    `
-      )
-      .join('');
-
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Official Invoice - ${order.orderNumber} | buddy4plant</title>
-          <style>
-            body { font-family: 'Helvetica Neue', Arial, sans-serif; padding: 24px; color: #111; max-width: 800px; margin: 0 auto; }
-            .header { display: flex; justify-content: space-between; border-bottom: 2px solid #2D4A27; padding-bottom: 16px; margin-bottom: 24px; }
-            .brand { color: #2D4A27; font-size: 24px; font-weight: bold; }
-            table { width: 100%; border-collapse: collapse; margin-top: 16px; }
-            th { background: #f4f6f4; text-align: left; padding: 8px; border-bottom: 1px solid #ccc; font-size: 12px; text-transform: uppercase; }
-            .total-row { font-weight: bold; font-size: 16px; border-top: 2px solid #2D4A27; }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <div>
-              <div class="brand">buddy4plant</div>
-              <p style="font-size: 12px; color: #555; margin: 4px 0 0 0;">Official Order Tax Invoice</p>
-            </div>
-            <div style="text-align: right;">
-              <h2 style="margin: 0; font-size: 18px;">TAX INVOICE</h2>
-              <p style="font-size: 12px; margin: 4px 0 0 0;">Order #: <strong>${order.orderNumber}</strong></p>
-              <p style="font-size: 12px; margin: 2px 0 0 0;">Date: ${new Date(order.createdAt).toLocaleDateString('en-IN')}</p>
-            </div>
-          </div>
-
-          <div style="display: flex; justify-content: space-between; margin-bottom: 24px; font-size: 13px;">
-            <div>
-              <strong>Shipping Destination:</strong><br/>
-              ${order.customerName || order.shippingAddress.fullName}<br/>
-              ${order.shippingAddress.street}, ${order.shippingAddress.city}<br/>
-              ${order.shippingAddress.state} - ${order.shippingAddress.pincode}<br/>
-              Phone: ${order.customerPhone || order.shippingAddress.phone}
-            </div>
-            <div style="text-align: right;">
-              <strong>Payment Summary:</strong><br/>
-              Method: ${order.paymentMethod.toUpperCase()}<br/>
-              Status: ${order.paymentStatus.toUpperCase()}<br/>
-              Order Status: <strong>${order.orderStatus}</strong>
-            </div>
-          </div>
-
-          <table>
-            <thead>
-              <tr>
-                <th>Item</th>
-                <th style="text-align: center;">Qty</th>
-                <th style="text-align: right;">Unit Price</th>
-                <th style="text-align: right;">Total Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${itemsHtml}
-            </tbody>
-          </table>
-
-          <div style="margin-top: 24px; text-align: right; font-size: 14px;">
-            <p style="margin: 4px 0;">Subtotal: ₹${order.subtotal.toLocaleString('en-IN')}</p>
-            ${order.discount ? `<p style="margin: 4px 0; color: green;">Discount: -₹${order.discount.toLocaleString('en-IN')}</p>` : ''}
-            <p style="margin: 4px 0;">Delivery: ${order.shippingCharge === 0 ? 'FREE' : '₹' + order.shippingCharge}</p>
-            <p class="total-row" style="margin: 8px 0 0 0; padding-top: 8px;">Grand Total: ₹${order.total.toLocaleString('en-IN')}</p>
-          </div>
-
-          <div style="margin-top: 40px; text-align: center; border-top: 1px solid #eee; padding-top: 16px; font-size: 11px; color: #777;">
-            Thank you for nurturing nature with buddy4plant! Support: contactus@buddy4plant.in
-          </div>
-          <script>
-            window.onload = function() { window.print(); }
-          </script>
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
-  };
+  const handlePrintInvoice = (order: Order) => printInvoice(order, settings);
 
   // Filter Orders
   const filteredOrders = orders.filter((ord) => {
