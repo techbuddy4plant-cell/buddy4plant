@@ -5,4 +5,9 @@
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"
-# SPA fallback is in public/_redirects; functions with a `path` run before it.
+
+# Single-page app: every other address serves index.html (functions with a `path` run before this)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
