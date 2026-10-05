@@ -235,9 +235,6 @@ const CardNav: React.FC<CardNavProps> = ({
             <div className="hamburger-line" />
             <div className="hamburger-line" />
           </div>
-          <span className="hamburger-label" onClick={toggleMenu} aria-hidden="true">
-            {isHamburgerOpen ? 'Close' : 'Menu'}
-          </span>
           <div className="logo-container" onClick={() => { close(); onLogoClick?.(); }}>
             {logo}
           </div>
