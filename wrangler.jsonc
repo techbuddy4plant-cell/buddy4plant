@@ -1,0 +1,16 @@
+{
+  // Cloudflare Workers settings for buddy4plant
+  "name": "buddy4plant",
+  "main": "worker/index.mjs",
+  "compatibility_date": "2025-09-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    // every page address serves the app (single-page app)
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+  // keep variables that were added in the Cloudflare dashboard when deploying
+  "keep_vars": true
+}
