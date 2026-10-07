@@ -19,6 +19,17 @@ const auth = () => {
   const { keyId, keySecret } = keys();
   return 'Basic ' + Buffer.from(`${keyId}:${keySecret}`).toString('base64');
 };
+// Razorpay sometimes answers 429 "Too many requests" for a moment (shared hosting addresses).
+// Wait briefly and try again, so customers do not see an error.
+async function rzpFetch(url, init) {
+  let r;
+  for (let i = 0; i < 4; i++) {
+    r = await fetch(url, init);
+    if (r.status !== 429 && r.status < 500) return r;
+    if (i < 3) await new Promise((res) => setTimeout(res, 500 * (i + 1) + Math.floor(Math.random() * 300)));
+  }
+  return r;
+}
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
 
@@ -31,7 +42,7 @@ export default async (req) => {
       const k = keys();
       let razorpayStatus = 0, razorpayError = '';
       try {
-        const r = await fetch('https://api.razorpay.com/v1/orders?count=1', { headers: { Authorization: auth() } });
+        const r = await rzpFetch('https://api.razorpay.com/v1/orders?count=1', { headers: { Authorization: auth() } });
         razorpayStatus = r.status;
         if (!r.ok) razorpayError = (await r.json().catch(() => ({})))?.error?.description || '';
       } catch (e) { razorpayError = 'Could not reach Razorpay'; }
@@ -63,7 +74,7 @@ export default async (req) => {
       const amount = Number(body?.amount);
       const receipt = String(body?.receipt || `rec_${Date.now()}`).slice(0, 40);
       if (!Number.isFinite(amount) || amount < 1 || amount > 500000) return json({ success: false, error: 'Invalid order amount' }, 400);
-      const r = await fetch('https://api.razorpay.com/v1/orders', {
+      const r = await rzpFetch('https://api.razorpay.com/v1/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: auth() },
         body: JSON.stringify({ amount: Math.round(amount * 100), currency: 'INR', receipt, payment_capture: 1, notes: { receipt, store: 'Buddy4Plant' } }),
@@ -94,8 +105,8 @@ export default async (req) => {
 
       // Confirm with Razorpay: payment belongs to this order, is captured/authorised, and the amount matches the order
       const [pr, or] = await Promise.all([
-        fetch(`https://api.razorpay.com/v1/payments/${encodeURIComponent(pid)}`, { headers: { Authorization: auth() } }),
-        fetch(`https://api.razorpay.com/v1/orders/${encodeURIComponent(oid)}`, { headers: { Authorization: auth() } }),
+        rzpFetch(`https://api.razorpay.com/v1/payments/${encodeURIComponent(pid)}`, { headers: { Authorization: auth() } }),
+        rzpFetch(`https://api.razorpay.com/v1/orders/${encodeURIComponent(oid)}`, { headers: { Authorization: auth() } }),
       ]);
       const payment = await pr.json();
       const order = await or.json();

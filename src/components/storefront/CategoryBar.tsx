@@ -47,6 +47,7 @@ export const CategoryBar: React.FC<CategoryBarProps> = ({ categories, navigate }
           </span>
           <img src="/categories/flourish-right.png" alt="" aria-hidden="true" className="h-7 sm:h-10 lg:h-12 w-auto" />
         </h2>
+        <p className="mt-2 sm:mt-3 text-center text-xs sm:text-sm text-[#C9D6C0]">Click to browse</p>
 
         {/* One row of round icons - scrolls sideways on smaller screens */}
         <div

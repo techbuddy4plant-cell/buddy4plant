@@ -51,9 +51,18 @@ async function paidOnRazorpay(order) {
   const pid = String(order.razorpayPaymentId || '');
   const oid = String(order.razorpayOrderId || '');
   if (!/^pay_\w+$/.test(pid) || !/^order_\w+$/.test(oid)) return 'Missing payment details';
+  const again = async (u) => {
+    let r;
+    for (let i = 0; i < 4; i++) {
+      r = await fetch(u, { headers: { Authorization: rzpAuth() } });
+      if (r.status !== 429 && r.status < 500) return r;
+      if (i < 3) await new Promise((res) => setTimeout(res, 500 * (i + 1)));
+    }
+    return r;
+  };
   const [pr, or] = await Promise.all([
-    fetch(`https://api.razorpay.com/v1/payments/${pid}`, { headers: { Authorization: rzpAuth() } }),
-    fetch(`https://api.razorpay.com/v1/orders/${oid}`, { headers: { Authorization: rzpAuth() } }),
+    again(`https://api.razorpay.com/v1/payments/${pid}`),
+    again(`https://api.razorpay.com/v1/orders/${oid}`),
   ]);
   if (!pr.ok || !or.ok) return 'Could not confirm the payment with Razorpay';
   const p = await pr.json();

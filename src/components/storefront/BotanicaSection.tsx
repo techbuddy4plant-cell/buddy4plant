@@ -54,6 +54,9 @@ export const BotanicaSection: React.FC<BotanicaSectionProps> = ({ navigate }) =>
 
           {/* Right Column: Stone Slab Visual with Floating Action Arrow */}
           <div className="lg:col-span-7 relative">
+            <h3 className="font-editorial text-2xl sm:text-3xl font-bold tracking-tight text-[#141414] mb-4 sm:mb-5">
+              Top Selling Product
+            </h3>
             <div className="relative rounded-3xl sm:rounded-4xl overflow-hidden border border-[#DED9CC] bg-[#EAE7DE] shadow-xl group">
               <img
                 src={image}
