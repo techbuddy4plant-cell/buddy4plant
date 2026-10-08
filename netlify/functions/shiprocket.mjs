@@ -74,6 +74,48 @@ async function paidOnRazorpay(order) {
   return '';
 }
 
+// ---- Cash on Delivery: read the order straight from the store database (never trust the browser's copy) ----
+const FIREBASE_PROJECT = 'buddy4plant-24f6f';
+const fsValue = (v) => {
+  if (!v || typeof v !== 'object') return undefined;
+  if ('stringValue' in v) return v.stringValue;
+  if ('integerValue' in v) return Number(v.integerValue);
+  if ('doubleValue' in v) return Number(v.doubleValue);
+  if ('booleanValue' in v) return v.booleanValue;
+  if ('nullValue' in v) return null;
+  if ('timestampValue' in v) return Date.parse(v.timestampValue);
+  if ('mapValue' in v) return fsObject(v.mapValue.fields || {});
+  if ('arrayValue' in v) return (v.arrayValue.values || []).map(fsValue);
+  return undefined;
+};
+const fsObject = (fields) => Object.fromEntries(Object.entries(fields).map(([k, v]) => [k, fsValue(v)]));
+
+async function codOrderFromDatabase(id) {
+  if (!/^[\w-]{3,80}$/.test(String(id || ''))) return { error: 'Invalid order' };
+  const r = await fetch(`https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT}/databases/(default)/documents/orders/${encodeURIComponent(id)}`);
+  if (!r.ok) return { error: 'Order not found' };
+  const doc = await r.json();
+  const order = fsObject(doc.fields || {});
+  if (order.paymentMethod !== 'cod') return { error: 'Not a Cash on Delivery order' };
+  if (order.orderStatus === 'Cancelled' || order.orderStatus === 'Refunded') return { error: 'Order is cancelled' };
+  if (!order.createdAt || Date.now() - Number(order.createdAt) > 7 * 86400000) return { error: 'Order is too old to send automatically' };
+  order.id = id;
+  return { order };
+}
+
+function codSanity(o) {
+  const a = o.shippingAddress || {};
+  if (!/^[A-Za-z0-9]+-\d{4,10}$/.test(String(o.orderNumber || ''))) return 'Invalid order number';
+  if (!o.createdAt || Math.abs(Date.now() - Number(o.createdAt)) > 6 * 3600000) return 'Order is too old to send automatically';
+  if (o.orderStatus === 'Cancelled' || o.orderStatus === 'Refunded') return 'Order is cancelled';
+  if (String(a.phone || o.customerPhone || '').replace(/\D/g, '').slice(-10).length !== 10) return 'Invalid phone number';
+  if (!/^[1-9]\d{5}$/.test(String(a.pincode || ''))) return 'Invalid pincode';
+  if (!Array.isArray(o.items) || o.items.length < 1 || o.items.length > 30) return 'Invalid items';
+  const total = Number(o.total);
+  if (!Number.isFinite(total) || total < 1 || total > 50000) return 'Order amount not allowed for Cash on Delivery';
+  return '';
+}
+
 const pad = (n) => String(n).padStart(2, '0');
 const istDate = (ms) => {
   const d = new Date((Number(ms) || Date.now()) + 5.5 * 3600000);
@@ -114,7 +156,7 @@ function buildShiprocketOrder(order) {
     billing_phone: String(a.phone || order.customerPhone || '').replace(/\D/g, '').slice(-10),
     shipping_is_billing: true,
     order_items: items,
-    payment_method: 'Prepaid',
+    payment_method: order.paymentMethod === 'cod' ? 'COD' : 'Prepaid',
     shipping_charges: Number(order.shippingCharge) || 0,
     total_discount: Number(order.discount) || 0,
     sub_total: Number(order.subtotal) || items.reduce((s, it) => s + it.selling_price * it.units, 0),
@@ -148,10 +190,26 @@ export default async (req) => {
 
   if (action === 'create-order' && req.method === 'POST') {
     try {
-      const order = await req.json().catch(() => null);
-      if (!order || !order.orderNumber || !Array.isArray(order.items) || !order.items.length) return json({ success: false, error: 'Invalid order' }, 400);
-      const problem = await paidOnRazorpay(order);
-      if (problem) return json({ success: false, error: problem }, 400);
+      const body = await req.json().catch(() => null);
+      if (!body) return json({ success: false, error: 'Invalid order' }, 400);
+      let order = body;
+      if (body.paymentMethod === 'cod') {
+        // COD: prefer the saved order from the database; if the database can't be read from here,
+        // accept the order only if it passes basic checks (recent, real phone/pincode, sensible amounts).
+        const found = await codOrderFromDatabase(body.id).catch(() => ({ error: 'lookup failed' }));
+        if (found.order) order = found.order;
+        else if (found.error === 'Order is cancelled' || found.error === 'Not a Cash on Delivery order') {
+          return json({ success: false, error: found.error }, 400);
+        } else {
+          const problem = codSanity(body);
+          if (problem) return json({ success: false, error: problem }, 400);
+        }
+      }
+      if (!order.orderNumber || !Array.isArray(order.items) || !order.items.length) return json({ success: false, error: 'Invalid order' }, 400);
+      if (order.paymentMethod !== 'cod') {
+        const problem = await paidOnRazorpay(order);
+        if (problem) return json({ success: false, error: problem }, 400);
+      }
 
       const r = await sr('/orders/create/adhoc', { method: 'POST', body: JSON.stringify(buildShiprocketOrder(order)) });
       const d = r.data || {};

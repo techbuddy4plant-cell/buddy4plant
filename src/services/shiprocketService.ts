@@ -39,7 +39,9 @@ async function patchOrder(order: Order, fields: Partial<Order>) {
 /** Sends a paid order to Shiprocket. Safe to call again - it does nothing if the order is already there. */
 export async function pushOrderToShiprocket(order: Order): Promise<{ ok: boolean; error?: string }> {
   if (order.shiprocketOrderId) return { ok: true };
-  if (order.paymentMethod !== 'razorpay' || order.paymentStatus !== 'paid') return { ok: false, error: 'Only orders paid online are sent automatically' };
+  const eligible = order.paymentMethod === 'cod' || (order.paymentMethod === 'razorpay' && order.paymentStatus === 'paid');
+  if (!eligible) return { ok: false, error: 'Only Cash on Delivery orders and orders paid online are sent' };
+  if (order.orderStatus === 'Cancelled' || order.orderStatus === 'Refunded') return { ok: false, error: 'Order is cancelled' };
   try {
     const res = await fetch('/api/shiprocket/create-order', {
       method: 'POST',

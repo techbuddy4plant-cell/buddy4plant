@@ -276,6 +276,8 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ navigate }) => {
 
         confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
         clearCart();
+        // Send the COD order to Shiprocket straight away (never blocks the customer)
+        void pushOrderToShiprocket(newOrder);
         navigate(`/order-success/${newOrder.orderNumber}`);
       } catch (err: any) {
         setErrorMsg(err.message || 'Failed to place order');

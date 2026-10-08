@@ -453,14 +453,13 @@ export const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, onRefresh }) =
                   <p className="text-[#7A7A7A]">
                     {trackingModalOrder.shiprocketError
                       ? `Not sent: ${trackingModalOrder.shiprocketError}`
-                      : trackingModalOrder.paymentMethod === 'razorpay' && trackingModalOrder.paymentStatus === 'paid'
-                      ? 'Not sent yet'
-                      : 'Only orders paid online are sent automatically'}
+                      : 'Not sent yet'}
                   </p>
                 )}
                 {srMsg && <p className="text-[#2D4A27] font-semibold">{srMsg}</p>}
               </div>
               {(trackingModalOrder.shiprocketOrderId ||
+                trackingModalOrder.paymentMethod === 'cod' ||
                 (trackingModalOrder.paymentMethod === 'razorpay' && trackingModalOrder.paymentStatus === 'paid')) && (
                 <button
                   type="button"

@@ -49,7 +49,7 @@ export const OrderTrackingPage: React.FC<OrderTrackingPageProps> = ({ initialOrd
     if (!order || isOrderCancelled(order)) return;
     let alive = true;
     (async () => {
-      if (!order.shiprocketOrderId && order.paymentMethod === 'razorpay' && order.paymentStatus === 'paid') {
+      if (!order.shiprocketOrderId && (order.paymentMethod === 'cod' || (order.paymentMethod === 'razorpay' && order.paymentStatus === 'paid'))) {
         await pushOrderToShiprocket(order);
         return; // the live order update re-runs this effect with the Shiprocket ids
       }
