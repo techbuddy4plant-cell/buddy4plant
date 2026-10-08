@@ -25,6 +25,12 @@ export const BotanicaSection: React.FC<BotanicaSectionProps> = ({ navigate }) =>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
           {/* Left Column: Text & Editorial CTA */}
           <div className="lg:col-span-5 flex flex-col justify-center">
+            {/* Top selling highlight */}
+            <div className="b4p-top-seller self-start mb-7 sm:mb-9">
+              <span className="b4p-top-seller-dot" aria-hidden="true" />
+              <i className="fa-solid fa-fire-flame-curved text-[#C2410C]" aria-hidden="true" />
+              <span className="font-editorial font-extrabold tracking-tight">Top Selling Product</span>
+            </div>
             {/* Small Botanica label */}
             <span className="text-[11px] font-bold text-[#556052] uppercase tracking-[0.24em] mb-4 flex items-center gap-1.5">
               <Leaf className="w-3.5 h-3.5 text-[#1F3B22]" />
@@ -54,9 +60,6 @@ export const BotanicaSection: React.FC<BotanicaSectionProps> = ({ navigate }) =>
 
           {/* Right Column: Stone Slab Visual with Floating Action Arrow */}
           <div className="lg:col-span-7 relative">
-            <h3 className="font-editorial text-2xl sm:text-3xl font-bold tracking-tight text-[#141414] mb-4 sm:mb-5">
-              Top Selling Product
-            </h3>
             <div className="relative rounded-3xl sm:rounded-4xl overflow-hidden border border-[#DED9CC] bg-[#EAE7DE] shadow-xl group">
               <img
                 src={image}

@@ -1,3 +1,4 @@
+import { useTypingPlaceholder } from '../../hooks/useTypingPlaceholder';
 import React, { useState, useEffect, useRef } from 'react';
 import {
   Search,
@@ -194,6 +195,16 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
     setSearchQuery('');
   };
 
+  // Search placeholder types out what customers can look for
+  const [searchFocused, setSearchFocused] = useState(false);
+  const typedPlaceholder = useTypingPlaceholder(
+    isDesktop
+      ? ['indoor plants...', 'ceramic pots...', 'organic plant food...', 'balcony plants...', 'gardening services...']
+      : ['plants...', 'pots...', 'plant food...'],
+    searchFocused || searchQuery.length > 0,
+    'Search '
+  );
+
   // Store search box - in the header on desktop, in its own row on phones and tablets
   const searchBox = (
                 <div className="relative">
@@ -207,7 +218,9 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
                         document.documentElement.style.setProperty('--b4p-search-top', `${Math.round(e.currentTarget.getBoundingClientRect().bottom + 8)}px`);
                       }}
                       onKeyDown={(e) => e.key === 'Escape' && setSearchQuery('')}
-                      placeholder={isDesktop ? 'Search plants, pots, plant care...' : 'Search'}
+                      placeholder={searchFocused ? (isDesktop ? 'Search plants, pots, plant care...' : 'Search') : typedPlaceholder}
+                      onFocus={() => setSearchFocused(true)}
+                      onBlur={() => setSearchFocused(false)}
                       aria-label="Search the store"
                       className="w-full h-10 lg:h-11 pl-7 lg:pl-11 pr-1.5 lg:pr-4 rounded-full bg-[#F1ECE2] border border-transparent text-[13px] lg:text-sm text-[#1A1A1A] placeholder-[#7A7A7A] focus:outline-none focus:bg-white focus:border-[#2D4A27] focus:ring-2 focus:ring-[#2D4A27]/15 transition-colors"
                     />

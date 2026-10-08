@@ -342,3 +342,23 @@
 .nav-card-links {
   margin-top: 0;
 }
+
+/* Desktop: logo in the centre of the bar, search box beside the menu button */
+@media (min-width: 1024px) {
+  .card-nav-top.has-center .logo-container {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+  }
+  .card-nav-top.has-center .card-nav-center {
+    flex: 0 1 auto;
+    width: calc(50% - 150px);
+    max-width: 440px;
+    margin: 0 0 0 0.75rem;
+  }
+  .card-nav-top.has-center .card-nav-actions {
+    margin-left: auto;
+  }
+}
