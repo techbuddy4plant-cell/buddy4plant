@@ -49,7 +49,10 @@ export const OrderTrackingPage: React.FC<OrderTrackingPageProps> = ({ initialOrd
     if (!order || isOrderCancelled(order)) return;
     let alive = true;
     (async () => {
-      if (!order.shiprocketOrderId && (order.paymentMethod === 'cod' || (order.paymentMethod === 'razorpay' && order.paymentStatus === 'paid'))) {
+      // retry sending from this page only if the last attempt did not fail on the Shiprocket login
+      // (repeated logins with a wrong password get the Shiprocket API user blocked)
+      const loginProblem = /login|blocked|password|unauthori/i.test(order.shiprocketError || '');
+      if (!order.shiprocketOrderId && !loginProblem && (order.paymentMethod === 'cod' || (order.paymentMethod === 'razorpay' && order.paymentStatus === 'paid'))) {
         await pushOrderToShiprocket(order);
         return; // the live order update re-runs this effect with the Shiprocket ids
       }
