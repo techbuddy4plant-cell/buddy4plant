@@ -63,7 +63,8 @@ service cloud.firestore {
 
     // Orders: Public create, read & update for checkout & order tracking
     match /orders/{orderId} {
-      allow read, write: if true;
+      allow read, create, update: if true;
+      allow delete: if false;
     }
 
     // Landscaping projects shown on Gardening Services / Projects pages (edited in Admin > Projects)
@@ -74,7 +75,8 @@ service cloud.firestore {
 
     // Landscaping / gardening service enquiries from the website form
     match /serviceEnquiries/{enquiryId} {
-      allow read, write: if true;
+      allow read, create, update: if true;
+      allow delete: if false;
     }
 
     // Inventory & Analytics
