@@ -25,27 +25,31 @@ export const BotanicaSection: React.FC<BotanicaSectionProps> = ({ navigate }) =>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
           {/* Left Column: Text & Editorial CTA */}
           <div className="lg:col-span-5 flex flex-col justify-center">
-            {/* Top selling highlight */}
-            <img
-              src="/top-selling-badge.png"
-              alt="Top selling - customer favourite, bestseller"
-              width={420}
-              height={353}
-              className="self-start w-36 sm:w-44 lg:w-52 h-auto mb-6 sm:mb-8 drop-shadow-[0_10px_18px_rgba(20,40,80,0.18)]"
-            />
-            {/* Small Botanica label */}
-            <span className="text-[11px] font-bold text-[#556052] uppercase tracking-[0.24em] mb-4 flex items-center gap-1.5">
-              <Leaf className="w-3.5 h-3.5 text-[#1F3B22]" />
-              Botanica &amp; Soil Nutrition
-            </span>
+            {/* Badge + heading: side by side on phones, stacked on larger screens */}
+            <div className="flex items-center gap-4 sm:block">
+              <img
+                src="/top-selling-badge.png"
+                alt="Top selling - customer favourite, bestseller"
+                width={420}
+                height={353}
+                className="shrink-0 w-[118px] sm:w-64 lg:w-72 xl:w-80 h-auto sm:mb-8 drop-shadow-[0_10px_18px_rgba(20,40,80,0.18)]"
+              />
+              <div className="min-w-0">
+                {/* Small Botanica label */}
+                <span className="text-[9.5px] sm:text-[11px] font-bold text-[#556052] uppercase tracking-[0.16em] sm:tracking-[0.24em] mb-2 sm:mb-4 flex items-center gap-1.5">
+                  <Leaf className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#1F3B22] shrink-0" />
+                  Botanica &amp; Soil Nutrition
+                </span>
 
-            {/* Bold Headline */}
-            <h2 className="font-editorial text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-[#141414] leading-[1.06] whitespace-pre-line">
-              {title}
-            </h2>
+                {/* Bold Headline */}
+                <h2 className="font-editorial text-[1.7rem] sm:text-5xl lg:text-6xl font-bold tracking-tight text-[#141414] leading-[1.06] whitespace-pre-line">
+                  {title}
+                </h2>
+              </div>
+            </div>
 
             {/* Subheading */}
-            <p className="mt-5 text-base sm:text-lg text-[#525252] font-normal leading-relaxed max-w-md">
+            <p className="mt-4 sm:mt-5 text-[15px] sm:text-lg text-[#525252] font-normal leading-relaxed max-w-md">
               {subtitle}
             </p>
 
