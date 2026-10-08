@@ -13,8 +13,7 @@
   },
   // the website's own addresses - Cloudflare keeps the records and certificates for these
   "routes": [
-    { "pattern": "buddy4plant.in", "custom_domain": true },
-    { "pattern": "www.buddy4plant.in", "custom_domain": true }
+    { "pattern": "buddy4plant.in", "custom_domain": true }
   ],
   "workers_dev": true,
   // non-secret settings; SHIPROCKET_EMAIL and all passwords/keys are set only in the Cloudflare dashboard
