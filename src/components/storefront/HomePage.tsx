@@ -70,6 +70,7 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate, onQuickView }) => 
     >
       {/* Unified Sylva Living Green 3D Hero Banner */}
       <HeroBanner navigate={navigate} />
+      <TrustStrip />
 
       {/* Botanica Section - Slow-grown stone slab presentation */}
       <BotanicaSection navigate={navigate} />
@@ -78,8 +79,6 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate, onQuickView }) => 
       {/* Category Pills & Grid */}
       <CategoryBar categories={categories} products={products} navigate={navigate} />
 
-      {/* Yellow trust strip - sits below the categories */}
-      <TrustStrip />
 
       {/* Bestsellers Section */}
       <BestSellersSection
