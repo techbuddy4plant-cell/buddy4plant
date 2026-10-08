@@ -26,11 +26,13 @@ export const BotanicaSection: React.FC<BotanicaSectionProps> = ({ navigate }) =>
           {/* Left Column: Text & Editorial CTA */}
           <div className="lg:col-span-5 flex flex-col justify-center">
             {/* Top selling highlight */}
-            <div className="b4p-top-seller self-start mb-7 sm:mb-9">
-              <span className="b4p-top-seller-dot" aria-hidden="true" />
-              <i className="fa-solid fa-fire-flame-curved text-[#C2410C]" aria-hidden="true" />
-              <span className="font-editorial font-extrabold tracking-tight">Top Selling Product</span>
-            </div>
+            <img
+              src="/top-selling-badge.png"
+              alt="Top selling - customer favourite, bestseller"
+              width={420}
+              height={353}
+              className="self-start w-36 sm:w-44 lg:w-52 h-auto mb-6 sm:mb-8 drop-shadow-[0_10px_18px_rgba(20,40,80,0.18)]"
+            />
             {/* Small Botanica label */}
             <span className="text-[11px] font-bold text-[#556052] uppercase tracking-[0.24em] mb-4 flex items-center gap-1.5">
               <Leaf className="w-3.5 h-3.5 text-[#1F3B22]" />
