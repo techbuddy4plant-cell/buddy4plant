@@ -172,15 +172,18 @@ export default async (req) => {
   const action = url.pathname.replace(/\/+$/, '').split('/').pop();
 
   if (action === 'config' && req.method === 'GET') {
+    // which API user is configured (partly hidden), to spot an old value still in use
+    const em = env('SHIPROCKET_EMAIL');
+    const emailUsed = em ? em.replace(/^(.{3}).*(@.*)$/, '$1***$2') : '';
     if (url.searchParams.get('test') === '1' && configured()) {
       try {
         await token(true);
         const p = await sr('/settings/company/pickup');
         const names = (p.data?.data?.shipping_address || []).map((x) => x.pickup_location);
         const want = env('SHIPROCKET_PICKUP_LOCATION') || 'Primary';
-        return json({ enabled: true, loginOk: true, pickupLocations: names, pickupLocationUsed: want, pickupLocationFound: names.includes(want) });
+        return json({ enabled: true, emailUsed, loginOk: true, pickupLocations: names, pickupLocationUsed: want, pickupLocationFound: names.includes(want) });
       } catch (e) {
-        return json({ enabled: true, loginOk: false, error: String(e.message || e) });
+        return json({ enabled: true, emailUsed, loginOk: false, error: String(e.message || e) });
       }
     }
     return json({ enabled: configured() });
