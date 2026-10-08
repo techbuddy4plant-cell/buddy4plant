@@ -17,9 +17,8 @@
     { "pattern": "www.buddy4plant.in", "custom_domain": true }
   ],
   "workers_dev": true,
-  // non-secret settings (same as in the Cloudflare dashboard); secrets are never stored here
+  // non-secret settings; SHIPROCKET_EMAIL and all passwords/keys are set only in the Cloudflare dashboard
   "vars": {
-    "SHIPROCKET_EMAIL": "tech.buddy4plant@gmail.com",
     "SHIPROCKET_PICKUP_LOCATION": "Home"
   },
   // keep variables and secrets that were added in the Cloudflare dashboard when deploying
