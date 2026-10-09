@@ -123,7 +123,7 @@ export const UserOrdersPage: React.FC<UserOrdersPageProps> = ({ navigate }) => {
         <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-900 flex items-center justify-center mx-auto text-2xl mb-4 shadow-xs">
           <Package className="w-8 h-8 text-[#2D4A27]" />
         </div>
-        <h2 className="font-serif font-bold text-2xl text-stone-900">Your Amazon-Style Orders</h2>
+        <h2 className="font-serif font-bold text-2xl text-stone-900">Your Orders</h2>
         <p className="text-xs text-stone-500 mt-2 max-w-md mx-auto">
           Please sign in to view your order history, track shipments, request returns, and reorder plants.
         </p>
