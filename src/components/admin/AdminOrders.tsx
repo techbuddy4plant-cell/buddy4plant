@@ -2,7 +2,7 @@ import { printInvoice } from '../../utils/invoice';
 import { useStoreSettings } from '../../context/StoreSettingsContext';
 import React, { useState, useEffect } from 'react';
 import { realShipping } from '../../utils/shipping';
-import { pushOrderToShiprocket, syncShiprocket } from '../../services/shiprocketService';
+import { pushOrderToShiprocket, syncShiprocket, cancelOnShiprocket } from '../../services/shiprocketService';
 import {
   Search,
   Filter,
@@ -79,9 +79,22 @@ export const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, onRefresh }) =
     'Blr Local Botanical Delivery Van',
   ];
 
+  /** Cancelling here also cancels on Shiprocket. Returns false if the parcel has already shipped. */
+  const cancelShipmentFirst = async (orderId: string, newStatus: OrderStatus) => {
+    if (newStatus !== 'Cancelled' && newStatus !== 'Refunded') return true;
+    const ord = orders.find((o) => o.id === orderId);
+    if (!ord || ord.orderStatus === 'Cancelled' || ord.orderStatus === 'Refunded') return true;
+    const r = await cancelOnShiprocket(ord);
+    if (!r.ok && /shipped/i.test(r.error || '')) {
+      return window.confirm('Shiprocket says this order has already shipped, so the courier cannot be stopped online. Mark it cancelled on the website anyway?');
+    }
+    return true; // other problems: the 30-minute sync retries the Shiprocket cancel
+  };
+
   const handleStatusChange = async (orderId: string, newStatus: OrderStatus) => {
     setIsUpdating(true);
     try {
+      if (!(await cancelShipmentFirst(orderId, newStatus))) return;
       await updateOrderStatus(orderId, newStatus, `Status transitioned to ${newStatus} by Admin`);
       onRefresh();
       if (selectedOrder && selectedOrder.id === orderId) {
@@ -143,6 +156,7 @@ export const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, onRefresh }) =
     if (!trackingModalOrder) return;
     setIsUpdating(true);
     try {
+      if (!(await cancelShipmentFirst(trackingModalOrder.id, editStatus))) return;
       await updateOrderStatus(
         trackingModalOrder.id,
         editStatus,
