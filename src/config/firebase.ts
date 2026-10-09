@@ -45,3 +45,11 @@ if (typeof window !== 'undefined') {
 }
 
 export default app;
+
+/**
+ * Gives up on a slow request after `ms` (default 5 s) so the page can fall back to the
+ * copy saved in this browser / shipped with the site instead of waiting forever
+ * (e.g. on networks that block Firebase).
+ */
+export const withTimeout = <T,>(p: Promise<T>, ms = 5000): Promise<T> =>
+  Promise.race([p, new Promise<never>((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
