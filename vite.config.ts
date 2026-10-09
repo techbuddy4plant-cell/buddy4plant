@@ -6,6 +6,23 @@ import {defineConfig} from 'vite';
 export default defineConfig(() => {
   return {
     plugins: [react(), tailwindcss()],
+    build: {
+      // separate long-lived library files so returning visitors reuse them from cache
+      rollupOptions: {
+        output: {
+          manualChunks(id: string) {
+            if (!id.includes('node_modules')) return undefined;
+            if (id.includes('firebase') || id.includes('@firebase')) return 'vendor-firebase';
+            if (id.includes('react-dom') || id.includes('/react/') || id.includes('scheduler')) return 'vendor-react';
+            if (id.includes('motion') || id.includes('framer')) return 'vendor-motion';
+            if (id.includes('gsap')) return 'vendor-gsap';
+            if (id.includes('three')) return 'vendor-three';
+            return undefined;
+          },
+        },
+      },
+      chunkSizeWarningLimit: 900,
+    },
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),

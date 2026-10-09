@@ -1,5 +1,4 @@
-import { StoreLocatorPage } from './components/pages/StoreLocatorPage';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { storefrontBackground, StoreSettingsProvider, useStoreSettings } from './context/StoreSettingsContext';
 import { AuthProvider } from './context/AuthContext';
@@ -15,31 +14,32 @@ import { AuthModal } from './components/common/AuthModal';
 import { QuickViewModal } from './components/common/QuickViewModal';
 
 import { HomePage } from './components/storefront/HomePage';
-import { ProductListingPage } from './components/catalogue/ProductListingPage';
-import { ProductDetailPage } from './components/product/ProductDetailPage';
-import { CheckoutPage } from './components/checkout/CheckoutPage';
-import { OrderSuccess } from './components/order/OrderSuccess';
-import { OrderTrackingPage } from './components/order/OrderTrackingPage';
-import { UserProfilePage } from './components/account/UserProfilePage';
-import { UserOrdersPage } from './components/account/UserOrdersPage';
-import { WishlistPage } from './components/pages/WishlistPage';
-import {
-  AboutUsPage,
-  ContactUsPage,
-  ReviewsPage,
-  CareGuidePage,
-  ShippingPolicyPage,
-  TermsAndConditionsPage,
-  PrivacyPolicyPage,
-  RefundPolicyPage
-} from './components/pages/StaticPages';
-import { ProjectsPage } from './components/pages/ProjectsPage';
-import { BlogPage } from './components/pages/BlogPage';
-import { GardenServicesPage } from './components/pages/GardenServicesPage';
-import { AdminDashboard } from './components/admin/AdminDashboard';
-import { AdminLoginPage } from './components/admin/AdminLoginPage';
-import { Scene } from './Scene';
 import { Product } from './types';
+
+// Pages load on demand so the first visit only downloads what the home page needs
+const StoreLocatorPage = lazy(() => import('./components/pages/StoreLocatorPage').then((m) => ({ default: m.StoreLocatorPage })));
+const ProductListingPage = lazy(() => import('./components/catalogue/ProductListingPage').then((m) => ({ default: m.ProductListingPage })));
+const ProductDetailPage = lazy(() => import('./components/product/ProductDetailPage').then((m) => ({ default: m.ProductDetailPage })));
+const CheckoutPage = lazy(() => import('./components/checkout/CheckoutPage').then((m) => ({ default: m.CheckoutPage })));
+const OrderSuccess = lazy(() => import('./components/order/OrderSuccess').then((m) => ({ default: m.OrderSuccess })));
+const OrderTrackingPage = lazy(() => import('./components/order/OrderTrackingPage').then((m) => ({ default: m.OrderTrackingPage })));
+const UserProfilePage = lazy(() => import('./components/account/UserProfilePage').then((m) => ({ default: m.UserProfilePage })));
+const UserOrdersPage = lazy(() => import('./components/account/UserOrdersPage').then((m) => ({ default: m.UserOrdersPage })));
+const WishlistPage = lazy(() => import('./components/pages/WishlistPage').then((m) => ({ default: m.WishlistPage })));
+const ProjectsPage = lazy(() => import('./components/pages/ProjectsPage').then((m) => ({ default: m.ProjectsPage })));
+const BlogPage = lazy(() => import('./components/pages/BlogPage').then((m) => ({ default: m.BlogPage })));
+const GardenServicesPage = lazy(() => import('./components/pages/GardenServicesPage').then((m) => ({ default: m.GardenServicesPage })));
+const AdminDashboard = lazy(() => import('./components/admin/AdminDashboard').then((m) => ({ default: m.AdminDashboard })));
+const AdminLoginPage = lazy(() => import('./components/admin/AdminLoginPage').then((m) => ({ default: m.AdminLoginPage })));
+const Scene = lazy(() => import('./Scene').then((m) => ({ default: m.Scene })));
+const AboutUsPage = lazy(() => import('./components/pages/StaticPages').then((m) => ({ default: m.AboutUsPage })));
+const ContactUsPage = lazy(() => import('./components/pages/StaticPages').then((m) => ({ default: m.ContactUsPage })));
+const ReviewsPage = lazy(() => import('./components/pages/StaticPages').then((m) => ({ default: m.ReviewsPage })));
+const CareGuidePage = lazy(() => import('./components/pages/StaticPages').then((m) => ({ default: m.CareGuidePage })));
+const ShippingPolicyPage = lazy(() => import('./components/pages/StaticPages').then((m) => ({ default: m.ShippingPolicyPage })));
+const TermsAndConditionsPage = lazy(() => import('./components/pages/StaticPages').then((m) => ({ default: m.TermsAndConditionsPage })));
+const PrivacyPolicyPage = lazy(() => import('./components/pages/StaticPages').then((m) => ({ default: m.PrivacyPolicyPage })));
+const RefundPolicyPage = lazy(() => import('./components/pages/StaticPages').then((m) => ({ default: m.RefundPolicyPage })));
 
 export default function App() {
   const [currentPath, setCurrentPath] = useState<string>(() => window.location.pathname || '/');
@@ -308,7 +308,15 @@ const AppShell: React.FC<{
             exit={{ opacity: 0 }}
             transition={{ duration: 0.18, ease: 'easeOut' }}
           >
-            {renderCurrentView()}
+            <Suspense
+              fallback={
+                <div className="min-h-[60vh] flex items-center justify-center" aria-busy="true">
+                  <span className="w-8 h-8 rounded-full border-2 border-[#13301B]/20 border-t-[#13301B] animate-spin" />
+                </div>
+              }
+            >
+              {renderCurrentView()}
+            </Suspense>
           </motion.div>
         </AnimatePresence>
       </main>

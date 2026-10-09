@@ -17,6 +17,14 @@ const env = (name) => {
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
 
+// Never let a slow Shiprocket response hang the website: give up after 12 seconds
+const _fetch = globalThis.fetch;
+const fetch = (url, init = {}) => {
+  const c = new AbortController();
+  const t = setTimeout(() => c.abort(), 12000);
+  return _fetch(url, { ...init, signal: c.signal }).finally(() => clearTimeout(t));
+};
+
 const configured = () => Boolean(env('SHIPROCKET_EMAIL') && env('SHIPROCKET_PASSWORD'));
 
 // Shiprocket tokens last 10 days; keep one for 8 days while this function instance is warm
