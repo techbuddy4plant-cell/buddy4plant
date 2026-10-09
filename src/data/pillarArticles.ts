@@ -368,7 +368,7 @@ export const PILLAR_ARTICLES: BlogPost[] = [
       "1. **Start with younger plants.** A 3-4 foot tree establishes faster and costs a fraction of a mature one.\n2. **Choose native and hardy species.** Neem, amaltas, kadam, duranta, hibiscus and bougainvillea cope with UP summers on less water.\n3. **Use less lawn.** Lawns need the most water and labour; replace some with groundcover, gravel or mulched beds.\n4. **Install drip irrigation early.** It saves water and labour every month after.\n5. **Phase the work.** Do soil, irrigation and trees first; add décor, lighting and seasonal beds later.\n6. **Sign an AMC from day one.** It protects the investment you just made.",
       "## What does the process look like?",
       "| Step | What happens |\n|---|---|\n| 1. Site visit | Measure the area, check sunlight, soil, water source and drainage |\n| 2. Design & quotation | Layout, plant list, materials and a line-item quote |\n| 3. Soil preparation | Clearing, excavation if needed, fresh soil and compost |\n| 4. Hardscape & irrigation | Paths, edging, pipes and drip lines |\n| 5. Plantation & lawn | Trees, shrubs, hedges, groundcover, grass |\n| 6. Handover & AMC | Care schedule and regular maintenance |",
-      "Buddy4Plant has carried out landscaping and AMC work for government offices, training institutes, a defence-corridor manufacturing unit and fuel stations across Lucknow, Kanpur and Uttar Pradesh. See our [project case studies](/blog/projects/buddy4plant-landscaping-projects-case-studies) or [book a free site visit](/garden-services).",
+      "Buddy4Plant has carried out landscaping and AMC work for government offices, training institutes, a defence-corridor manufacturing unit and fuel stations across Lucknow, Kanpur and Uttar Pradesh. See our [project case studies](/blog/projects/buddy4plant-landscaping-projects-case-studies) or [plan your garden with us](/garden-services).",
       "*Cost ranges are indicative, based on [published 2026 Indian landscaping cost guides](https://www.studiomatrx.org/guides/landscape-cost-guide-india), and vary by city, site and specification.*"
     ],
     "tags": [
@@ -398,7 +398,7 @@ export const PILLAR_ARTICLES: BlogPost[] = [
       "miyawaki-plantation-india-guide"
     ],
     "cta": {
-      "label": "Book a free site visit",
+      "label": "Plan your garden with us",
       "path": "/garden-services"
     }
   },
@@ -448,7 +448,7 @@ export const PILLAR_ARTICLES: BlogPost[] = [
       "- Water less, at midday.\n- Move areca palms, anthuriums, crotons and other tropicals away from cold, foggy winds.\n- Cover delicate plants with cloth or a plastic sheet on the coldest nights (late December - mid January).\n- Stop heavy fertilizing until February.",
       "## When is the best time to plant in Lucknow?",
       "| Plant type | Best planting time |\n|---|---|\n| Trees and shrubs | July - September (monsoon) or February - March |\n| Winter flowers | Sow September - October, transplant October - November |\n| Summer flowers | February - March |\n| Lawns | February - April or July - August |\n| Indoor plants | Any time except peak winter |",
-      "Buddy4Plant is based in Lucknow and has landscaped campuses across the city, including UP 112, Van Nigam, the State Archaeology Department and Nagar Nigam projects. If you are planning a garden in Lucknow or nearby districts, [book a free site visit](/garden-services)."
+      "Buddy4Plant is based in Lucknow and has landscaped campuses across the city, including UP 112, Van Nigam, the State Archaeology Department and Nagar Nigam projects. If you are planning a garden in Lucknow or nearby districts, [plan your garden with us](/garden-services)."
     ],
     "tags": [
       "Lucknow",
@@ -596,7 +596,7 @@ export const PILLAR_ARTICLES: BlogPost[] = [
       "| Question | Why it matters |\n|---|---|\n| Where does the sun fall in summer and winter? | Decides which plants go where |\n| Where is the water source? | Plans irrigation and saves pipe cost |\n| How does rain water drain? | Avoids monsoon waterlogging |\n| How will the space be used? | Seating, play, parking, kitchen garden |\n| Who will maintain it and how often? | Decides lawn size and plant choice |\n| What is the budget? | See our [landscaping cost guide](/blog/landscaping/landscaping-cost-india) |",
       "## Which plants suit each design style?",
       "| Style | Plants |\n|---|---|\n| Traditional Indian | Tulsi, mogra, hibiscus, marigold, champa, mango, kamini |\n| Modern | Foxtail palm, snake plant, ZZ, ornamental grasses, ficus panda hedges |\n| Tropical | Areca palm, monstera, heliconia, bird of paradise, ferns |\n| Dry / low water | Bougainvillea, adenium, agave, aloe, kaner, portulaca |\n| Edible | Lemon, guava, curry leaf, chillies, herbs, gourds on trellis |",
-      "Want a garden like this for your home, office or campus? Buddy4Plant designs and builds gardens across Lucknow and Uttar Pradesh. [Book a free site visit](/garden-services)."
+      "Want a garden like this for your home, office or campus? Buddy4Plant designs and builds gardens across Lucknow and Uttar Pradesh. [Plan your garden with us](/garden-services)."
     ],
     "tags": [
       "Garden Design",
@@ -744,7 +744,7 @@ export const PILLAR_ARTICLES: BlogPost[] = [
       "- Location and site area\n- The client's objective\n- Site condition before work\n- Design and plant palette\n- Soil preparation and irrigation\n- Materials used\n- Execution photographs\n- The finished result",
       "Browse the full project list with photos on our [Gardening Services page](/garden-services).",
       "## Planning a project?",
-      "Whether it is a government office, a training institute, an industrial green belt or a home garden, we will visit the site and send a clear plan and quotation. [Book a free site visit](/garden-services) or read our [landscaping cost guide](/blog/landscaping/landscaping-cost-india) first."
+      "Whether it is a government office, a training institute, an industrial green belt or a home garden, we will visit the site and send a clear plan and quotation. [Plan your garden with us](/garden-services) or read our [landscaping cost guide](/blog/landscaping/landscaping-cost-india) first."
     ],
     "tags": [
       "Case Studies",
