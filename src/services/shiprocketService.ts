@@ -121,21 +121,22 @@ export async function syncShiprocket(order: Order, force = false): Promise<Shipr
   }
 }
 
-/** Cancels the shipment on Shiprocket too (only possible before it ships). */
+/** Cancels the shipment on Shiprocket too (only possible before it ships). Finds the Shiprocket order even if its id was never saved here. */
 export async function cancelOnShiprocket(order: Order): Promise<{ ok: boolean; error?: string }> {
-  if (!order.shiprocketOrderId) return { ok: true };
   try {
     const res = await fetch('/api/shiprocket/cancel', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ shiprocketOrderId: order.shiprocketOrderId, orderNumber: order.orderNumber }),
+      body: JSON.stringify({ id: order.id, shiprocketOrderId: order.shiprocketOrderId || '', orderNumber: order.orderNumber }),
     });
-    const d = await res.json();
+    const d = await res.json().catch(() => ({}));
     if (res.ok && d.success) {
-      await patchOrder({ ...order }, { shiprocketStatus: 'CANCELED' });
+      if (!d.notOnShiprocket) await patchOrder({ ...order }, { shiprocketStatus: 'CANCELED' });
       return { ok: true };
     }
-    return { ok: false, error: d.error };
+    // Shiprocket not set up / not reachable: the website order is still cancelled and the
+    // 30-minute sync cancels it on Shiprocket later
+    return { ok: false, error: d.error || 'Could not reach Shiprocket' };
   } catch {
     return { ok: false, error: 'Could not reach the server' };
   }
