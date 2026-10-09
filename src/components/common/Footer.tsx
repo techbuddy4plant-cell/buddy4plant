@@ -23,7 +23,7 @@ const COLUMNS: { title: string; links: LinkItem[] }[] = [
     links: [
       { label: 'Gardening Services', path: '/garden-services' },
       { label: 'Landscaping Projects', path: '/projects' },
-      { label: 'Botanical Blog', path: '/blog' },
+      { label: 'Plant Care Blog', path: '/blog' },
       { label: 'Customer Reviews', path: '/reviews' },
     ],
   },
@@ -76,8 +76,27 @@ export const Footer: React.FC<FooterProps> = ({ navigate }) => {
   };
 
   return (
+    <>
+    {/* help band, half over the page and half over the footer */}
+    <div className="b4p-fixed-theme relative bg-[linear-gradient(to_bottom,transparent_50%,#13301B_50%)] px-4 sm:px-8 lg:px-10">
+      <div className="mx-auto max-w-7xl rounded-3xl bg-[#3E9F5B] px-6 py-10 sm:py-12 text-center">
+        <p className="font-serif text-[1.65rem] sm:text-4xl font-bold leading-tight text-[#0E2716]">
+          Stuck with a plant problem?
+          <br />
+          We&apos;re here to help.
+        </p>
+        <a
+          href={`https://wa.me/${wa}?text=${encodeURIComponent('Hi Buddy4Plant, I need help with my plants')}`}
+          target="_blank"
+          rel="noreferrer"
+          className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#13301B] px-7 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#0C2213]"
+        >
+          <i className="fa-brands fa-whatsapp" aria-hidden="true" /> Chat with us
+        </a>
+      </div>
+    </div>
     <footer className="b4p-fixed-theme relative overflow-hidden bg-[#13301B] text-[#D5E2D0]">
-      <div className="mx-auto max-w-7xl px-5 pt-16 pb-12 sm:px-8 sm:pt-20 lg:px-10 lg:pt-24 lg:pb-16">
+      <div className="mx-auto max-w-7xl px-5 pt-14 pb-12 sm:px-8 sm:pt-16 lg:px-10 lg:pt-20 lg:pb-16">
         <div className="grid gap-14 lg:grid-cols-12 lg:gap-10">
           {/* Brand */}
           <div className="lg:col-span-4">
@@ -87,7 +106,7 @@ export const Footer: React.FC<FooterProps> = ({ navigate }) => {
               </span>
               <span>
                 <span className="block font-serif text-3xl sm:text-4xl font-semibold leading-none text-white">buddy4plant</span>
-                <span className="mt-2 block text-[11px] sm:text-xs font-semibold uppercase tracking-[0.22em] text-[#9CCB8F]">Botanical Sanctuary</span>
+                <span className="mt-2 block text-[11px] sm:text-xs font-semibold uppercase tracking-[0.22em] text-[#9CCB8F]">Nursery &amp; Landscaping</span>
               </span>
             </a>
             <p className="mt-7 max-w-md text-base leading-relaxed text-[#B9CBB3]">
@@ -175,11 +194,6 @@ export const Footer: React.FC<FooterProps> = ({ navigate }) => {
         </div>
       </div>
 
-      {/* Large faded wordmark */}
-      <div aria-hidden="true" className="pointer-events-none select-none overflow-hidden whitespace-nowrap px-4 pb-6 pt-2 text-center font-serif font-semibold leading-[1.1] tracking-tight text-white/[0.08] text-[16vw] lg:text-[11.5rem]">
-        buddy4plant
-      </div>
-
       {/* Bottom bar */}
       <div className="relative bg-[#0C2213]">
         <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-7 pb-28 sm:px-8 lg:flex-row lg:items-center lg:justify-between lg:px-10 lg:pb-7">
@@ -216,6 +230,7 @@ export const Footer: React.FC<FooterProps> = ({ navigate }) => {
         </div>
       </div>
     </footer>
+    </>
   );
 };
 
