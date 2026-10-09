@@ -81,6 +81,10 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ navigate }) => {
             >
               <img
                 src={s.src}
+                srcSet={`${s.src.replace(/\.jpg$/, '-800.webp')} 800w, ${s.src.replace(/\.jpg$/, '.webp')} 1600w`}
+                sizes="(max-width: 1280px) 100vw, 1280px"
+                width={1600}
+                height={900}
                 alt={s.alt}
                 draggable={false}
                 loading={i === 0 ? 'eager' : 'lazy'}
