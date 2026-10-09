@@ -29,7 +29,7 @@ export const BestSellersSection: React.FC<BestSellersSectionProps> = ({
           <div>
             <div className="flex items-center gap-1.5 text-[10px] font-bold text-[#5B6E58] uppercase tracking-[0.24em]">
               <Sparkles className="w-3.5 h-3.5 text-[#1F3B22]" />
-              Signature Botanical Cultivars
+              Customer favourites
             </div>
             <h2 className="font-editorial text-3xl sm:text-4xl lg:text-5xl font-bold text-[#141414] mt-2 tracking-tight">
               Our Bestselling Living Greens
