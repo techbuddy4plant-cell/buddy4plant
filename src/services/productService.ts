@@ -11,7 +11,7 @@ import {
   limit,
   writeBatch
 } from 'firebase/firestore';
-import { db } from '../config/firebase';
+import { db, withTimeout } from '../config/firebase';
 import { Product } from '../types';
 import { INITIAL_PRODUCTS, LEGACY_DEMO_PRODUCT_IDS, STORE_CATALOGUE } from '../data/initialProducts';
 
@@ -112,7 +112,7 @@ export async function seedProductsIfEmpty(): Promise<void> {
 
   try {
     const colRef = collection(db, PRODUCTS_COLLECTION);
-    const snap = await getDocs(query(colRef, limit(1)));
+    const snap = await withTimeout(getDocs(query(colRef, limit(1))));
     if (snap.empty) {
       const batch = writeBatch(db);
       for (const prod of INITIAL_PRODUCTS) {
@@ -123,7 +123,8 @@ export async function seedProductsIfEmpty(): Promise<void> {
           updatedAt: Date.now(),
         });
       }
-      await batch.commit();
+      // saved in the background - the page never waits for it
+      void batch.commit().catch((e) => console.warn('Background save to Firestore failed (kept in this browser):', e));
       if (typeof window !== 'undefined') {
         localStorage.setItem(SEEDED_FLAG_KEY, 'true');
       }
@@ -152,7 +153,7 @@ async function getAllProductsBase(): Promise<Product[]> {
     if (!isSeeded && saved === null) {
       await seedProductsIfEmpty();
     }
-    const snap = await getDocs(collection(db, PRODUCTS_COLLECTION));
+    const snap = await withTimeout(getDocs(collection(db, PRODUCTS_COLLECTION)));
     if (!snap.empty) {
       const remoteProducts = snap.docs
         .map((d) => sanitizeProduct({ id: d.id, ...d.data() } as Product))
@@ -239,7 +240,8 @@ async function getAllProductsWithCatalogue(): Promise<Product[]> {
     const batch = writeBatch(db);
     for (const p of legacy) if (!catalogueIds.has(p.id)) batch.delete(doc(db, PRODUCTS_COLLECTION, p.id));
     for (const p of missing) batch.set(doc(db, PRODUCTS_COLLECTION, p.id), p);
-    await batch.commit();
+    // saved in the background - the page never waits for it
+    void batch.commit().catch((e) => console.warn('Background save to Firestore failed (kept in this browser):', e));
   } catch (error) {
     console.warn('Could not update Firestore catalogue (changes kept locally):', error);
   }
@@ -267,7 +269,8 @@ export async function getAllProducts(): Promise<Product[]> {
   try {
     const batch = writeBatch(db);
     for (const p of changed) batch.set(doc(db, PRODUCTS_COLLECTION, p.id), { images: p.images }, { merge: true });
-    await batch.commit();
+    // saved in the background - the page never waits for it
+    void batch.commit().catch((e) => console.warn('Background save to Firestore failed (kept in this browser):', e));
   } catch (error) {
     console.warn('Could not update product images in Firestore (kept locally):', error);
   }
