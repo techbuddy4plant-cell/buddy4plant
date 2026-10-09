@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { lookupPincode } from '../../utils/pincode';
 import {
   ShieldCheck,
@@ -57,6 +57,9 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ navigate }) => {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('razorpay');
   const [orderNotes, setOrderNotes] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  // second confirmation before an order is placed
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const confirmedRef = useRef(false);
   // Online payment is offered only when the Razorpay keys are set on the server
   const [payConfig, setPayConfig] = useState<PaymentConfig | null>(null);
   useEffect(() => {
@@ -214,6 +217,14 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ navigate }) => {
         return;
       }
     }
+
+    // Ask once more before placing the order (the customer checks address, payment and total)
+    if (!confirmedRef.current) {
+      setConfirmOpen(true);
+      return;
+    }
+    confirmedRef.current = false;
+    setConfirmOpen(false);
 
     setIsProcessing(true);
 
@@ -672,6 +683,62 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ navigate }) => {
                 )}
               </button>
             </form>
+
+            {/* Second confirmation before placing the order */}
+            {confirmOpen && (
+              <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center sm:p-4" role="dialog" aria-modal="true" aria-labelledby="b4p-confirm-title">
+                <div className="absolute inset-0 bg-[#0F1710]/60" onClick={() => setConfirmOpen(false)} />
+                <div className="relative w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[92vh] overflow-y-auto p-5 sm:p-7 text-sm text-[#1A1A1A]">
+                  <h3 id="b4p-confirm-title" className="font-serif font-bold text-xl text-[#13301B]">Confirm your order</h3>
+                  <p className="mt-1 text-[13px] text-[#5A5A5A]">Please check the details below before we place your order.</p>
+
+                  <dl className="mt-5 space-y-3">
+                    <div className="flex justify-between gap-4">
+                      <dt className="text-[#7A7A7A]">Items</dt>
+                      <dd className="font-semibold text-right">{items.reduce((a, c) => a + c.quantity, 0)} item{items.reduce((a, c) => a + c.quantity, 0) === 1 ? '' : 's'}</dd>
+                    </div>
+                    <div className="flex justify-between gap-4">
+                      <dt className="text-[#7A7A7A]">Payment</dt>
+                      <dd className="font-semibold text-right">{paymentMethod === 'cod' ? 'Cash on Delivery' : 'Pay online (Razorpay)'}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-[#7A7A7A]">Deliver to</dt>
+                      <dd className="mt-1 rounded-xl bg-[#F6F3EC] px-3.5 py-3 leading-relaxed">
+                        <span className="font-semibold">{fullName}</span> · {phone}
+                        <br />
+                        {[street, landmark, city, state].filter((x) => x && x.trim()).join(', ')} - {pincode}
+                      </dd>
+                    </div>
+                    <div className="flex justify-between gap-4 border-t border-[#EEE9DE] pt-3 text-base">
+                      <dt className="font-semibold">Total to pay</dt>
+                      <dd className="font-bold text-[#13301B]">₹{total.toLocaleString('en-IN')}</dd>
+                    </div>
+                  </dl>
+
+                  <div className="mt-6 flex flex-col-reverse sm:flex-row gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setConfirmOpen(false)}
+                      className="flex-1 py-3.5 rounded-full border border-[#D9D2C3] text-[#13301B] font-semibold hover:bg-[#F6F3EC]"
+                    >
+                      Go back &amp; edit
+                    </button>
+                    <button
+                      type="button"
+                      autoFocus
+                      disabled={isProcessing}
+                      onClick={() => {
+                        confirmedRef.current = true;
+                        (document.getElementById('checkout-form') as HTMLFormElement | null)?.requestSubmit();
+                      }}
+                      className="flex-1 py-3.5 rounded-full bg-[#13301B] hover:bg-[#1F4A2B] text-white font-semibold disabled:opacity-50"
+                    >
+                      {paymentMethod === 'cod' ? 'Yes, place my order' : 'Yes, continue to pay'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Right Summary: Order Items & Pricing Breakdown */}
