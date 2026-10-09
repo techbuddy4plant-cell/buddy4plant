@@ -12,6 +12,7 @@ export default defineConfig(() => {
         output: {
           manualChunks(id: string) {
             if (!id.includes('node_modules')) return undefined;
+            if (/[\/]@?firebase[\/](analytics|installations)|@firebase[\/](analytics|installations)/.test(id)) return 'vendor-firebase-analytics';
             if (id.includes('firebase') || id.includes('@firebase')) return 'vendor-firebase';
             if (id.includes('react-dom') || id.includes('/react/') || id.includes('scheduler')) return 'vendor-react';
             if (id.includes('motion') || id.includes('framer')) return 'vendor-motion';
