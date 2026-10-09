@@ -1,23 +1,25 @@
 import React, { useEffect } from 'react';
-import { Clock, MapPin, MessageCircle, Navigation, Phone, Truck } from '../common/Icons';
+import { Clock, MapPin, MessageCircle, Navigation, Truck } from '../common/Icons';
+
+/** The nursery's pin on Google Maps */
+const STORE_MAPS_LINK = 'https://maps.app.goo.gl/kF5HbobUaLwzu3vu9';
 import { useStoreSettings } from '../../context/StoreSettingsContext';
 import { setSeo } from '../../utils/seo';
 
-/** "Locate Our Store" - address, map, directions, call and WhatsApp. Details come from Admin > Settings. */
+/** "Locate Our Store" - address, map, directions and WhatsApp. Details come from Admin > Settings. */
 export const StoreLocatorPage: React.FC<{ navigate: (path: string) => void }> = ({ navigate }) => {
   const { settings } = useStoreSettings();
   const address = settings.storeAddress || 'Lucknow, Uttar Pradesh, India';
   const phone = settings.contactPhone || settings.whatsappSupportNumber || '';
-  const phoneDigits = phone.replace(/\D/g, '');
   const waDigits = (settings.whatsappSupportNumber || phone).replace(/\D/g, '');
   const mapsQuery = `Buddy4Plant, ${address}`;
-  const directions = settings.storeMapsUrl || `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(mapsQuery)}`;
+  const directions = settings.storeMapsUrl || STORE_MAPS_LINK;
   const embed = `https://www.google.com/maps?q=${encodeURIComponent(mapsQuery)}&output=embed`;
 
   useEffect(() => {
     setSeo({
       title: 'Locate Our Store - Buddy4Plant Nursery, Lucknow',
-      description: `Visit the Buddy4Plant nursery: ${address}. Get directions, call or WhatsApp us for plants, pots and gardening services across Uttar Pradesh and Delhi.`,
+      description: `Visit the Buddy4Plant nursery: ${address}. Get directions or WhatsApp us for plants, pots and gardening services across Uttar Pradesh and Delhi.`,
       path: '/store-locator',
     });
   }, [address]);
@@ -74,20 +76,6 @@ export const StoreLocatorPage: React.FC<{ navigate: (path: string) => void }> = 
               </div>
             )}
 
-            {phone && (
-              <div className="flex gap-3">
-                <span className="w-10 h-10 rounded-2xl bg-[#EBF5EC] text-[#1F3B22] flex items-center justify-center shrink-0">
-                  <Phone className="w-5 h-5" />
-                </span>
-                <div>
-                  <span className="block text-[10px] font-bold uppercase tracking-wider text-[#7A7A7A]">Phone &amp; WhatsApp</span>
-                  <a href={`tel:+${phoneDigits}`} className="text-sm font-semibold text-[#142B1A] hover:underline">
-                    {phone}
-                  </a>
-                </div>
-              </div>
-            )}
-
             <div className="flex gap-3">
               <span className="w-10 h-10 rounded-2xl bg-[#EBF5EC] text-[#1F3B22] flex items-center justify-center shrink-0">
                 <Truck className="w-5 h-5" />
@@ -98,23 +86,15 @@ export const StoreLocatorPage: React.FC<{ navigate: (path: string) => void }> = 
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3 gap-2 pt-1 mt-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-2 pt-1 mt-auto">
               <a
                 href={directions}
                 target="_blank"
                 rel="noreferrer"
                 className="px-4 py-3 rounded-xl bg-[#1F3B22] hover:bg-[#162D19] text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2"
               >
-                <Navigation className="w-4 h-4" /> Directions
+                <Navigation className="w-4 h-4" /> Open in Google Maps
               </a>
-              {phoneDigits && (
-                <a
-                  href={`tel:+${phoneDigits}`}
-                  className="px-4 py-3 rounded-xl border border-[#1F3B22] text-[#1F3B22] hover:bg-[#EBF5EC] text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2"
-                >
-                  <Phone className="w-4 h-4" /> Call
-                </a>
-              )}
               {waDigits && (
                 <a
                   href={`https://wa.me/${waDigits}?text=${encodeURIComponent('Hi Buddy4Plant, I would like to visit your store. Please share the location.')}`}
