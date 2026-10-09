@@ -69,7 +69,7 @@ export const Buddy4PlantLogo: React.FC<Buddy4PlantLogoProps> = ({
             buddy<span className="text-[#8C5835] font-extrabold mx-0.5">4</span>plant
           </span>
           <span className="b4p-logo-sub hidden sm:block text-[9px] sm:text-[10px] tracking-[0.22em] text-[#5A6E55] uppercase font-semibold mt-0.5">
-            Botanical Sanctuary
+            Nursery &amp; Landscaping
           </span>
         </div>
       )}
