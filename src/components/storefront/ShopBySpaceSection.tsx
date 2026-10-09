@@ -49,7 +49,7 @@ export const ShopBySpaceSection: React.FC<ShopBySpaceProps> = ({ navigate, produ
             {homepageCMS.livingSpacesTitle || 'Shop by Living Space'}
           </h2>
           <p className="text-sm sm:text-base text-[#5A5A5A] mt-3 leading-relaxed">
-            {homepageCMS.livingSpacesSubtitle || 'Plants picked for the light and space of each room.'}
+            {homepageCMS.livingSpacesSubtitle && !homepageCMS.livingSpacesSubtitle.startsWith('Every room possesses') ? homepageCMS.livingSpacesSubtitle : 'Every room gets different light. Pick plants that will be happy in yours.'}
           </p>
         </div>
 
