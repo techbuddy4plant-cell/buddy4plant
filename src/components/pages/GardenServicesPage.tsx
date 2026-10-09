@@ -535,6 +535,9 @@ const ChoiceChips: React.FC<{ label: string; options: string[]; value: string; o
   </fieldset>
 );
 
+/** We do not offer free site visits: older saved button text that says so is replaced */
+const noFreeVisit = (text: string | undefined, fallback: string) => (!text || /free\s+site\s+visit/i.test(text) ? fallback : text);
+
 /** "Full Name *" -> "Full Name*" for use as a placeholder */
 const asPlaceholder = (label: string) => label.replace(/\s+\*$/, '*');
 
@@ -759,7 +762,7 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
                   onClick={scrollToForm}
                   className="px-7 py-3.5 rounded-full bg-[#F3EEE3] hover:bg-white text-[#142817] text-sm font-semibold inline-flex items-center gap-2 transition-colors"
                 >
-                  {C.hero.primaryButton || 'Book Site Visit & Quote'} <ArrowRight className="w-4 h-4" />
+                  {noFreeVisit(C.hero.primaryButton, 'Plan My Dream Garden')} <ArrowRight className="w-4 h-4" />
                 </button>
                 <a
                   href={`https://wa.me/${whatsappNum}?text=${encodeURIComponent(C.hero.whatsappMessage || 'Hi Buddy4Plant, I want to book a gardening consultation')}`}
@@ -1192,7 +1195,7 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
                             </>
                           ) : (
                             <>
-                              {isHelp ? C.form.helpSubmitButton : C.form.submitButton} <ArrowRight className="w-4 h-4" />
+                              {isHelp ? C.form.helpSubmitButton : noFreeVisit(C.form.submitButton, 'Get My Garden Plan & Quote')} <ArrowRight className="w-4 h-4" />
                             </>
                           )}
                         </button>
@@ -1236,10 +1239,7 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
             <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm">
               <span className="text-[#6B645A]">Prefer to talk?</span>
               <a href={`https://wa.me/${whatsappNum}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 font-semibold text-[#1F4A2C] hover:text-[#1F6B3A]">
-                <MessageCircle className="w-4 h-4 text-[#1FA855]" /> WhatsApp {prettyPhone(whatsappNum)}
-              </a>
-              <a href={`tel:+${whatsappNum}`} className="inline-flex items-center gap-2 font-semibold text-[#1F4A2C] hover:text-[#1F6B3A]">
-                <Phone className="w-4 h-4" /> {C.contact.callLabel || 'Call us'}
+                <MessageCircle className="w-4 h-4 text-[#1FA855]" /> Chat on WhatsApp
               </a>
               {settings.contactEmail && (
                 <a href={`mailto:${settings.contactEmail}`} className="inline-flex items-center gap-2 font-semibold text-[#1F4A2C] hover:text-[#1F6B3A]">
