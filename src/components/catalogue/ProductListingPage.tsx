@@ -331,7 +331,7 @@ export const ProductListingPage: React.FC<ProductListingPageProps> = ({
         <div className="mb-8 sm:mb-12">
           <div className="max-w-3xl">
             <span className="text-[11px] font-bold text-[#486B44] uppercase tracking-[0.26em] block mb-2 font-sans">
-              {isGiftingSection ? 'GIFTS THAT GROW' : isPlantCareSection ? 'PLANT NUTRITION & DOCTOR CARE' : isPotsSection ? 'ARTISANAL PLANTERS' : 'BOTANICAL SANCTUARY'}
+              {isGiftingSection ? 'GIFTS THAT GROW' : isPlantCareSection ? 'PLANT NUTRITION & DOCTOR CARE' : isPotsSection ? 'ARTISANAL PLANTERS' : 'NURSERY-GROWN PLANTS'}
             </span>
             <h1 className="font-editorial text-4xl sm:text-5xl lg:text-[3.6rem] font-bold text-[#141C14] tracking-tight leading-[1.08]">
               {isGiftingSection
