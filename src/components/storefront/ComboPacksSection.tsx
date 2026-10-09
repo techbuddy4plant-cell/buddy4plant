@@ -36,7 +36,7 @@ export const ComboPacksSection: React.FC<ComboPacksSectionProps> = ({
           <div>
             <div className="flex items-center gap-1.5 text-[10px] font-bold text-[#A3B899] uppercase tracking-[0.25em]">
               <Gift className="w-3.5 h-3.5" />
-              Gift Boxes &amp; Turnkey Value Duos
+              Plant sets &amp; gift boxes
             </div>
             <h2 className="font-serif text-3xl sm:text-4xl font-normal text-[#FDFCF9] mt-1">
               Curated Plant Combos
