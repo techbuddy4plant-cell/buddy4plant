@@ -199,7 +199,6 @@ export const PlantDoctorPage: React.FC = () => {
 export const ContactUsPage: React.FC = () => {
   const { settings } = useStoreSettings();
   const wa = (settings.whatsappSupportNumber || settings.contactPhone || '918004881668').replace(/\D/g, '');
-  const displayPhone = settings.whatsappSupportNumber || settings.contactPhone || '+91 80048 81668';
   const email = settings.contactEmail || 'contactus@buddy4plant.in';
 
   const [formData, setFormData] = useState({
@@ -274,7 +273,6 @@ export const ContactUsPage: React.FC = () => {
               </p>
             </div>
             <div className="pt-4 border-t border-[#EFE8DD] space-y-3">
-              <span className="text-xs font-semibold text-[#182018] block">{displayPhone}</span>
               <a
                 href={`https://wa.me/${wa}?text=Hi%20Buddy4Plant%20Team,%20I%20would%20like%20assistance`}
                 target="_blank"
@@ -713,7 +711,7 @@ export const TermsAndConditionsPage: React.FC<{ navigate?: (path: string) => voi
               <strong>Entity Name:</strong> Buddy4Plant Botanical Nursery<br />
               <strong>Operating Address:</strong> {address}<br />
               <strong>Support Email:</strong> <a href={`mailto:${email}`} className="text-[#1A3824] underline">{email}</a><br />
-              <strong>Helpline:</strong> <a href={`tel:${phone}`} className="text-[#1A3824] underline">{phone}</a>
+              <strong>WhatsApp:</strong> <a href={`https://wa.me/${phone.replace(/\D/g, '')}`} target="_blank" rel="noreferrer" className="text-[#1A3824] underline">Chat with us</a>
             </p>
           </div>
         </div>
