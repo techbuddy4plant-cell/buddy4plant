@@ -4,7 +4,8 @@
 //   SHIPROCKET_PICKUP_LOCATION              - pickup location nickname exactly as in Shiprocket (default "Primary")
 //   SHIPROCKET_BOX_CM                       - optional default box "length,breadth,height" (default 25,25,35)
 //   SHIPROCKET_WEIGHT_PER_ITEM_KG           - optional (default 0.5)
-// Only orders with a confirmed Razorpay payment are accepted, so nobody can create fake shipments.
+// Online orders need a confirmed Razorpay payment; COD orders are checked against the saved order,
+// so nobody can create fake shipments. syncAll() keeps the website and Shiprocket in step.
 
 const API = 'https://apiv2.shiprocket.in/v1/external';
 
@@ -27,18 +28,69 @@ const fetch = (url, init = {}) => {
 
 const configured = () => Boolean(env('SHIPROCKET_EMAIL') && env('SHIPROCKET_PASSWORD'));
 
-// Shiprocket tokens last 10 days; keep one for 8 days while this function instance is warm
-let cached = { token: '', at: 0 };
+// ---- Login handling ----
+// Shiprocket blocks an API user after a few failed logins, so:
+//  1. one token is shared by every server instance (Cloudflare cache) and reused for 8 days
+//  2. after a failed login, no new login is tried for 30 minutes with the same email+password
+//     (changing the password in the dashboard lifts the pause straight away)
+const TOKEN_DAYS = 8;
+const FAIL_PAUSE_MIN = 30;
+let cached = { token: '', at: 0, key: '' };
+const memFail = new Map(); // backup for the failed-login pause when the shared cache is not available
+const sha = async (text) => {
+  const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return [...new Uint8Array(b)].slice(0, 12).map((x) => x.toString(16).padStart(2, '0')).join('');
+};
+const edgeCache = () => (globalThis.caches && globalThis.caches.default) || null;
+const cacheGet = async (key) => {
+  try {
+    const c = edgeCache();
+    const r = c && (await c.match(`https://b4p-internal.cache/${key}`));
+    return r ? await r.json() : null;
+  } catch { return null; }
+};
+const cachePut = async (key, value, seconds) => {
+  try {
+    const c = edgeCache();
+    if (c) await c.put(`https://b4p-internal.cache/${key}`, new Response(JSON.stringify(value), { headers: { 'Cache-Control': `max-age=${seconds}` } }));
+  } catch { /* ignore */ }
+};
+const cacheDelete = async (key) => {
+  try { const c = edgeCache(); if (c) await c.delete(`https://b4p-internal.cache/${key}`); } catch { /* ignore */ }
+};
+
 async function token(force = false) {
-  if (!force && cached.token && Date.now() - cached.at < 8 * 86400000) return cached.token;
+  const userKey = await sha('u:' + env('SHIPROCKET_EMAIL'));
+  const credKey = await sha('c:' + env('SHIPROCKET_EMAIL') + ':' + env('SHIPROCKET_PASSWORD'));
+  const fresh = (t) => t && t.token && Date.now() - t.at < TOKEN_DAYS * 86400000;
+  if (!force) {
+    if (cached.key === userKey && fresh(cached)) return cached.token;
+    const shared = await cacheGet(`sr-token-${userKey}`);
+    if (fresh(shared)) { cached = { ...shared, key: userKey }; return shared.token; }
+  }
+  const failed = (await cacheGet(`sr-fail-${credKey}`)) || memFail.get(credKey);
+  if (failed && Date.now() - failed.at < FAIL_PAUSE_MIN * 60000) {
+    throw new Error(`Shiprocket login paused after a failed attempt (${failed.message}). It is tried again ${Math.ceil((FAIL_PAUSE_MIN * 60000 - (Date.now() - failed.at)) / 60000)} min from now, or straight away once the password is changed.`);
+  }
   const r = await fetch(`${API}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email: env('SHIPROCKET_EMAIL'), password: env('SHIPROCKET_PASSWORD') }),
   });
   const d = await r.json().catch(() => ({}));
-  if (!r.ok || !d.token) throw new Error(d.message || 'Shiprocket login failed - check the API user email and password');
-  cached = { token: d.token, at: Date.now() };
+  if (!r.ok || !d.token) {
+    const message = String(d.message || `login failed (${r.status})`).slice(0, 160);
+    // wrong password / blocked user: pause; Shiprocket being down (5xx): don't
+    if (r.status < 500) {
+      memFail.set(credKey, { at: Date.now(), message });
+      await cachePut(`sr-fail-${credKey}`, { at: Date.now(), message }, FAIL_PAUSE_MIN * 60);
+    }
+    throw new Error(`Shiprocket login failed: ${message}`);
+  }
+  cached = { token: d.token, at: Date.now(), key: userKey };
+  memFail.delete(credKey);
+  await cacheDelete(`sr-fail-${credKey}`);
+  await cachePut(`sr-token-${userKey}`, { token: d.token, at: cached.at }, TOKEN_DAYS * 86400);
   return d.token;
 }
 async function sr(path, init = {}, retry = true) {
@@ -175,6 +227,169 @@ function buildShiprocketOrder(order) {
   };
 }
 
+
+/** Creates the order on Shiprocket. Returns { success, shiprocketOrderId, shipmentId, status } or { success:false, error }. */
+async function createInShiprocket(order) {
+  const r = await sr('/orders/create/adhoc', { method: 'POST', body: JSON.stringify(buildShiprocketOrder(order)) });
+  const d = r.data || {};
+  if (!r.ok || !d.order_id) {
+    console.error('Shiprocket create failed', r.status, JSON.stringify(d).slice(0, 800));
+    const msg = d.message || (d.errors && Object.values(d.errors).flat().join(' ')) || 'Shiprocket did not accept the order';
+    return { success: false, error: String(msg).slice(0, 300) };
+  }
+  return { success: true, shiprocketOrderId: String(d.order_id), shipmentId: String(d.shipment_id || ''), status: d.status || 'NEW' };
+}
+
+/** Live shipping details: status, AWB, courier, expected delivery, tracking link and courier scans. */
+async function trackShiprocket(orderId, shipmentId) {
+  const out = { success: true, status: '', awb: '', courier: '', etd: '', location: '', trackUrl: '', activities: [] };
+
+  if (orderId) {
+    const o = await sr(`/orders/show/${orderId}`);
+    const d = o.data?.data || {};
+    const sh = Array.isArray(d.shipments) ? d.shipments[0] || {} : d.shipments || {};
+    out.status = clean(d.status, 60);
+    out.awb = clean(sh.awb || d.awb_data?.awb, 40);
+    out.courier = clean(sh.courier || sh.sr_courier_name, 80);
+    out.etd = clean(sh.etd || d.etd_date || '', 40);
+  }
+  if (shipmentId && (out.awb || !orderId)) {
+    const t = await sr(`/courier/track/shipment/${shipmentId}`);
+    const td = t.data?.tracking_data || {};
+    const tr = (td.shipment_track || [])[0] || {};
+    out.awb = out.awb || clean(tr.awb_code, 40);
+    out.courier = out.courier || clean(tr.courier_name, 80);
+    out.status = clean(tr.current_status, 60) || out.status;
+    out.etd = clean(td.etd || tr.edd || out.etd, 40);
+    out.trackUrl = clean(td.track_url, 200);
+    out.activities = (td.shipment_track_activities || []).slice(0, 25).map((x) => ({
+      date: clean(x.date, 30),
+      activity: clean(x.activity || x['sr-status-label'], 160),
+      location: clean(x.location, 80),
+    }));
+    out.location = out.activities[0]?.location || '';
+  }
+  return out;
+}
+
+// ---- Background sync (runs every 30 minutes from the Cloudflare cron, see wrangler.jsonc) ----
+// Sends waiting orders to Shiprocket and copies status / AWB / courier / delivery date back to the website.
+const FS_DOCS = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT}/databases/(default)/documents`;
+const toFs = (v) => {
+  if (v === null || v === undefined) return { nullValue: null };
+  if (typeof v === 'boolean') return { booleanValue: v };
+  if (typeof v === 'number') return Number.isInteger(v) ? { integerValue: String(v) } : { doubleValue: v };
+  if (Array.isArray(v)) return { arrayValue: { values: v.map(toFs) } };
+  if (typeof v === 'object') return { mapValue: { fields: Object.fromEntries(Object.entries(v).map(([k, x]) => [k, toFs(x)])) } };
+  return { stringValue: String(v) };
+};
+async function patchOrderDoc(id, fields) {
+  const keys = Object.keys(fields);
+  if (!keys.length) return;
+  const mask = keys.map((k) => `updateMask.fieldPaths=${encodeURIComponent(k)}`).join('&');
+  const r = await fetch(`${FS_DOCS}/orders/${encodeURIComponent(id)}?${mask}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ fields: Object.fromEntries(keys.map((k) => [k, toFs(fields[k])])) }),
+  });
+  if (!r.ok) console.error('order update failed', id, r.status, (await r.text()).slice(0, 200));
+}
+async function recentOrders(days = 30) {
+  const r = await fetch(`${FS_DOCS}:runQuery`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      structuredQuery: {
+        from: [{ collectionId: 'orders' }],
+        where: { fieldFilter: { field: { fieldPath: 'createdAt' }, op: 'GREATER_THAN_OR_EQUAL', value: { integerValue: String(Date.now() - days * 86400000) } } },
+        limit: 300,
+      },
+    }),
+  });
+  if (!r.ok) throw new Error(`Could not read orders (${r.status})`);
+  const rows = await r.json();
+  return rows.filter((x) => x.document).map((x) => ({ ...fsObject(x.document.fields || {}), id: x.document.name.split('/').pop() }));
+}
+const RANK = ['Pending', 'Confirmed', 'Processing', 'Packed', 'Shipped', 'Out for Delivery', 'Delivered'];
+function mapStatus(s) {
+  const t = String(s || '').toUpperCase();
+  if (/RTO|CANCEL|LOST|DAMAGED|UNDELIVERED/.test(t)) return null;
+  if (/^DELIVERED/.test(t)) return 'Delivered';
+  if (/OUT FOR DELIVERY/.test(t)) return 'Out for Delivery';
+  if (/IN TRANSIT|SHIPPED|PICKED UP|REACHED|DESTINATION HUB/.test(t)) return 'Shipped';
+  if (/PICKUP|READY TO SHIP|AWB|MANIFEST|PACKED|INVOICED/.test(t)) return 'Packed';
+  return null;
+}
+
+export async function syncAll() {
+  const report = { sent: [], updated: [], errors: [] };
+  if (!configured()) return { ...report, errors: ['Shiprocket is not set up'] };
+  await token(); // stop early (without touching orders) if the login is not working
+  const orders = await recentOrders();
+  const open = orders.filter((o) => !['Cancelled', 'Refunded', 'Delivered'].includes(o.orderStatus));
+  let budget = 8; // keep within Cloudflare's per-run request limit
+
+  // 1. orders that never reached Shiprocket (older than 10 min, so the checkout page has had its turn)
+  const waiting = open.filter((o) =>
+    !o.shiprocketOrderId &&
+    Number(o.shiprocketTries || 0) < 5 &&
+    Date.now() - Number(o.createdAt || 0) > 10 * 60000 &&
+    (o.paymentMethod === 'cod' ? Date.now() - Number(o.createdAt) < 7 * 86400000 : o.paymentMethod === 'razorpay' && o.paymentStatus === 'paid'));
+  for (const o of waiting) {
+    if (budget-- <= 0) break;
+    try {
+      const problem = o.paymentMethod === 'cod' ? '' : await paidOnRazorpay(o);
+      const made = problem ? { success: false, error: problem } : await createInShiprocket(o);
+      if (made.success) {
+        await patchOrderDoc(o.id, { shiprocketOrderId: made.shiprocketOrderId, shiprocketShipmentId: made.shipmentId, shiprocketStatus: made.status, shiprocketError: '', updatedAt: Date.now() });
+        report.sent.push(o.orderNumber);
+      } else {
+        await patchOrderDoc(o.id, { shiprocketError: made.error, shiprocketTries: Number(o.shiprocketTries || 0) + 1, updatedAt: Date.now() });
+        report.errors.push(`${o.orderNumber}: ${made.error}`);
+      }
+    } catch (e) {
+      report.errors.push(`${o.orderNumber}: ${e.message || e}`);
+      if (/login/i.test(String(e.message))) break;
+    }
+  }
+
+  // 2. orders already on Shiprocket: copy the latest shipping details back
+  const shipped = open
+    .filter((o) => o.shiprocketOrderId || o.shiprocketShipmentId)
+    .sort((a, b) => Number(a.shiprocketSyncedAt || 0) - Number(b.shiprocketSyncedAt || 0));
+  for (const o of shipped) {
+    if (budget-- <= 0) break;
+    try {
+      const t = await trackShiprocket(String(o.shiprocketOrderId || '').replace(/\D/g, ''), String(o.shiprocketShipmentId || '').replace(/\D/g, ''));
+      const f = { shiprocketSyncedAt: Date.now() };
+      if (t.status && t.status !== o.shiprocketStatus) f.shiprocketStatus = t.status;
+      if (t.awb && t.awb !== o.trackingNumber) f.trackingNumber = t.awb;
+      if (t.courier && t.courier !== o.deliveryCourier) f.deliveryCourier = t.courier;
+      if (t.location && t.location !== o.currentLocation) f.currentLocation = t.location;
+      if (t.etd && t.etd !== o.estimatedDeliveryDate) f.estimatedDeliveryDate = t.etd;
+      if (t.trackUrl && t.trackUrl !== o.shiprocketTrackUrl) f.shiprocketTrackUrl = t.trackUrl;
+      const next = mapStatus(t.status);
+      if (next && RANK.indexOf(next) > RANK.indexOf(o.orderStatus)) {
+        f.orderStatus = next;
+        f.statusHistory = [...(Array.isArray(o.statusHistory) ? o.statusHistory : []), {
+          status: next,
+          timestamp: Date.now(),
+          location: t.location || o.currentLocation || 'In transit',
+          note: `${t.status}${t.courier ? ` - ${t.courier}` : ''}${t.awb ? ` (AWB ${t.awb})` : ''}`,
+        }];
+        if (next === 'Delivered' && o.paymentMethod === 'cod') f.paymentStatus = 'paid';
+      }
+      const changed = Object.keys(f).length > 1;
+      if (changed) f.updatedAt = Date.now();
+      await patchOrderDoc(o.id, f);
+      if (changed) report.updated.push(`${o.orderNumber}: ${t.status || ''}${t.awb ? ' AWB ' + t.awb : ''}`);
+    } catch (e) {
+      report.errors.push(`${o.orderNumber}: ${e.message || e}`);
+    }
+  }
+  return report;
+}
+
 export default async (req) => {
   const url = new URL(req.url);
   const action = url.pathname.replace(/\/+$/, '').split('/').pop();
@@ -185,7 +400,7 @@ export default async (req) => {
     const emailUsed = em ? em.replace(/^(.{3}).*(@.*)$/, '$1***$2') : '';
     if (url.searchParams.get('test') === '1' && configured()) {
       try {
-        await token(true);
+        await token(false);
         const p = await sr('/settings/company/pickup');
         const names = (p.data?.data?.shipping_address || []).map((x) => x.pickup_location);
         const want = env('SHIPROCKET_PICKUP_LOCATION') || 'Primary';
@@ -198,6 +413,19 @@ export default async (req) => {
   }
 
   if (!configured()) return json({ success: false, error: 'Shiprocket is not set up yet' }, 503);
+
+  // Run the background sync now (at most once every 2 minutes): /api/shiprocket/sync
+  if (action === 'sync' && req.method === 'GET') {
+    const last = await cacheGet('sr-sync-last');
+    if (last && Date.now() - last.at < 120000) return json({ success: true, skipped: 'Synced less than 2 minutes ago', last: last.report });
+    try {
+      const report = await syncAll();
+      await cachePut('sr-sync-last', { at: Date.now(), report }, 300);
+      return json({ success: true, ...report });
+    } catch (e) {
+      return json({ success: false, error: String(e.message || e) }, 500);
+    }
+  }
 
   if (action === 'create-order' && req.method === 'POST') {
     try {
@@ -222,14 +450,9 @@ export default async (req) => {
         if (problem) return json({ success: false, error: problem }, 400);
       }
 
-      const r = await sr('/orders/create/adhoc', { method: 'POST', body: JSON.stringify(buildShiprocketOrder(order)) });
-      const d = r.data || {};
-      if (!r.ok || !d.order_id) {
-        console.error('Shiprocket create failed', r.status, JSON.stringify(d).slice(0, 800));
-        const msg = d.message || (d.errors && Object.values(d.errors).flat().join(' ')) || 'Shiprocket did not accept the order';
-        return json({ success: false, error: String(msg).slice(0, 300) }, 400);
-      }
-      return json({ success: true, shiprocketOrderId: String(d.order_id), shipmentId: String(d.shipment_id || ''), status: d.status || 'NEW' });
+      const made = await createInShiprocket(order);
+      if (!made.success) return json(made, 400);
+      return json(made);
     } catch (e) {
       console.error('shiprocket create-order', e);
       return json({ success: false, error: String(e.message || 'Could not reach Shiprocket') }, 500);
@@ -265,34 +488,7 @@ export default async (req) => {
       const orderId = (url.searchParams.get('order') || '').replace(/\D/g, '');
       const shipmentId = (url.searchParams.get('shipment') || '').replace(/\D/g, '');
       if (!orderId && !shipmentId) return json({ success: false, error: 'Missing order' }, 400);
-      const out = { success: true, status: '', awb: '', courier: '', etd: '', location: '', trackUrl: '', activities: [] };
-
-      if (orderId) {
-        const o = await sr(`/orders/show/${orderId}`);
-        const d = o.data?.data || {};
-        const sh = Array.isArray(d.shipments) ? d.shipments[0] || {} : d.shipments || {};
-        out.status = clean(d.status, 60);
-        out.awb = clean(sh.awb || d.awb_data?.awb, 40);
-        out.courier = clean(sh.courier || sh.sr_courier_name, 80);
-        out.etd = clean(sh.etd || d.etd_date || '', 40);
-      }
-      if (shipmentId && (out.awb || !orderId)) {
-        const t = await sr(`/courier/track/shipment/${shipmentId}`);
-        const td = t.data?.tracking_data || {};
-        const tr = (td.shipment_track || [])[0] || {};
-        out.awb = out.awb || clean(tr.awb_code, 40);
-        out.courier = out.courier || clean(tr.courier_name, 80);
-        out.status = clean(tr.current_status, 60) || out.status;
-        out.etd = clean(td.etd || tr.edd || out.etd, 40);
-        out.trackUrl = clean(td.track_url, 200);
-        out.activities = (td.shipment_track_activities || []).slice(0, 25).map((x) => ({
-          date: clean(x.date, 30),
-          activity: clean(x.activity || x['sr-status-label'], 160),
-          location: clean(x.location, 80),
-        }));
-        out.location = out.activities[0]?.location || '';
-      }
-      return json(out);
+      return json(await trackShiprocket(orderId, shipmentId));
     } catch (e) {
       console.error('shiprocket track', e);
       return json({ success: false, error: 'Could not reach Shiprocket' }, 500);

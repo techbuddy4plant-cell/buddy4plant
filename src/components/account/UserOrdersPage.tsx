@@ -25,6 +25,7 @@ import { useCart } from '../../context/CartContext';
 import { Order, OrderItem, Product } from '../../types';
 import { getCustomerOrders, requestOrderReturn } from '../../services/orderService';
 import { CancelOrderModal } from '../order/CancelOrderModal';
+import { syncShiprocket } from '../../services/shiprocketService';
 import { getProductById, getProductBySlug } from '../../services/productService';
 import { submitReview } from '../../services/reviewService';
 import { PlantImage } from '../../utils/imageFallback';
@@ -93,6 +94,28 @@ export const UserOrdersPage: React.FC<UserOrdersPageProps> = ({ navigate }) => {
       }
     };
   }, [user, profile]);
+
+  // Bring the latest courier, AWB and delivery status from Shiprocket for orders still on their way
+  const openShipmentKey = orders
+    .filter((o) => (o.shiprocketOrderId || o.shiprocketShipmentId) && !['Delivered', 'Cancelled', 'Refunded'].includes(o.orderStatus))
+    .map((o) => o.id)
+    .join(',');
+  useEffect(() => {
+    if (!openShipmentKey) return;
+    let alive = true;
+    (async () => {
+      let changed = false;
+      for (const o of orders.filter((x) => openShipmentKey.split(',').includes(x.id))) {
+        const t = await syncShiprocket(o);
+        if (t) changed = true;
+      }
+      if (alive && changed) fetchOrders();
+    })();
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openShipmentKey]);
 
   if (!user && !profile) {
     return (

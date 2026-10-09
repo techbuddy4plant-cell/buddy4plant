@@ -1,6 +1,6 @@
 import { printInvoice } from '../../utils/invoice';
 import { useStoreSettings } from '../../context/StoreSettingsContext';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { realShipping } from '../../utils/shipping';
 import { pushOrderToShiprocket, syncShiprocket } from '../../services/shiprocketService';
 import {
@@ -37,6 +37,12 @@ interface AdminOrdersProps {
 }
 
 export const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, onRefresh }) => {
+  // Opening Orders asks the server to sync with Shiprocket now (it also runs by itself every 30 minutes):
+  // waiting orders are sent, and AWB / courier / status come back into the list.
+  useEffect(() => {
+    fetch('/api/shiprocket/sync').then(() => onRefresh && onRefresh()).catch(() => undefined);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const { settings: invoiceSettings } = useStoreSettings();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');

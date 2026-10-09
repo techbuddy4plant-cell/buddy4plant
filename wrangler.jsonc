@@ -16,6 +16,8 @@
     { "pattern": "buddy4plant.in", "custom_domain": true }
   ],
   "workers_dev": true,
+  // keeps orders in step with Shiprocket (sends waiting orders, brings back AWB / courier / status)
+  "triggers": { "crons": ["*/30 * * * *"] },
   // non-secret settings; SHIPROCKET_EMAIL and all passwords/keys are set only in the Cloudflare dashboard
   "vars": {
     "SHIPROCKET_PICKUP_LOCATION": "Home"
