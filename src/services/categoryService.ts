@@ -8,7 +8,7 @@ import {
   limit,
   writeBatch
 } from 'firebase/firestore';
-import { db } from '../config/firebase';
+import { db, withTimeout } from '../config/firebase';
 import { Category } from '../types';
 import { INITIAL_CATEGORIES, REQUIRED_CATEGORY_IDS } from '../data/initialCategories';
 
@@ -102,14 +102,15 @@ export async function seedCategoriesIfEmpty(): Promise<void> {
 
   try {
     const colRef = collection(db, CATEGORIES_COLLECTION);
-    const snap = await getDocs(query(colRef, limit(1)));
+    const snap = await withTimeout(getDocs(query(colRef, limit(1))));
     if (snap.empty) {
       const batch = writeBatch(db);
       for (const cat of INITIAL_CATEGORIES) {
         const docRef = doc(db, CATEGORIES_COLLECTION, cat.id);
         batch.set(docRef, cat);
       }
-      await batch.commit();
+      // saved in the background - the page never waits for it
+      void batch.commit().catch((e) => console.warn('Background save to Firestore failed (kept in this browser):', e));
       if (typeof window !== 'undefined') {
         localStorage.setItem(SEEDED_FLAG_KEY, 'true');
       }
@@ -137,7 +138,7 @@ async function getAllCategoriesBase(): Promise<Category[]> {
     if (!isSeeded && saved === null) {
       await seedCategoriesIfEmpty();
     }
-    const snap = await getDocs(collection(db, CATEGORIES_COLLECTION));
+    const snap = await withTimeout(getDocs(collection(db, CATEGORIES_COLLECTION)));
     if (!snap.empty) {
       const cats = snap.docs
         .map((d) => sanitizeCategory({ id: d.id, ...d.data() } as Category))
@@ -205,7 +206,8 @@ export async function getAllCategories(): Promise<Category[]> {
   try {
     const batch = writeBatch(db);
     for (const cat of missing) batch.set(doc(db, CATEGORIES_COLLECTION, cat.id), cat);
-    await batch.commit();
+    // saved in the background - the page never waits for it
+    void batch.commit().catch((e) => console.warn('Background save to Firestore failed (kept in this browser):', e));
   } catch (error) {
     console.warn('Could not save new categories to Firestore (kept locally):', error);
   }
