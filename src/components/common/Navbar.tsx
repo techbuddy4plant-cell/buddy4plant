@@ -36,12 +36,15 @@ import { Buddy4PlantLogo } from './Buddy4PlantLogo';
 import { AnnouncementTicker } from './AnnouncementTicker';
 import CardNav, { CardNavItem } from './CardNav';
 
-/** Cards shown when the menu is opened. Colours follow the site's green palette. */
+/** One soft leaf green for every menu card (white text stays easy to read on it). */
+const NAV_CARD_GREEN = '#4A7A43';
+
+/** Cards shown when the menu is opened. */
 const NAV_CARDS: CardNavItem[] = [
   {
     label: 'Plants',
-    bgColor: '#13301B',
-    textColor: '#F4EFE3',
+    bgColor: NAV_CARD_GREEN,
+    textColor: '#FFFFFF',
     links: [
       { label: 'All Plants', href: '/plants' },
       { label: 'Indoor Plants', href: '/plants/indoor-plants' },
@@ -52,8 +55,8 @@ const NAV_CARDS: CardNavItem[] = [
   },
   {
     label: 'Pots & Care',
-    bgColor: '#1F3B22',
-    textColor: '#F4EFE3',
+    bgColor: NAV_CARD_GREEN,
+    textColor: '#FFFFFF',
     links: [
       { label: 'Pots & Planters', href: '/plants/pots-planters' },
       { label: 'Ceramic Pots', href: '/plants/ceramic-pots' },
@@ -64,8 +67,8 @@ const NAV_CARDS: CardNavItem[] = [
   },
   {
     label: 'Gardening',
-    bgColor: '#2D4A27',
-    textColor: '#F4EFE3',
+    bgColor: NAV_CARD_GREEN,
+    textColor: '#FFFFFF',
     links: [
       { label: 'Gardening Services', href: '/garden-services' },
       { label: 'Our Projects', href: '/projects' },
@@ -74,8 +77,8 @@ const NAV_CARDS: CardNavItem[] = [
   },
   {
     label: 'Company',
-    bgColor: '#E9E3D3',
-    textColor: '#13301B',
+    bgColor: NAV_CARD_GREEN,
+    textColor: '#FFFFFF',
     links: [
       { label: 'About Us', href: '/about' },
       { label: 'Blog', href: '/blog' },
