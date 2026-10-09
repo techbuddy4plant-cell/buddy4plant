@@ -272,6 +272,30 @@ async function trackShiprocket(orderId, shipmentId) {
   return out;
 }
 
+/** Finds the Shiprocket order for a website order number (when its id was never saved). */
+async function findShiprocketOrderId(orderNumber) {
+  const r = await sr(`/orders?search=${encodeURIComponent(orderNumber)}&per_page=10`);
+  const list = Array.isArray(r.data?.data) ? r.data.data : [];
+  const hit = list.find((x) => String(x.channel_order_id || '') === orderNumber);
+  return hit ? String(hit.id) : '';
+}
+
+/** Cancels on Shiprocket if it has not shipped. { success, already?, notOnShiprocket? } or { success:false, error, code }. */
+async function cancelInShiprocket(orderNumber, srId) {
+  const id = srId || (await findShiprocketOrderId(orderNumber));
+  if (!id) return { success: true, notOnShiprocket: true };
+  const o = await sr(`/orders/show/${id}`);
+  const d = o.data?.data || {};
+  if (!o.ok || String(d.channel_order_id || '') !== orderNumber) return { success: false, error: 'Order not found', code: 404 };
+  if (/CANCEL/i.test(String(d.status || ''))) return { success: true, already: true, shiprocketOrderId: id };
+  if (/SHIPPED|TRANSIT|OUT FOR DELIVERY|DELIVERED|PICKED/i.test(String(d.status || ''))) {
+    return { success: false, error: 'This order has already been shipped', code: 409 };
+  }
+  const r = await sr('/orders/cancel', { method: 'POST', body: JSON.stringify({ ids: [Number(id)] }) });
+  if (!r.ok) return { success: false, error: clean(r.data?.message, 200) || 'Shiprocket could not cancel the order', code: 400 };
+  return { success: true, shiprocketOrderId: id };
+}
+
 // ---- Background sync (runs every 30 minutes from the Cloudflare cron, see wrangler.jsonc) ----
 // Sends waiting orders to Shiprocket and copies status / AWB / courier / delivery date back to the website.
 const FS_DOCS = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT}/databases/(default)/documents`;
@@ -322,7 +346,7 @@ function mapStatus(s) {
 }
 
 export async function syncAll() {
-  const report = { sent: [], updated: [], errors: [] };
+  const report = { sent: [], cancelled: [], updated: [], errors: [] };
   if (!configured()) return { ...report, errors: ['Shiprocket is not set up'] };
   await token(); // stop early (without touching orders) if the login is not working
   const orders = await recentOrders();
@@ -353,7 +377,29 @@ export async function syncAll() {
     }
   }
 
-  // 2. orders already on Shiprocket: copy the latest shipping details back
+  // 2. orders cancelled on the website (by the customer or admin) but still open on Shiprocket
+  const toCancel = orders.filter((o) =>
+    ['Cancelled', 'Refunded'].includes(o.orderStatus) &&
+    o.shiprocketOrderId &&
+    !/CANCEL/i.test(String(o.shiprocketStatus || '')) &&
+    Number(o.shiprocketCancelTries || 0) < 3);
+  for (const o of toCancel) {
+    if (budget-- <= 0) break;
+    try {
+      const c = await cancelInShiprocket(o.orderNumber, String(o.shiprocketOrderId).replace(/\D/g, ''));
+      if (c.success) {
+        await patchOrderDoc(o.id, { shiprocketStatus: 'CANCELED', updatedAt: Date.now() });
+        report.cancelled.push(o.orderNumber);
+      } else {
+        await patchOrderDoc(o.id, { shiprocketError: `Cancel on Shiprocket: ${c.error}`, shiprocketCancelTries: Number(o.shiprocketCancelTries || 0) + 1 });
+        report.errors.push(`${o.orderNumber}: cancel - ${c.error}`);
+      }
+    } catch (e) {
+      report.errors.push(`${o.orderNumber}: cancel - ${e.message || e}`);
+    }
+  }
+
+  // 3. orders already on Shiprocket: copy the latest shipping details back
   const shipped = open
     .filter((o) => o.shiprocketOrderId || o.shiprocketShipmentId)
     .sort((a, b) => Number(a.shiprocketSyncedAt || 0) - Number(b.shiprocketSyncedAt || 0));
@@ -459,23 +505,23 @@ export default async (req) => {
     }
   }
 
-  // Cancel an order that has not shipped yet. The website order number must match the Shiprocket order.
+  // Cancel an order that has not shipped yet. Works with the Shiprocket order id, or finds it from the
+  // website order (database) or the order number on Shiprocket. The order number must match.
   if (action === 'cancel' && req.method === 'POST') {
     try {
       const b = await req.json().catch(() => ({}));
-      const id = String(b.shiprocketOrderId || '').replace(/\D/g, '');
       const orderNumber = clean(b.orderNumber, 45);
-      if (!id || !orderNumber) return json({ success: false, error: 'Missing order' }, 400);
-      const o = await sr(`/orders/show/${id}`);
-      const d = o.data?.data || {};
-      if (!o.ok || String(d.channel_order_id || '') !== orderNumber) return json({ success: false, error: 'Order not found' }, 404);
-      if (/CANCEL/i.test(String(d.status || ''))) return json({ success: true, already: true });
-      if (/SHIPPED|TRANSIT|OUT FOR DELIVERY|DELIVERED|PICKED/i.test(String(d.status || ''))) {
-        return json({ success: false, error: 'This order has already been shipped' }, 409);
+      if (!orderNumber) return json({ success: false, error: 'Missing order' }, 400);
+      let id = String(b.shiprocketOrderId || '').replace(/\D/g, '');
+      if (!id && /^[\w-]{3,80}$/.test(String(b.id || ''))) {
+        const r = await fetch(`${FS_DOCS}/orders/${encodeURIComponent(b.id)}`).catch(() => null);
+        if (r && r.ok) {
+          const o = fsObject((await r.json()).fields || {});
+          if (o.orderNumber === orderNumber) id = String(o.shiprocketOrderId || '').replace(/\D/g, '');
+        }
       }
-      const r = await sr('/orders/cancel', { method: 'POST', body: JSON.stringify({ ids: [Number(id)] }) });
-      if (!r.ok) return json({ success: false, error: clean(r.data?.message, 200) || 'Shiprocket could not cancel the order' }, 400);
-      return json({ success: true });
+      const out = await cancelInShiprocket(orderNumber, id);
+      return json(out, out.success ? 200 : out.code || 400);
     } catch (e) {
       console.error('shiprocket cancel', e);
       return json({ success: false, error: 'Could not reach Shiprocket' }, 500);
