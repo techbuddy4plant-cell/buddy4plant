@@ -218,6 +218,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
                         document.documentElement.style.setProperty('--b4p-search-top', `${Math.round(e.currentTarget.getBoundingClientRect().bottom + 8)}px`);
                       }}
                       onKeyDown={(e) => e.key === 'Escape' && setSearchQuery('')}
+                      data-b4p-typing=""
                       placeholder={searchFocused ? (isDesktop ? 'Search plants, pots, plant care...' : 'Search') : typedPlaceholder}
                       onFocus={() => setSearchFocused(true)}
                       onBlur={() => setSearchFocused(false)}

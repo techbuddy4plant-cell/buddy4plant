@@ -75,7 +75,10 @@ const getLocalCoupons = (): Coupon[] => {
 
 const setLocalCoupons = (coupons: Coupon[]) => {
   try {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(coupons));
+    const json = JSON.stringify(coupons);
+    // Nothing changed: don't re-save or tell the page to reload (that caused an endless reload loop)
+    if (localStorage.getItem(LOCAL_STORAGE_KEY) === json && localStorage.getItem(SEEDED_FLAG_KEY) === 'true') return;
+    localStorage.setItem(LOCAL_STORAGE_KEY, json);
     localStorage.setItem(SEEDED_FLAG_KEY, 'true');
     emitStoreDataChanged();
   } catch (err) {

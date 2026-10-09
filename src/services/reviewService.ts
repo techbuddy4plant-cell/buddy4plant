@@ -69,7 +69,10 @@ export function getLocalReviews(): Review[] {
 
 export function saveLocalReviews(reviews: Review[]): void {
   try {
-    localStorage.setItem(REVIEWS_STORAGE_KEY, JSON.stringify(reviews));
+    const json = JSON.stringify(reviews);
+    // Nothing changed: don't re-save or tell the page to reload (that caused an endless reload loop)
+    if (localStorage.getItem(REVIEWS_STORAGE_KEY) === json && localStorage.getItem(SEEDED_FLAG_KEY) === 'true') return;
+    localStorage.setItem(REVIEWS_STORAGE_KEY, json);
     localStorage.setItem(SEEDED_FLAG_KEY, 'true');
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new Event('b4p_reviews_changed'));
