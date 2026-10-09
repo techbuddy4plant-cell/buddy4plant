@@ -418,7 +418,7 @@ export const BlogPage: React.FC<{ navigate: (path: string) => void }> = ({ navig
                 <CheckCircle2 className="w-5 h-5 text-[#2D6A4F] shrink-0 mt-0.5" />
                 <div>
                   <h2 className="font-editorial font-bold text-base text-[#142B1A]">Have a plant problem or planning a garden?</h2>
-                  <p className="text-xs text-[#3D6A48] mt-0.5">Ask our team - we answer gardening questions and do free site visits in Lucknow &amp; Kanpur.</p>
+                  <p className="text-xs text-[#3D6A48] mt-0.5">Ask our team - we answer gardening questions and design gardens across Lucknow &amp; Kanpur.</p>
                 </div>
               </div>
               <Link to="/garden-services" navigate={navigate} className="pill-btn-dark px-7 py-3 text-xs font-bold uppercase tracking-wider whitespace-nowrap shadow-sm">
