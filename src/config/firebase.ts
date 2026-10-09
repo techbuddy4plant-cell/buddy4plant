@@ -1,8 +1,6 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getFirestore, initializeFirestore, Firestore } from 'firebase/firestore';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
-import { getStorage } from 'firebase/storage';
-import { getAnalytics, isSupported } from 'firebase/analytics';
 import firebaseConfigJson from '../../firebase-applet-config.json';
 
 const metaEnv = (import.meta as any).env || {};
@@ -30,21 +28,20 @@ try {
 }
 export const db = firestore;
 export const auth = getAuth(app);
-export const storage = getStorage(app);
 
 export const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: 'select_account' });
 
-// Initialize Analytics conditionally for browser environments
+// Analytics loads after the page is ready, so it never slows down the first view
 export let analytics: any = null;
 if (typeof window !== 'undefined') {
-  isSupported().then((supported) => {
-    if (supported) {
-      analytics = getAnalytics(app);
-    }
-  }).catch(() => {
-    // Analytics is optional in offline or non-standard environments
-  });
+  const startAnalytics = () =>
+    import('firebase/analytics')
+      .then(({ getAnalytics, isSupported }) => isSupported().then((ok) => { if (ok) analytics = getAnalytics(app); }))
+      .catch(() => undefined); // optional
+  const idle = (window as any).requestIdleCallback || ((cb: () => void) => setTimeout(cb, 2500));
+  if (document.readyState === 'complete') idle(startAnalytics);
+  else window.addEventListener('load', () => idle(startAnalytics), { once: true });
 }
 
 export default app;
