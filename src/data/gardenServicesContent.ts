@@ -130,7 +130,7 @@ export const DEFAULT_GARDEN_CONTENT: GardenServicesContent = {
     highlightWords: 'Uttar Pradesh Delhi',
     subtitle:
       'From UP 112 and Nagar Nigam Lucknow to 8 GITI campuses and the BrahMos unit in the Defence Corridor - we design, build and maintain green spaces that stay beautiful all year.',
-    primaryButton: 'Book a Free Site Visit',
+    primaryButton: 'Plan My Dream Garden',
     whatsappButton: 'WhatsApp Us',
     whatsappMessage: 'Hi Buddy4Plant team, I am interested in your landscaping / gardening services.',
     projectsButton: 'See Our Projects',
@@ -318,7 +318,7 @@ export const DEFAULT_GARDEN_CONTENT: GardenServicesContent = {
       'Large campus (1 acre +)',
       'Not sure yet',
     ],
-    submitButton: 'Request Free Site Visit & Quote',
+    submitButton: 'Get My Garden Plan & Quote',
     helpSubmitButton: 'Send My Question',
     labels: {
       need: 'What do you need? *',
