@@ -9,7 +9,7 @@ import {
   limit,
   writeBatch
 } from 'firebase/firestore';
-import { db } from '../config/firebase';
+import { db, withTimeout } from '../config/firebase';
 import { Review } from '../types';
 import { INITIAL_REVIEWS } from '../data/initialSettings';
 
@@ -92,14 +92,15 @@ export async function seedReviewsIfEmpty(): Promise<void> {
 
   try {
     const colRef = collection(db, REVIEWS_COLLECTION);
-    const snap = await getDocs(query(colRef, limit(1)));
+    const snap = await withTimeout(getDocs(query(colRef, limit(1))));
     if (snap.empty) {
       const batch = writeBatch(db);
       for (const rev of INITIAL_REVIEWS) {
         const docRef = doc(db, REVIEWS_COLLECTION, rev.id);
         batch.set(docRef, rev);
       }
-      await batch.commit();
+      // saved in the background - the page never waits for it
+      void batch.commit().catch((e) => console.warn('Background save to Firestore failed (kept in this browser):', e));
       if (typeof window !== 'undefined') {
         localStorage.setItem(SEEDED_FLAG_KEY, 'true');
       }
@@ -128,7 +129,7 @@ export async function getAllReviews(): Promise<Review[]> {
     if (!isSeeded && saved === null) {
       await seedReviewsIfEmpty();
     }
-    const snap = await getDocs(collection(db, REVIEWS_COLLECTION));
+    const snap = await withTimeout(getDocs(collection(db, REVIEWS_COLLECTION)));
     if (!snap.empty) {
       const remote = snap.docs
         .map((d) => ({ id: d.id, ...d.data() } as Review))
