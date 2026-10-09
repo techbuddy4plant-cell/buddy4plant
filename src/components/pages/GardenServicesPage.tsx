@@ -13,6 +13,7 @@ import {
   ArrowRight,
   Building2,
   CalendarCheck,
+  Check,
   CheckCircle2,
   ChevronDown,
   CloudRain,
@@ -26,7 +27,9 @@ import {
   Mail,
   MapPin,
   MessageCircle,
+  Minus,
   Phone,
+  Plus,
   Send,
   ShieldCheck,
   Snowflake,
@@ -34,6 +37,7 @@ import {
   Sprout,
   Sun,
   Trees,
+  User,
   Wrench,
   X,
 } from '../common/Icons';
@@ -45,7 +49,6 @@ import { BotanicalProject } from '../../types';
 import { setSeo, breadcrumbLd, ORG_ID } from '../../utils/seo';
 import { ProjectMediaSection, ProjectMediaBadge } from './ProjectMedia';
 import { resolveGardenContent } from '../../data/gardenServicesContent';
-import OptionWheel from '../common/OptionWheel';
 
 const GARDEN_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   Landmark, CalendarCheck, Home, Building2, Trees, MapPin, Sprout, Leaf, Flower2, ShieldCheck, Sun, CloudRain, Snowflake, Droplets, Wrench, Sparkles,
@@ -307,58 +310,42 @@ const categoryIcon = (cat: string) => {
   return Landmark;
 };
 
-const ProjectCard: React.FC<{ project: BotanicalProject; index: number; onOpen: () => void }> = ({ project, index, onOpen }) => {
-  const Icon = categoryIcon(project.category);
+const ProjectCard: React.FC<{ project: BotanicalProject; index: number; onOpen: () => void }> = ({ project, onOpen }) => {
   const sites = project.sites || [];
   return (
     <div
+      role="button"
+      tabIndex={0}
       onClick={onOpen}
-      className="group cursor-pointer text-left bg-white rounded-[24px] ring-1 ring-[#E8DFD3] overflow-hidden shadow-[0_4px_20px_-8px_rgba(20,40,25,0.08)] hover:shadow-[0_16px_36px_-12px_rgba(20,40,25,0.16)] transition-all duration-300 flex flex-col focus:outline-none"
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onOpen();
+        }
+      }}
+      className="group cursor-pointer rounded-2xl overflow-hidden bg-[#173A22] flex flex-col h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2E8B4E] focus-visible:ring-offset-2"
     >
-      <div className="relative aspect-[16/10] overflow-hidden bg-[#EEF3EA]">
+      <div className="relative aspect-[4/3] overflow-hidden bg-[#22402A]">
         <img
           src={project.image}
           alt={project.title}
           loading="lazy"
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#142B1A]/60 via-transparent to-transparent" />
-        <span className="absolute top-4 left-4 inline-flex items-center gap-1.5 bg-white/95 text-[#1A3824] text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm font-sans">
-          <Icon className="w-3 h-3 text-[#1A3824]" />
+        <span className="absolute top-3 left-3 rounded-md bg-white/95 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#173A22]">
           {project.category}
         </span>
-        <ProjectMediaBadge project={project} className="absolute bottom-4 left-4" />
+        <ProjectMediaBadge project={project} className="absolute bottom-3 left-3" />
       </div>
-      <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between gap-3">
-        <div>
-          <h3 className="font-editorial text-lg sm:text-xl font-bold text-[#141C14] leading-snug group-hover:text-[#1A3824] transition-colors">
-            {project.title}
-          </h3>
-          <p className="text-xs text-[#6B645A] flex items-center gap-1.5 mt-1.5 font-sans">
-            <MapPin className="w-3.5 h-3.5 text-[#1A3824] shrink-0" />
-            {project.location}
-          </p>
-        </div>
-
-        {sites.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 my-1">
-            {sites.slice(0, 4).map((s) => (
-              <span key={s} className="px-2.5 py-0.5 rounded-full bg-[#EBF5EC] text-[#1A3824] text-[10px] font-semibold border border-[#C5E1C9]">
-                {s}
-              </span>
-            ))}
-            {sites.length > 4 && (
-              <span className="px-2.5 py-0.5 rounded-full bg-[#F5EEE4] text-[#6B645A] text-[10px] font-semibold">+{sites.length - 4} more</span>
-            )}
-          </div>
-        )}
-
-        <div className="pt-3 border-t border-[#EFE8DD] flex items-center justify-between mt-auto">
-          <span className="text-[11px] text-[#7A746B] line-clamp-1 font-sans">{project.plantHighlights.slice(0, 2).join(' · ')}</span>
-          <span className="text-xs font-bold text-[#1A3824] inline-flex items-center gap-1 group-hover:gap-2 transition-all font-sans">
-            Explore <ArrowRight className="w-3.5 h-3.5" />
-          </span>
-        </div>
+      <div className="flex-1 flex flex-col items-center justify-center text-center px-5 py-6 sm:py-7">
+        <h3 className="font-editorial text-lg sm:text-[1.35rem] font-semibold text-white leading-snug">{project.title}</h3>
+        <p className="mt-2 text-sm text-white/70 leading-relaxed">
+          {project.location}
+          {sites.length > 1 ? ` · ${sites.length} sites` : ''}
+        </p>
+        <span className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#BFE3B0] underline-offset-4 group-hover:underline">
+          View project <ArrowRight className="w-3.5 h-3.5" />
+        </span>
       </div>
     </div>
   );
@@ -471,67 +458,85 @@ const prettyPhone = (n: string) => {
 };
 
 
-/** "Trusted by" list shown as an auto-turning wheel (React Bits OptionWheel). */
-const TrustedWheel: React.FC<{ label: string; names: string[] }> = ({ label, names }) => {
-  const [wide, setWide] = useState(() => typeof window !== 'undefined' && window.matchMedia('(min-width: 640px)').matches);
-  const [current, setCurrent] = useState(0);
-  useEffect(() => {
-    const mq = window.matchMedia('(min-width: 640px)');
-    const on = () => setWide(mq.matches);
-    mq.addEventListener('change', on);
-    return () => mq.removeEventListener('change', on);
-  }, []);
-  const items = names.filter((n, i) => n && names.indexOf(n) === i);
+/** "Trusted by": the real client names in a quiet grid */
+const TrustedList: React.FC<{ label: string; names: string[] }> = ({ label, names }) => {
+  const items = names.filter((n, i) => n && names.indexOf(n) === i).slice(0, 12);
   if (items.length === 0) return null;
-  const pad = (n: number) => String(n).padStart(2, '0');
   return (
-    <section className="-mt-6 sm:-mt-10">
-      <div className="grid lg:grid-cols-12 items-center rounded-[36px] sm:rounded-[44px] bg-white shadow-[0_1px_0_rgba(20,40,25,0.04),0_24px_60px_-36px_rgba(20,40,25,0.35)] overflow-hidden">
-        <div className="lg:col-span-4 px-7 pt-8 sm:px-12 sm:pt-12 lg:py-12 font-sans">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#486B44]">{label}</p>
-          <h2 className="font-editorial text-[1.75rem] sm:text-4xl font-bold text-[#141C14] leading-[1.1] mt-3">
-            Gardens we look after
-          </h2>
-          <p className="text-sm text-[#6B645A] mt-3 leading-relaxed max-w-xs">
-            Government offices, training institutes, defence units and campuses across Uttar Pradesh.
-          </p>
-          <p className="mt-6 hidden lg:flex items-baseline gap-1.5 text-[#141C14]">
-            <span className="font-editorial text-2xl font-bold tabular-nums">{pad(current + 1)}</span>
-            <span className="text-sm text-[#A59F94] tabular-nums">/ {pad(items.length)}</span>
-          </p>
-        </div>
-        <div className="lg:col-span-8 relative h-[250px] sm:h-[340px] lg:border-l lg:border-[#F0EADF]">
-          {/* soft band behind the active name */}
-          <span className="pointer-events-none absolute left-3 right-3 sm:left-6 sm:right-6 top-1/2 -translate-y-1/2 h-11 sm:h-14 rounded-full bg-[#F4F0E8]" />
-          <OptionWheel
-            items={items}
-            defaultSelected={0}
-            onChange={(i) => setCurrent(i)}
-            textColor="#BDB6AA"
-            activeColor="#142817"
-            side="left"
-            fontSize={wide ? 1.5 : 0.95}
-            spacing={wide ? 1.9 : 2.2}
-            curve={0.8}
-            tilt={wide ? 6 : 8}
-            blur={1}
-            fade={0.24}
-            minOpacity={0.06}
-            smoothing={240}
-            inset={wide ? 48 : 30}
-            loop
-            draggable={false}
-            captureWheel={false}
-            autoPlay={1600}
-            className="font-sans"
-          />
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-white via-white/70 to-transparent" />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-white via-white/70 to-transparent" />
-        </div>
+    <section>
+      <div className="text-center max-w-2xl mx-auto">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#486B44]">{label}</p>
+        <h2 className="font-editorial text-[1.75rem] sm:text-4xl font-bold text-[#141C14] leading-tight mt-3">Gardens we look after</h2>
+        <p className="text-sm text-[#6B645A] mt-3 leading-relaxed">
+          Government offices, training institutes, defence units and campuses across Uttar Pradesh.
+        </p>
       </div>
+      <ul className="mt-8 sm:mt-10 grid grid-cols-2 lg:grid-cols-4 border-t border-l border-[#E3DBCD] bg-white/60">
+        {items.map((n) => (
+          <li
+            key={n}
+            className="border-r border-b border-[#E3DBCD] px-4 py-6 sm:px-6 sm:py-8 flex items-center justify-center text-center font-editorial text-[15px] sm:text-lg font-semibold text-[#24382A] leading-snug"
+          >
+            {n}
+          </li>
+        ))}
+      </ul>
     </section>
   );
 };
+
+/** Text field with a leading icon (placeholder doubles as the label) */
+const IconField: React.FC<{ icon: React.ComponentType<{ className?: string }>; error?: string; children: React.ReactNode }> = ({
+  icon: Icon,
+  error,
+  children,
+}) => (
+  <div>
+    <div
+      className={`flex items-center gap-3 h-12 px-4 rounded-xl bg-white border transition-colors ${
+        error ? 'border-[#D64545]' : 'border-[#DCD3C4] focus-within:border-[#1F6B3A] focus-within:ring-2 focus-within:ring-[#1F6B3A]/15'
+      }`}
+    >
+      <Icon className="w-[18px] h-[18px] text-[#6E7769] shrink-0" />
+      {children}
+    </div>
+    {error && <span className="text-xs text-[#C93C3C] mt-1.5 block">{error}</span>}
+  </div>
+);
+const fieldInput = 'flex-1 min-w-0 h-full bg-transparent text-[15px] text-[#182018] placeholder:text-[#8C887F] focus:outline-none';
+
+/** One-tap choice buttons instead of a dropdown */
+const ChoiceChips: React.FC<{ label: string; options: string[]; value: string; onChange: (v: string) => void }> = ({
+  label,
+  options,
+  value,
+  onChange,
+}) => (
+  <fieldset>
+    <legend className="text-sm font-semibold text-[#1F4A2C] mb-2.5">{label.replace(/\s*\*$/, '')}</legend>
+    <div className="flex flex-wrap gap-2">
+      {options.map((o) => {
+        const active = value === o;
+        return (
+          <button
+            type="button"
+            key={o}
+            aria-pressed={active}
+            onClick={() => onChange(o)}
+            className={`px-4 py-2.5 rounded-xl border text-sm font-medium transition-colors ${
+              active ? 'bg-[#1F6B3A] border-[#1F6B3A] text-white' : 'bg-white border-[#DCD3C4] text-[#2B2A26] hover:border-[#1F6B3A]'
+            }`}
+          >
+            {o}
+          </button>
+        );
+      })}
+    </div>
+  </fieldset>
+);
+
+/** "Full Name *" -> "Full Name*" for use as a placeholder */
+const asPlaceholder = (label: string) => label.replace(/\s+\*$/, '*');
 
 const emptyForm = {
   fullName: '',
@@ -574,6 +579,7 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
   }, [C.seo.title, C.seo.description]);
   const [projects, setProjects] = useState<BotanicalProject[]>(LANDSCAPE_PROJECTS);
   const [filter, setFilter] = useState('All');
+  const [showAllProjects, setShowAllProjects] = useState(false);
   const [openProject, setOpenProject] = useState<BotanicalProject | null>(null);
   const [season, setSeason] = useState(SEASONS[0].id);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
@@ -612,6 +618,14 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
   const siteCount = projects.reduce((n, p) => n + Math.max(1, (p.sites || []).length), 0);
   const multiSite = projects.reduce((m, p) => Math.max(m, (p.sites || []).length), 0);
   const clientNames = workProjects.map((p) => p.client || p.title);
+  const statItems = C.stats.map((raw) => ({
+    n: raw.value === 'auto:projects' ? workProjects.length : raw.value === 'auto:sites' ? siteCount : raw.value === 'auto:multisite' ? multiSite : Number(raw.value) || 0,
+    s: raw.suffix,
+    label: raw.label,
+    icon: gIcon(raw.icon),
+  }));
+  // short client names for the line under the form ("UP 112 (Emergency ...)" -> "UP 112")
+  const shortClients = Array.from(new Set(clientNames.map((n) => n.replace(/\s*\(.*?\)\s*/g, ' ').split(',')[0].trim()).filter(Boolean))).slice(0, 4);
   const heroPool: BotanicalProject[] = C.hero.images.length
     ? C.hero.images.map((img, k) => ({ id: `hero-${k}-${img}`, image: img, title: '', category: '', location: '', description: '', speciesCount: 0, plantHighlights: [], tag: '' }))
     : projects;
@@ -743,7 +757,7 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
               <div className="flex flex-wrap gap-3.5 pt-2 font-sans">
                 <button
                   onClick={scrollToForm}
-                  className="px-7 py-3.5 rounded-full bg-[#B7D7A8] hover:bg-[#A3C893] text-[#142817] text-sm font-semibold inline-flex items-center gap-2 shadow-lg transition-all"
+                  className="px-7 py-3.5 rounded-full bg-[#F3EEE3] hover:bg-white text-[#142817] text-sm font-semibold inline-flex items-center gap-2 transition-colors"
                 >
                   {C.hero.primaryButton || 'Book Site Visit & Quote'} <ArrowRight className="w-4 h-4" />
                 </button>
@@ -783,12 +797,7 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
         {/* ---------------- STATS ---------------- */}
         <div>
           <div className="grid grid-cols-2 lg:grid-cols-4 bg-white rounded-3xl border border-[#E8DFD3] overflow-hidden">
-            {C.stats.map((raw) => ({
-              n: raw.value === 'auto:projects' ? workProjects.length : raw.value === 'auto:sites' ? siteCount : raw.value === 'auto:multisite' ? multiSite : Number(raw.value) || 0,
-              s: raw.suffix,
-              label: raw.label,
-              icon: gIcon(raw.icon),
-            })).map((st, i) => (
+            {statItems.map((st, i) => (
               <div
                 key={i}
                 className={`px-5 py-6 sm:px-8 sm:py-8 border-[#EFE8DD] ${i % 2 === 1 ? 'border-l' : ''} ${i >= 2 ? 'border-t lg:border-t-0' : ''} ${i === 2 ? 'lg:border-l' : ''}`}
@@ -802,49 +811,63 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
           </div>
         </div>
 
-        {/* ---------------- TRUSTED BY (option wheel) ---------------- */}
-        <TrustedWheel
+        {/* ---------------- TRUSTED BY ---------------- */}
+        <TrustedList
           label={C.trustedByLabel || 'Trusted by institutions & campuses'}
           names={[...clientNames.slice(0, 8), ...C.trustedByExtra.filter(Boolean)]}
         />
 
         {/* ---------------- PROJECTS ---------------- */}
-        <section id="projects" className="scroll-mt-24 space-y-8">
-          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
-            <div className="max-w-2xl">
-              <span className="text-[11px] font-bold text-[#486B44] uppercase tracking-[0.16em] block mb-2 font-sans">{C.projectsSection.eyebrow}</span>
-              <h2 className="font-editorial text-3xl sm:text-4xl lg:text-5xl font-bold text-[#141C14] leading-tight">
-                {C.projectsSection.title}
-              </h2>
-              <p className="text-xs sm:text-sm text-[#5C554B] mt-2.5 leading-relaxed font-normal">{C.projectsSection.subtitle}</p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {categories.map((c) => (
-                <button
-                  key={c}
-                  onClick={() => setFilter(c)}
-                  className={`px-4 py-2 rounded-full text-xs font-semibold transition-all shadow-xs ${
-                    filter === c
-                      ? 'bg-[#1A3824] text-white shadow-sm ring-1 ring-[#1A3824]'
-                      : 'bg-white/90 border border-[#DDD5C7] text-[#332E27] hover:border-[#1A3824] hover:bg-white'
-                  }`}
-                >
-                  <span>
-                    {c}
-                    <span className="ml-1.5 opacity-60">
-                      ({c === 'All' ? workProjects.length : workProjects.filter((p) => p.category === c).length})
-                    </span>
-                  </span>
-                </button>
-              ))}
-            </div>
+        <section id="projects" className="scroll-mt-24">
+          <div className="text-center max-w-2xl mx-auto">
+            <span className="text-[11px] font-semibold text-[#486B44] uppercase tracking-[0.18em] block mb-3 font-sans">{C.projectsSection.eyebrow}</span>
+            <h2 className="font-editorial text-3xl sm:text-4xl lg:text-5xl font-bold text-[#141C14] leading-tight">
+              {C.projectsSection.title}
+            </h2>
+            <p className="text-sm sm:text-base text-[#5C554B] mt-3 leading-relaxed">{C.projectsSection.subtitle}</p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-            {shown.map((p) => (
+          <div className="mt-7 flex flex-wrap justify-center gap-2.5">
+            {categories.map((c) => (
+              <button
+                key={c}
+                onClick={() => {
+                  setFilter(c);
+                  setShowAllProjects(false);
+                }}
+                className={`px-5 py-2.5 rounded-full text-sm font-semibold border transition-colors ${
+                  filter === c
+                    ? 'bg-[#1F6B3A] border-[#1F6B3A] text-white'
+                    : 'bg-white border-[#D9D1C2] text-[#2B2A26] hover:border-[#1F6B3A]'
+                }`}
+              >
+                {c}
+                <span className={`ml-1.5 ${filter === c ? 'text-white/70' : 'text-[#9A9387]'}`}>
+                  {c === 'All' ? workProjects.length : workProjects.filter((p) => p.category === c).length}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-8 sm:mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {(showAllProjects ? shown : shown.slice(0, 6)).map((p) => (
               <ProjectCard key={p.id} project={p} index={workProjects.indexOf(p)} onOpen={() => setOpenProject(p)} />
             ))}
           </div>
+          {shown.length > 6 && (
+            <div className="mt-8 flex justify-center">
+              <button
+                type="button"
+                onClick={() => {
+                  if (showAllProjects) document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  setShowAllProjects((v) => !v);
+                }}
+                className="px-7 py-3 rounded-full border border-[#1F6B3A] text-[#1F6B3A] text-sm font-semibold hover:bg-[#1F6B3A] hover:text-white transition-colors"
+              >
+                {showAllProjects ? 'Show fewer projects' : `View all ${shown.length} projects`}
+              </button>
+            </div>
+          )}
           {openProject && (
             <ProjectModal project={openProject} onClose={() => setOpenProject(null)} onEnquire={() => enquireFor(openProject)} />
           )}
@@ -852,31 +875,23 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
 
         {/* ---------------- PRIVATE PROJECTS ---------------- */}
         {showPrivate && (
-          <section id="private-projects" className="scroll-mt-24 space-y-8">
-            <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
-              <div className="max-w-2xl">
-                <span className="text-[11px] font-bold text-[#C4661F] uppercase tracking-[0.16em] mb-2 inline-flex items-center gap-1.5 font-sans">
-                  <Home className="w-3.5 h-3.5" /> {C.privateSection.eyebrow}
-                </span>
-                <h2 className="font-editorial text-3xl sm:text-4xl lg:text-5xl font-bold text-[#141C14] leading-tight">
-                  {C.privateSection.title}
-                </h2>
-                <p className="text-xs sm:text-sm text-[#5C554B] mt-2.5 leading-relaxed font-normal">
-                  {C.privateSection.subtitle}
-                </p>
-              </div>
+          <section id="private-projects" className="scroll-mt-24">
+            <div className="text-center max-w-2xl mx-auto">
+              <span className="text-[11px] font-semibold text-[#486B44] uppercase tracking-[0.18em] block mb-3 font-sans">{C.privateSection.eyebrow}</span>
+              <h2 className="font-editorial text-3xl sm:text-4xl lg:text-5xl font-bold text-[#141C14] leading-tight">{C.privateSection.title}</h2>
+              <p className="text-sm sm:text-base text-[#5C554B] mt-3 leading-relaxed">{C.privateSection.subtitle}</p>
               <button
                 type="button"
                 onClick={() => {
                   setForm((f) => ({ ...f, enquiryType: 'Balcony & terrace garden', propertyType: 'Home / Villa' }));
                   setTimeout(scrollToForm, 50);
                 }}
-                className="self-start lg:self-auto pill-btn-dark px-6 py-3 text-sm font-semibold inline-flex items-center gap-2"
+                className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-[#1F6B3A] underline underline-offset-4 decoration-[#1F6B3A]/30 hover:decoration-[#1F6B3A]"
               >
-                {C.privateSection.button} <ArrowRight className="w-4 h-4" />
+                {C.privateSection.button} <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+            <div className={`mt-8 sm:mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 ${privateProjects.length < 3 ? 'lg:flex lg:justify-center [&>*]:lg:w-[calc((100%-2.5rem)/3)]' : ''}`}>
               {privateProjects.map((p, i) => (
                 <ProjectCard key={p.id} project={p} index={i} onOpen={() => setOpenProject(p)} />
               ))}
@@ -885,98 +900,80 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
         )}
 
         {/* ---------------- SERVICES ---------------- */}
-        <section className="space-y-8">
+        <section>
           <div className="text-center max-w-2xl mx-auto">
-            <span className="text-[11px] font-bold text-[#486B44] uppercase tracking-[0.16em] block mb-2 font-sans">{C.servicesSection.eyebrow}</span>
+            <span className="text-[11px] font-semibold text-[#486B44] uppercase tracking-[0.18em] block mb-3 font-sans">{C.servicesSection.eyebrow}</span>
             <h2 className="font-editorial text-3xl sm:text-4xl lg:text-5xl font-bold text-[#141C14] tracking-tight">{C.servicesSection.title}</h2>
-            {C.servicesSection.subtitle && <p className="text-xs sm:text-sm text-[#5C554B] mt-3 leading-relaxed font-normal">{C.servicesSection.subtitle}</p>}
+            {C.servicesSection.subtitle && <p className="text-sm sm:text-base text-[#5C554B] mt-3 leading-relaxed">{C.servicesSection.subtitle}</p>}
           </div>
-          <div className="grid sm:grid-cols-2 gap-6 lg:gap-8">
-            {SERVICES.map((s) => (
-              <div
-                key={s.id}
-                className="group bg-white rounded-3xl ring-1 ring-[#E8DFD3] shadow-[0_4px_20px_-8px_rgba(20,40,25,0.06)] p-7 sm:p-9 hover:shadow-xl transition-all flex flex-col justify-between"
-              >
-                <div className="space-y-4">
-                  {s.image && (
-                    <div className="-mx-7 sm:-mx-9 -mt-7 sm:-mt-9 mb-4 aspect-[16/8] overflow-hidden rounded-t-3xl">
-                      <img src={s.image} alt={s.title} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                    </div>
-                  )}
-                  {!s.image && (
-                    <div className="w-12 h-12 rounded-2xl bg-[#EBF5EC] flex items-center justify-center">
-                      <s.icon className="w-6 h-6 text-[#1A3824]" />
-                    </div>
-                  )}
-                  <h3 className="font-editorial text-xl sm:text-2xl font-bold text-[#141C14]">{s.title}</h3>
-                  <p className="text-sm text-[#5C554B] leading-relaxed">{s.text}</p>
-                  <ul className="space-y-2 pt-2">
-                    {s.points.map((pt) => (
-                      <li key={pt} className="flex items-start gap-2.5 text-sm text-[#332E27] font-sans">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#2D6A4F] shrink-0 mt-[7px]" />
-                        {pt}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="pt-6 mt-4 border-t border-[#EFE8DD]">
-                  <button
-                    onClick={() => {
-                      setForm((f) => ({ ...f, enquiryType: s.enquiryType || ENQUIRY_TYPES[0] }));
-                      scrollToForm();
-                    }}
-                    className="pill-btn-light px-5 py-2.5 text-sm font-semibold inline-flex items-center gap-2 border border-[#DDD5C7] group-hover:border-[#1A3824] transition-colors"
-                  >
-                    {C.servicesSection.quoteButton} <ArrowRight className="w-3.5 h-3.5 text-[#1A3824]" />
-                  </button>
-                </div>
+          <div className="mt-10 sm:mt-12 grid sm:grid-cols-2 gap-x-10 lg:gap-x-16 gap-y-12">
+            {SERVICES.map((s, i) => (
+              <div key={s.id} className="border-t border-[#D9D1C2] pt-6 flex flex-col">
+                {s.image && (
+                  <div className="mb-6 aspect-[16/9] overflow-hidden rounded-2xl">
+                    <img src={s.image} alt={s.title} loading="lazy" className="w-full h-full object-cover" />
+                  </div>
+                )}
+                <span className="text-sm font-semibold text-[#2E8B4E] tabular-nums">{String(i + 1).padStart(2, '0')}</span>
+                <h3 className="font-editorial text-2xl sm:text-[1.75rem] font-bold text-[#141C14] mt-2 leading-tight">{s.title}</h3>
+                <p className="text-[15px] text-[#5C554B] leading-relaxed mt-3">{s.text}</p>
+                <ul className="mt-4 space-y-2">
+                  {s.points.map((pt) => (
+                    <li key={pt} className="flex items-start gap-3 text-sm text-[#332E27]">
+                      <Check className="w-4 h-4 text-[#2E8B4E] shrink-0 mt-0.5" />
+                      {pt}
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  onClick={() => {
+                    setForm((f) => ({ ...f, enquiryType: s.enquiryType || ENQUIRY_TYPES[0] }));
+                    scrollToForm();
+                  }}
+                  className="mt-6 self-start inline-flex items-center gap-1.5 text-sm font-semibold text-[#1F6B3A] underline underline-offset-4 decoration-[#1F6B3A]/30 hover:decoration-[#1F6B3A] transition-colors"
+                >
+                  {C.servicesSection.quoteButton} <ArrowRight className="w-3.5 h-3.5" />
+                </button>
               </div>
             ))}
           </div>
         </section>
 
         {/* ---------------- PROCESS ---------------- */}
-        <section className="bg-[#142817] text-white rounded-4xl p-8 sm:p-14 relative overflow-hidden shadow-xl">
-          <div className="relative text-center max-w-xl mx-auto mb-12">
-            <span className="text-[11px] font-bold text-[#B7D7A8] uppercase tracking-[0.16em] block mb-2 font-sans">{C.process.eyebrow}</span>
-            <h2 className="font-editorial text-3xl sm:text-4xl font-bold tracking-tight">{C.process.title}</h2>
+        <section className="rounded-3xl bg-[#EFE9DD] px-6 py-10 sm:px-12 sm:py-14">
+          <div className="text-center max-w-xl mx-auto">
+            <span className="text-[11px] font-semibold text-[#486B44] uppercase tracking-[0.18em] block mb-3 font-sans">{C.process.eyebrow}</span>
+            <h2 className="font-editorial text-3xl sm:text-4xl font-bold text-[#141C14] tracking-tight">{C.process.title}</h2>
           </div>
-          <div ref={stepsRef} className="relative">
-            <div className="hidden lg:block absolute top-6 left-[12.5%] right-[12.5%] h-0.5 bg-white/15" />
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 relative">
-              {STEPS.map((st, i) => (
-                <div key={i} className="text-center">
-                  <div className="w-12 h-12 mx-auto rounded-full bg-[#B7D7A8] text-[#142817] font-editorial font-bold text-lg flex items-center justify-center shadow-md">
-                    {i + 1}
-                  </div>
-                  <h4 className="font-editorial font-bold text-lg mt-4 text-white">{st.title}</h4>
-                  <p className="text-xs text-white/75 leading-relaxed mt-2 max-w-[220px] mx-auto font-sans">{st.text}</p>
-                </div>
-              ))}
-            </div>
-          </div>
+          <ol ref={stepsRef} className="mt-10 grid sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-0">
+            {STEPS.map((st, i) => (
+              <li key={i} className={`lg:px-8 ${i > 0 ? 'lg:border-l lg:border-[#D6CDBC]' : ''} ${i === 0 ? 'lg:pl-0' : ''}`}>
+                <span className="font-editorial text-sm font-bold text-[#2E8B4E] tabular-nums">{String(i + 1).padStart(2, '0')}</span>
+                <h3 className="font-editorial font-bold text-xl text-[#141C14] mt-2">{st.title}</h3>
+                <p className="text-sm text-[#5C554B] leading-relaxed mt-2">{st.text}</p>
+              </li>
+            ))}
+          </ol>
         </section>
 
         {/* ---------------- TIPS ---------------- */}
         <section className="space-y-8">
           <div className="text-center max-w-2xl mx-auto">
-            <span className="text-[11px] font-bold text-[#486B44] uppercase tracking-[0.16em] inline-flex items-center gap-1.5 mb-2 font-sans">
-              <Lightbulb className="w-3.5 h-3.5" /> {C.tips.eyebrow}
-            </span>
+            <span className="text-[11px] font-semibold text-[#486B44] uppercase tracking-[0.18em] block mb-3 font-sans">{C.tips.eyebrow}</span>
             <h2 className="font-editorial text-3xl sm:text-4xl lg:text-5xl font-bold text-[#141C14] tracking-tight">{C.tips.title}</h2>
             <p className="text-xs sm:text-sm text-[#5C554B] mt-2.5 leading-relaxed font-normal">{C.tips.subtitle}</p>
           </div>
 
           <div className="flex justify-center">
-            <div className="inline-flex p-1.5 bg-white border border-[#E8DFD3] rounded-full gap-1.5 overflow-x-auto max-w-full shadow-xs">
+            <div className="flex flex-wrap justify-center gap-2.5">
               {SEASONS.map((s) => (
                 <button
                   key={s.id}
                   onClick={() => setSeason(s.id)}
-                  className={`px-5 py-2.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
+                  className={`px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap border transition-colors ${
                     season === s.id
-                      ? 'bg-[#1A3824] text-white shadow-sm'
-                      : 'text-[#332E27] hover:bg-[#FAF5EE]'
+                      ? 'bg-[#1F6B3A] border-[#1F6B3A] text-white'
+                      : 'bg-white border-[#D9D1C2] text-[#2B2A26] hover:border-[#1F6B3A]'
                   }`}
                 >
                   <span className="inline-flex items-center gap-1.5">
@@ -994,7 +991,7 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
               {activeSeason.tips.map((tp, i) => (
                 <div
                   key={i}
-                  className="bg-white rounded-3xl border border-[#E8DFD3] p-6 shadow-sm hover:shadow-md transition-all"
+                  className="bg-white rounded-2xl border border-[#E8DFD3] p-6"
                 >
                   <span className="font-editorial text-sm font-bold text-[#2D6A4F] block mb-3">{String(i + 1).padStart(2, '0')}</span>
                   <h4 className="font-editorial font-bold text-base text-[#141C14]">{tp.t}</h4>
@@ -1005,282 +1002,250 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
           </div>
 
           {/* FAQ */}
-          <div className="grid lg:grid-cols-5 gap-8 pt-8">
-            <div className="lg:col-span-2 space-y-4">
-              <h3 className="font-editorial text-2xl sm:text-3xl font-bold text-[#141C14]">{C.faq.title}</h3>
-              <p className="text-xs sm:text-sm text-[#5C554B] leading-relaxed font-sans">{C.faq.text}</p>
+          <div className="pt-14 sm:pt-20 max-w-3xl mx-auto">
+            <h3 className="font-editorial text-3xl sm:text-4xl font-bold text-[#141C14] text-center">{C.faq.title}</h3>
+            <div className="mt-8 border-t border-[#E3DBCD]">
+              {FAQS.map((f, i) => {
+                const open = openFaq === i;
+                return (
+                  <div key={i} className="border-b border-[#E3DBCD]">
+                    <button
+                      onClick={() => setOpenFaq(open ? null : i)}
+                      className="w-full flex items-center gap-4 py-5 text-left font-sans group"
+                      aria-expanded={open}
+                    >
+                      <span
+                        className={`shrink-0 w-7 h-7 rounded-full border flex items-center justify-center transition-colors ${
+                          open ? 'bg-[#1F6B3A] border-[#1F6B3A] text-white' : 'border-[#CFC6B6] text-[#1F6B3A] group-hover:border-[#1F6B3A]'
+                        }`}
+                      >
+                        {open ? <Minus className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
+                      </span>
+                      <span className="text-[15px] font-semibold text-[#141C14]">{f.q}</span>
+                    </button>
+                    {open && <p className="pl-11 pr-2 pb-5 -mt-1 text-sm text-[#5C554B] leading-relaxed">{f.a}</p>}
+                  </div>
+                );
+              })}
+            </div>
+            <p className="mt-6 text-center text-sm text-[#5C554B]">
+              {C.faq.text}{' '}
               <button
                 onClick={() => {
                   setForm((f) => ({ ...f, enquiryType: HELP }));
                   scrollToForm();
                 }}
-                className="pill-btn-light px-5 py-3 text-sm font-semibold inline-flex items-center gap-2 border border-[#DDD5C7]"
+                className="font-semibold text-[#1F6B3A] underline underline-offset-4"
               >
-                <Lightbulb className="w-4 h-4 text-[#1A3824]" /> {C.faq.button}
+                {C.faq.button}
               </button>
-            </div>
-            <div className="lg:col-span-3 space-y-3">
-              {FAQS.map((f, i) => {
-                const open = openFaq === i;
-                return (
-                  <div key={i} className={`rounded-2xl border bg-white transition-colors ${open ? 'border-[#1A3824]/60 shadow-sm' : 'border-[#E8DFD3]'}`}>
-                    <button
-                      onClick={() => setOpenFaq(open ? null : i)}
-                      className="w-full flex items-center justify-between gap-4 p-5 text-left font-sans"
-                      aria-expanded={open}
-                    >
-                      <span className="text-sm font-bold text-[#141C14]">{f.q}</span>
-                      <span className="shrink-0 w-7 h-7 rounded-full bg-[#FAF5EE] flex items-center justify-center border border-[#E8DFD3]">
-                        <ChevronDown className={`w-4 h-4 text-[#1A3824] transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
-                      </span>
-                    </button>
-                    {open && (
-                      <div className="px-5 pb-5 text-xs sm:text-sm text-[#5C554B] leading-relaxed font-sans border-t border-[#FAF5EE] pt-3">
-                        {f.a}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+            </p>
           </div>
         </section>
 
         {/* ---------------- ENQUIRY FORM ---------------- */}
         <section id="book-consultation" className="scroll-mt-24">
           <div className="max-w-3xl mx-auto">
-            <div className="text-center mb-8 sm:mb-10">
-              <span className="text-[11px] font-bold text-[#486B44] uppercase tracking-[0.16em] block mb-2 font-sans">{C.contact.eyebrow}</span>
-              <h2 className="font-editorial text-3xl sm:text-4xl lg:text-5xl font-bold text-[#141C14] tracking-tight">{C.contact.title}</h2>
-              <p className="text-sm text-[#5C554B] mt-3 leading-relaxed max-w-xl mx-auto">{C.contact.text}</p>
-            </div>
+            <div className="rounded-[28px] bg-[#F3EEE3] border border-[#E3DBCD] px-5 py-8 sm:px-10 sm:py-11">
+              <div className="text-center">
+                <span className="text-[11px] font-semibold text-[#486B44] uppercase tracking-[0.18em] block mb-3">{C.contact.eyebrow}</span>
+                <h2 className="font-editorial text-3xl sm:text-4xl font-bold text-[#1F6B3A] tracking-tight leading-tight">{C.contact.title}</h2>
+                <p className="text-sm sm:text-[15px] text-[#4F5A4C] mt-3 leading-relaxed max-w-xl mx-auto">{C.contact.text}</p>
+              </div>
 
-            <div className="bg-white rounded-3xl border border-[#E8DFD3] shadow-[0_18px_50px_-28px_rgba(20,40,25,0.28)] p-6 sm:p-10">
-              <AnimatePresence mode="wait">
-                {status === 'done' ? (
-                  <div className="h-full flex flex-col items-center justify-center text-center py-10 space-y-5 animate-fadeIn">
-                    <div className="w-16 h-16 rounded-full bg-[#EBF5EC] text-[#1A3824] flex items-center justify-center border border-[#C5E1C9]">
-                      <CheckCircle2 className="w-8 h-8 text-[#1A3824]" />
-                    </div>
-                    <h3 className="font-editorial text-2xl sm:text-3xl font-bold text-[#141C14]">{C.form.successTitle}, {form.fullName.split(' ')[0]}!</h3>
-                    <p className="text-xs sm:text-sm text-[#5C554B] max-w-md leading-relaxed">
-                      {C.form.successText ? (
-                        C.form.successText
-                      ) : (
-                        <>
-                          We have received your enquiry for <strong>{form.enquiryType.toLowerCase()}</strong>. Our team will contact you shortly on{' '}
-                          <strong>{form.phone}</strong>.
-                        </>
-                      )}
-                    </p>
-                    {waConfirmed && (
-                      <p className="text-xs font-semibold text-[#1F7A3E] bg-[#EAF7EE] border border-[#BFE5CB] rounded-full px-4 py-2 inline-flex items-center gap-2">
-                        <MessageCircle className="w-4 h-4" /> We have sent a confirmation to your WhatsApp.
+              <div className="mt-8">
+                <AnimatePresence mode="wait">
+                  {status === 'done' ? (
+                    <div className="flex flex-col items-center justify-center text-center py-8 space-y-5 animate-fadeIn">
+                      <div className="w-16 h-16 rounded-full bg-white text-[#1F6B3A] flex items-center justify-center border border-[#CFE3C6]">
+                        <CheckCircle2 className="w-8 h-8" />
+                      </div>
+                      <h3 className="font-editorial text-2xl sm:text-3xl font-bold text-[#141C14]">
+                        {C.form.successTitle}, {form.fullName.split(' ')[0]}!
+                      </h3>
+                      <p className="text-sm text-[#5C554B] max-w-md leading-relaxed">
+                        {C.form.successText ? (
+                          C.form.successText
+                        ) : (
+                          <>
+                            We have received your enquiry for <strong>{form.enquiryType.toLowerCase()}</strong>. Our team will contact you shortly on{' '}
+                            <strong>{form.phone}</strong>.
+                          </>
+                        )}
                       </p>
-                    )}
-                    <div className="flex flex-wrap justify-center gap-3 pt-2 font-sans">
-                      <a
-                        href={`https://wa.me/${whatsappNum}?text=${waText}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="pill-btn-dark px-6 py-3 text-sm font-semibold inline-flex items-center gap-2 shadow-md"
-                      >
-                        <MessageCircle className="w-4 h-4 text-[#25D366]" /> Also send on WhatsApp
-                      </a>
-                      <button
-                        onClick={() => {
-                          setForm(emptyForm);
-                          setStatus('idle');
-                        }}
-                        className="pill-btn-light px-6 py-3 text-sm font-semibold text-[#1A3824] border border-[#DDD5C7]"
-                      >
-                        New enquiry
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <form onSubmit={handleSubmit} noValidate className="space-y-5 font-sans">
-                    <div>
-                      <span className="block text-[13px] font-semibold text-[#2B2A26] mb-2 font-sans">{C.form.labels.need}</span>
-                      <div className="flex flex-wrap gap-2">
-                        {ENQUIRY_TYPES.map((t) => {
-                          const active = form.enquiryType === t;
-                          return (
-                            <button
-                              type="button"
-                              key={t}
-                              onClick={() => setForm({ ...form, enquiryType: t })}
-                              className={`px-3.5 py-2 rounded-full text-xs font-semibold border transition-all ${
-                                active
-                                  ? 'bg-[#1A3824] text-white border-[#1A3824] shadow-xs'
-                                  : 'text-[#332E27] border-[#DDD5C7] bg-white hover:border-[#1A3824]'
-                              }`}
-                            >
-                              <span>{t}</span>
-                            </button>
-                          );
-                        })}
+                      {waConfirmed && (
+                        <p className="text-xs font-semibold text-[#1F7A3E] bg-white border border-[#BFE5CB] rounded-full px-4 py-2 inline-flex items-center gap-2">
+                          <MessageCircle className="w-4 h-4" /> We have sent a confirmation to your WhatsApp.
+                        </p>
+                      )}
+                      <div className="flex flex-wrap justify-center gap-3 pt-2">
+                        <a
+                          href={`https://wa.me/${whatsappNum}?text=${waText}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-6 py-3 rounded-xl bg-[#1F6B3A] hover:bg-[#185730] text-white text-sm font-semibold inline-flex items-center gap-2 transition-colors"
+                        >
+                          <MessageCircle className="w-4 h-4" /> Also send on WhatsApp
+                        </a>
+                        <button
+                          onClick={() => {
+                            setForm(emptyForm);
+                            setStatus('idle');
+                          }}
+                          className="px-6 py-3 rounded-xl bg-white border border-[#DCD3C4] text-sm font-semibold text-[#1F4A2C] hover:border-[#1F6B3A] transition-colors"
+                        >
+                          New enquiry
+                        </button>
                       </div>
                     </div>
+                  ) : (
+                    <form onSubmit={handleSubmit} noValidate className="space-y-6">
+                      <ChoiceChips label={C.form.labels.need} options={ENQUIRY_TYPES} value={form.enquiryType} onChange={(v) => setForm({ ...form, enquiryType: v })} />
 
-                    <div className="grid sm:grid-cols-2 gap-4">
-                      <label className="block">
-                        <span className="block text-[13px] font-semibold text-[#2B2A26] mb-1.5 font-sans">{C.form.labels.name}</span>
-                        <input
-                          className={inputCls(errors.fullName)}
-                          value={form.fullName}
-                          onChange={(e) => setForm({ ...form, fullName: e.target.value })}
-                          placeholder={C.form.labels.namePlaceholder}
-                          autoComplete="name"
-                        />
-                        {errors.fullName && <span className="text-[11px] text-[#D64545] mt-1 block">{errors.fullName}</span>}
-                      </label>
-                      <label className="block">
-                        <span className="block text-[13px] font-semibold text-[#2B2A26] mb-1.5 font-sans">{C.form.labels.phone}</span>
-                        <input
-                          type="tel"
-                          className={inputCls(errors.phone)}
-                          value={form.phone}
-                          onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                          placeholder={C.form.labels.phonePlaceholder}
-                          autoComplete="tel"
-                        />
-                        {errors.phone && <span className="text-[11px] text-[#D64545] mt-1 block">{errors.phone}</span>}
-                      </label>
-                      <label className="block">
-                        <span className="block text-[13px] font-semibold text-[#2B2A26] mb-1.5 font-sans">{C.form.labels.email}</span>
-                        <input
-                          type="email"
-                          className={inputCls(errors.email)}
-                          value={form.email}
-                          onChange={(e) => setForm({ ...form, email: e.target.value })}
-                          placeholder={C.form.labels.emailPlaceholder}
-                          autoComplete="email"
-                        />
-                        {errors.email && <span className="text-[11px] text-[#D64545] mt-1 block">{errors.email}</span>}
-                      </label>
-                      <label className="block">
-                        <span className="block text-[13px] font-semibold text-[#2B2A26] mb-1.5 font-sans">{C.form.labels.organisation}</span>
-                        <input
-                          className={inputCls()}
-                          value={form.organisation}
-                          onChange={(e) => setForm({ ...form, organisation: e.target.value })}
-                          placeholder={C.form.labels.organisationPlaceholder}
-                        />
-                      </label>
-                      <label className="block">
-                        <span className="block text-[13px] font-semibold text-[#2B2A26] mb-1.5 font-sans">{C.form.labels.propertyType}</span>
-                        <select className={inputCls()} value={form.propertyType} onChange={(e) => setForm({ ...form, propertyType: e.target.value })}>
-                          {PROPERTY_TYPES.map((p) => (
-                            <option key={p}>{p}</option>
-                          ))}
-                        </select>
-                      </label>
-                      <label className="block">
-                        <span className="block text-[13px] font-semibold text-[#2B2A26] mb-1.5 font-sans">{C.form.labels.city}</span>
-                        <select className={inputCls()} value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })}>
-                          {CITIES.map((c) => (
-                            <option key={c}>{c}</option>
-                          ))}
-                        </select>
-                      </label>
-                    </div>
+                      <div className="grid sm:grid-cols-2 gap-3">
+                        <IconField icon={User} error={errors.fullName}>
+                          <input
+                            className={fieldInput}
+                            aria-label={C.form.labels.name}
+                            value={form.fullName}
+                            onChange={(e) => setForm({ ...form, fullName: e.target.value })}
+                            placeholder={asPlaceholder(C.form.labels.name)}
+                            autoComplete="name"
+                          />
+                        </IconField>
+                        <IconField icon={Phone} error={errors.phone}>
+                          <input
+                            type="tel"
+                            inputMode="numeric"
+                            className={fieldInput}
+                            aria-label={C.form.labels.phone}
+                            value={form.phone}
+                            onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                            placeholder={asPlaceholder(C.form.labels.phone)}
+                            autoComplete="tel"
+                          />
+                        </IconField>
+                        <IconField icon={Mail} error={errors.email}>
+                          <input
+                            type="email"
+                            className={fieldInput}
+                            aria-label={C.form.labels.email}
+                            value={form.email}
+                            onChange={(e) => setForm({ ...form, email: e.target.value })}
+                            placeholder={C.form.labels.email}
+                            autoComplete="email"
+                          />
+                        </IconField>
+                        <IconField icon={Building2}>
+                          <input
+                            className={fieldInput}
+                            aria-label={C.form.labels.organisation}
+                            value={form.organisation}
+                            onChange={(e) => setForm({ ...form, organisation: e.target.value })}
+                            placeholder={C.form.labels.organisation}
+                            autoComplete="organization"
+                          />
+                        </IconField>
+                      </div>
 
-                    {!isHelp && (
-                      <label className="block">
-                        <span className="block text-[13px] font-semibold text-[#2B2A26] mb-1.5 font-sans">{C.form.labels.area}</span>
-                        <select className={inputCls()} value={form.area} onChange={(e) => setForm({ ...form, area: e.target.value })}>
-                          {AREAS.map((a) => (
-                            <option key={a}>{a}</option>
-                          ))}
-                        </select>
-                      </label>
-                    )}
+                      <ChoiceChips label={C.form.labels.propertyType} options={PROPERTY_TYPES} value={form.propertyType} onChange={(v) => setForm({ ...form, propertyType: v })} />
 
-                    <label className="block">
-                      <span className="block text-[13px] font-semibold text-[#2B2A26] mb-1.5 font-sans">
-                        {isHelp ? C.form.labels.question : C.form.labels.message}
+                      <div className="space-y-6">
+                        <label className="block sm:max-w-[calc(50%-6px)]">
+                          <span className="block text-sm font-semibold text-[#1F4A2C] mb-2.5">{C.form.labels.city}</span>
+                          <IconField icon={MapPin}>
+                            <select className={`${fieldInput} cursor-pointer`} value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })}>
+                              {CITIES.map((c) => (
+                                <option key={c}>{c}</option>
+                              ))}
+                            </select>
+                          </IconField>
+                        </label>
+                        {!isHelp && (
+                          <ChoiceChips label={C.form.labels.area} options={AREAS} value={form.area} onChange={(v) => setForm({ ...form, area: v })} />
+                        )}
+                      </div>
+
+                      <label className="block">
+                        <span className="block text-sm font-semibold text-[#1F4A2C] mb-2.5">{isHelp ? C.form.labels.question : C.form.labels.message}</span>
+                        <textarea
+                          rows={4}
+                          className={`w-full px-4 py-3 bg-white border rounded-xl text-[15px] text-[#182018] placeholder:text-[#8C887F] focus:outline-none focus:border-[#1F6B3A] focus:ring-2 focus:ring-[#1F6B3A]/15 transition-colors ${
+                            errors.message ? 'border-[#D64545]' : 'border-[#DCD3C4]'
+                          }`}
+                          value={form.message}
+                          onChange={(e) => setForm({ ...form, message: e.target.value })}
+                          placeholder={isHelp ? C.form.labels.questionPlaceholder : C.form.labels.messagePlaceholder}
+                        />
+                        {errors.message && <span className="text-xs text-[#C93C3C] mt-1.5 block">{errors.message}</span>}
+                      </label>
+
+                      <div>
+                        <button
+                          type="submit"
+                          disabled={status === 'saving'}
+                          className="w-full h-14 rounded-xl bg-[#1F6B3A] hover:bg-[#185730] disabled:opacity-60 text-white text-base font-semibold flex items-center justify-center gap-2 transition-colors"
+                        >
+                          {status === 'saving' ? (
+                            <>
+                              <Loader2 className="w-4 h-4 animate-spin" /> Sending...
+                            </>
+                          ) : (
+                            <>
+                              {isHelp ? C.form.helpSubmitButton : C.form.submitButton} <ArrowRight className="w-4 h-4" />
+                            </>
+                          )}
+                        </button>
+                        <p className="text-xs text-center text-[#7A746B] mt-3">{C.form.privacyNote}</p>
+                      </div>
+                    </form>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* who we work with - real clients and numbers */}
+              {shortClients.length > 0 && (
+                <div className="mt-8 pt-7 border-t border-[#DDD4C4] text-center">
+                  <p className="text-sm font-semibold text-[#1F4A2C]">{C.trustedByLabel || 'Trusted by'}</p>
+                  <p className="mt-3 flex flex-wrap justify-center gap-x-3 gap-y-1.5 font-editorial text-[15px] sm:text-base font-semibold text-[#2B3A2C]">
+                    {shortClients.map((n, i) => (
+                      <React.Fragment key={n}>
+                        {i > 0 && (
+                          <span aria-hidden="true" className="text-[#B5AC9C]">
+                            ·
+                          </span>
+                        )}
+                        <span>{n}</span>
+                      </React.Fragment>
+                    ))}
+                  </p>
+                  <p className="mt-5 inline-flex flex-col sm:flex-row justify-center gap-1 sm:gap-0 rounded-xl bg-white px-5 py-3 text-[13px] font-semibold text-[#1F2A1F]">
+                    {statItems.slice(0, 2).map((st, i) => (
+                      <span key={i} className={i > 0 ? 'sm:ml-3 sm:pl-3 sm:border-l sm:border-[#DCD3C4]' : ''}>
+                        {st.n}
+                        {st.s} {st.label.toLowerCase()}
                       </span>
-                      <textarea
-                        rows={4}
-                        className={inputCls(errors.message)}
-                        value={form.message}
-                        onChange={(e) => setForm({ ...form, message: e.target.value })}
-                        placeholder={
-                          isHelp
-                            ? C.form.labels.questionPlaceholder
-                            : C.form.labels.messagePlaceholder
-                        }
-                      />
-                      {errors.message && <span className="text-[11px] text-[#D64545] mt-1 block">{errors.message}</span>}
-                    </label>
-
-                    <button
-                      type="submit"
-                      disabled={status === 'saving'}
-                      className="w-full pill-btn-dark py-4 text-sm font-semibold shadow-md hover:shadow-lg flex items-center justify-center gap-2"
-                    >
-                      {status === 'saving' ? (
-                        <>
-                          <Loader2 className="w-4 h-4 animate-spin" /> Sending...
-                        </>
-                      ) : (
-                        <>
-                          <Send className="w-4 h-4" /> {isHelp ? C.form.helpSubmitButton : C.form.submitButton}
-                        </>
-                      )}
-                    </button>
-                    <p className="text-[11px] text-center text-[#7A746B]">{C.form.privacyNote}</p>
-                  </form>
-                )}
-              </AnimatePresence>
+                    ))}
+                    <span className="sm:ml-3 sm:pl-3 sm:border-l sm:border-[#DCD3C4]">Lucknow · Kanpur · Delhi</span>
+                  </p>
+                </div>
+              )}
             </div>
 
-            {/* direct contact, below the form */}
-            <div className="mt-8">
-              <p className="text-center text-sm text-[#6B645A] mb-4 font-sans">Prefer to talk to us directly?</p>
-              <div className={`grid gap-3 font-sans ${settings.contactEmail ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
-                <a
-                  href={`https://wa.me/${whatsappNum}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center gap-3 p-4 rounded-2xl bg-white border border-[#E8DFD3] hover:border-[#1A3824]/40 transition-colors"
-                >
-                  <span className="w-10 h-10 rounded-full bg-[#E9F8EE] flex items-center justify-center shrink-0">
-                    <MessageCircle className="w-5 h-5 text-[#1FA855]" />
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block text-xs text-[#7A746B]">WhatsApp</span>
-                    <span className="block text-sm font-semibold text-[#141C14] truncate">{prettyPhone(whatsappNum)}</span>
-                  </span>
+            {/* direct contact */}
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm">
+              <span className="text-[#6B645A]">Prefer to talk?</span>
+              <a href={`https://wa.me/${whatsappNum}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 font-semibold text-[#1F4A2C] hover:text-[#1F6B3A]">
+                <MessageCircle className="w-4 h-4 text-[#1FA855]" /> WhatsApp {prettyPhone(whatsappNum)}
+              </a>
+              <a href={`tel:+${whatsappNum}`} className="inline-flex items-center gap-2 font-semibold text-[#1F4A2C] hover:text-[#1F6B3A]">
+                <Phone className="w-4 h-4" /> {C.contact.callLabel || 'Call us'}
+              </a>
+              {settings.contactEmail && (
+                <a href={`mailto:${settings.contactEmail}`} className="inline-flex items-center gap-2 font-semibold text-[#1F4A2C] hover:text-[#1F6B3A]">
+                  <Mail className="w-4 h-4" /> {settings.contactEmail}
                 </a>
-                <a
-                  href={`tel:+${whatsappNum}`}
-                  className="flex items-center gap-3 p-4 rounded-2xl bg-white border border-[#E8DFD3] hover:border-[#1A3824]/40 transition-colors"
-                >
-                  <span className="w-10 h-10 rounded-full bg-[#EBF5EC] flex items-center justify-center shrink-0">
-                    <Phone className="w-[18px] h-[18px] text-[#1A3824]" />
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block text-xs text-[#7A746B]">{C.contact.callLabel || 'Call us'}</span>
-                    <span className="block text-sm font-semibold text-[#141C14] truncate">{prettyPhone(whatsappNum)}</span>
-                  </span>
-                </a>
-                {settings.contactEmail && (
-                  <a
-                    href={`mailto:${settings.contactEmail}`}
-                    className="flex items-center gap-3 p-4 rounded-2xl bg-white border border-[#E8DFD3] hover:border-[#1A3824]/40 transition-colors"
-                  >
-                    <span className="w-10 h-10 rounded-full bg-[#EBF5EC] flex items-center justify-center shrink-0">
-                      <Mail className="w-[18px] h-[18px] text-[#1A3824]" />
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block text-xs text-[#7A746B]">Email</span>
-                      <span className="block text-sm font-semibold text-[#141C14] truncate">{settings.contactEmail}</span>
-                    </span>
-                  </a>
-                )}
-              </div>
+              )}
             </div>
           </div>
         </section>
