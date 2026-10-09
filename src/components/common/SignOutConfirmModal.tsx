@@ -111,11 +111,6 @@ export const SignOutConfirmModal: React.FC<SignOutConfirmModalProps> = ({
           </div>
         </div>
 
-        {/* Amazon-style Footer Bar */}
-        <div className="bg-[#F8F9FA] px-5 py-2.5 border-t border-[#E5E2D9] text-[10px] text-[#7A7A7A] flex items-center justify-between font-mono">
-          <span>Amazon-Style Authentication Protocol</span>
-          <span className="text-[#2D4A27] font-semibold">Protected Session</span>
-        </div>
       </div>
     </div>
   );
