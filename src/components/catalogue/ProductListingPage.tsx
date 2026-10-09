@@ -280,57 +280,71 @@ export const ProductListingPage: React.FC<ProductListingPageProps> = ({
     });
   }, [currentCategory?.slug, filters.category]);
   const activeChips = isGiftingSection ? GIFTING_FILTERS : isPlantCareSection ? PLANT_CARE_FILTERS : isPotsSection ? POTS_FILTERS : QUICK_FILTERS;
+  const chipsRef = React.useRef<HTMLDivElement>(null);
 
   return (
     <div className="bg-[#FAF5EE] min-h-screen py-8 sm:py-12 text-[#182018] relative">
-      {/* Decorative Botanical Foliage Framing (Left & Right top corners as in reference design) */}
-      <div className="pointer-events-none absolute -top-8 -left-10 w-48 sm:w-72 lg:w-88 h-64 sm:h-96 opacity-85 z-0 select-none hidden sm:block overflow-hidden">
-        <svg viewBox="0 0 320 380" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-          {/* Palm Fronds & Tropical Leaves */}
-          <path d="M-20 40C40 30 110 90 140 160C110 140 50 120 -20 110" fill="#3D5A42" fillOpacity="0.75" />
-          <path d="M-10 80C60 80 130 150 160 230C130 200 60 170 -10 160" fill="#4B6E52" fillOpacity="0.8" />
-          <path d="M-30 0C50 -10 150 40 200 120C150 90 60 70 -30 60" fill="#2E4833" fillOpacity="0.85" />
-          <path d="M10 140C80 140 150 220 170 310C140 270 80 230 10 210" fill="#5B7E62" fillOpacity="0.75" />
-          <path d="M-40 180C30 190 90 270 100 360C80 320 30 270 -40 250" fill="#3A563F" fillOpacity="0.7" />
-          {/* Subtle warm highlights */}
-          <path d="M20 60C70 60 120 120 140 190C120 160 80 130 20 120" stroke="#8EB093" strokeWidth="1.5" strokeOpacity="0.5" />
-        </svg>
-      </div>
-      <div className="pointer-events-none absolute -top-8 -right-10 w-48 sm:w-72 lg:w-88 h-64 sm:h-96 opacity-85 z-0 select-none hidden sm:block overflow-hidden">
-        <svg viewBox="0 0 320 380" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full scale-x-[-1]">
-          {/* Palm Fronds & Tropical Leaves */}
-          <path d="M-20 40C40 30 110 90 140 160C110 140 50 120 -20 110" fill="#3D5A42" fillOpacity="0.75" />
-          <path d="M-10 80C60 80 130 150 160 230C130 200 60 170 -10 160" fill="#4B6E52" fillOpacity="0.8" />
-          <path d="M-30 0C50 -10 150 40 200 120C150 90 60 70 -30 60" fill="#2E4833" fillOpacity="0.85" />
-          <path d="M10 140C80 140 150 220 170 310C140 270 80 230 10 210" fill="#5B7E62" fillOpacity="0.75" />
-          <path d="M-40 180C30 190 90 270 100 360C80 320 30 270 -40 250" fill="#3A563F" fillOpacity="0.7" />
-          {/* Subtle warm highlights */}
-          <path d="M20 60C70 60 120 120 140 190C120 160 80 130 20 120" stroke="#8EB093" strokeWidth="1.5" strokeOpacity="0.5" />
-        </svg>
+      {/* Decorative Botanical Foliage Framing (Left & Right top corners wrapped in dedicated clipping box so sticky sidebar is not broken) */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden z-0">
+        <div className="absolute -top-8 -left-10 w-48 sm:w-72 lg:w-88 h-64 sm:h-96 opacity-80 select-none hidden sm:block">
+          <svg viewBox="0 0 320 380" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+            {/* Palm Fronds & Tropical Leaves */}
+            <path d="M-20 40C40 30 110 90 140 160C110 140 50 120 -20 110" fill="#3D5A42" fillOpacity="0.75" />
+            <path d="M-10 80C60 80 130 150 160 230C130 200 60 170 -10 160" fill="#4B6E52" fillOpacity="0.8" />
+            <path d="M-30 0C50 -10 150 40 200 120C150 90 60 70 -30 60" fill="#2E4833" fillOpacity="0.85" />
+            <path d="M10 140C80 140 150 220 170 310C140 270 80 230 10 210" fill="#5B7E62" fillOpacity="0.75" />
+            <path d="M-40 180C30 190 90 270 100 360C80 320 30 270 -40 250" fill="#3A563F" fillOpacity="0.7" />
+            {/* Subtle warm highlights */}
+            <path d="M20 60C70 60 120 120 140 190C120 160 80 130 20 120" stroke="#8EB093" strokeWidth="1.5" strokeOpacity="0.5" />
+          </svg>
+        </div>
+        <div className="absolute -top-8 -right-10 w-48 sm:w-72 lg:w-88 h-64 sm:h-96 opacity-80 select-none hidden sm:block">
+          <svg viewBox="0 0 320 380" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full scale-x-[-1]">
+            {/* Palm Fronds & Tropical Leaves */}
+            <path d="M-20 40C40 30 110 90 140 160C110 140 50 120 -20 110" fill="#3D5A42" fillOpacity="0.75" />
+            <path d="M-10 80C60 80 130 150 160 230C130 200 60 170 -10 160" fill="#4B6E52" fillOpacity="0.8" />
+            <path d="M-30 0C50 -10 150 40 200 120C150 90 60 70 -30 60" fill="#2E4833" fillOpacity="0.85" />
+            <path d="M10 140C80 140 150 220 170 310C140 270 80 230 10 210" fill="#5B7E62" fillOpacity="0.75" />
+            <path d="M-40 180C30 190 90 270 100 360C80 320 30 270 -40 250" fill="#3A563F" fillOpacity="0.7" />
+            {/* Subtle warm highlights */}
+            <path d="M20 60C70 60 120 120 140 190C120 160 80 130 20 120" stroke="#8EB093" strokeWidth="1.5" strokeOpacity="0.5" />
+          </svg>
+        </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-xs text-[#7A746B] mb-6 sm:mb-8 font-sans">
-          <button onClick={() => navigate('/')} className="hover:text-[#182018] transition-colors">
-            Home
+        {/* Navigation Bar with Back Button & Breadcrumbs */}
+        <div className="flex flex-wrap items-center gap-2.5 mb-6 sm:mb-8">
+          <button
+            onClick={() => (window.history.length > 1 ? window.history.back() : navigate('/'))}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/95 border border-[#DDD5C7] text-xs font-semibold text-[#182018] hover:bg-[#FAF5EE] hover:border-[#1A3824] transition-all shadow-xs cursor-pointer"
+            aria-label="Go back"
+          >
+            <ArrowLeft className="w-3.5 h-3.5 text-[#1F3B22]" />
+            <span>Back</span>
           </button>
-          <span className="text-[#B5ACA0]">/</span>
-          <span className="text-[#182018] font-medium">
-            {isGiftingSection ? 'Gifting' : isPlantCareSection ? 'Plant Care Collection' : isPotsSection ? 'Pots & Planters' : 'Nursery Catalogue'}
-          </span>
-          {currentCategory && (
-            <>
-              <span className="text-[#B5ACA0]">/</span>
-              <span className="text-[#1A3824] font-semibold">{currentCategory.name}</span>
-            </>
-          )}
+
+          <nav aria-label="Breadcrumb" className="inline-flex items-center gap-2 text-xs text-[#4A4237] font-sans px-3.5 py-1.5 rounded-full bg-[#FAF5EE]/92 backdrop-blur-md border border-[#E8DFD3]/80 shadow-xs">
+            <button onClick={() => navigate('/')} className="hover:text-[#142817] font-semibold transition-colors">
+              Home
+            </button>
+            <span className="text-[#8C8275] font-light">/</span>
+            <span className="text-[#182018] font-medium">
+              {isGiftingSection ? 'Gifting' : isPlantCareSection ? 'Plant Care Collection' : isPotsSection ? 'Pots & Planters' : 'Nursery Catalogue'}
+            </span>
+            {currentCategory && (
+              <>
+                <span className="text-[#8C8275] font-light">/</span>
+                <span className="text-[#1A3824] font-bold">{currentCategory.name}</span>
+              </>
+            )}
+          </nav>
         </div>
 
         {/* Editorial Header */}
         <div className="mb-8 sm:mb-12">
           <div className="max-w-3xl">
-            <span className="text-[11px] font-bold text-[#486B44] uppercase tracking-[0.26em] block mb-2 font-sans">
+            <span className="text-[11px] font-bold text-[#1F4A24] uppercase tracking-[0.24em] inline-block px-2.5 py-0.5 rounded-md bg-[#FAF5EE]/90 backdrop-blur-xs mb-2.5 font-sans border border-[#E5DEC4]/40">
               {isGiftingSection ? 'GIFTS THAT GROW' : isPlantCareSection ? 'PLANT NUTRITION & DOCTOR CARE' : isPotsSection ? 'ARTISANAL PLANTERS' : 'NURSERY-GROWN PLANTS'}
             </span>
             <h1 className="font-editorial text-4xl sm:text-5xl lg:text-[3.6rem] font-bold text-[#141C14] tracking-tight leading-[1.08]">
@@ -358,24 +372,53 @@ export const ProductListingPage: React.FC<ProductListingPageProps> = ({
             </p>
           </div>
 
-          {/* Quick Filter Pill Chips */}
-          <div className="flex items-center gap-2.5 mt-7 overflow-x-auto pb-2 scrollbar-none">
-            {activeChips.map((chip) => {
-              const isActive = filters.category === chip.slug;
-              return (
-                <button
-                  key={chip.slug}
-                  onClick={() => setFilters((prev) => ({ ...prev, category: chip.slug }))}
-                  className={`shrink-0 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs font-semibold transition-all duration-200 shadow-xs ${
-                    isActive
-                      ? 'bg-[#1A3824] text-white shadow-sm ring-1 ring-[#1A3824]'
-                      : 'bg-white/90 border border-[#DDD5C7] text-[#3D372E] hover:border-[#1A3824] hover:bg-white'
-                  }`}
-                >
-                  {chip.label}
-                </button>
-              );
-            })}
+          {/* Quick Filter Pill Chips with Slide Bar & Navigation */}
+          <div className="relative mt-7 flex items-center gap-2">
+            <button
+              onClick={() => {
+                if (chipsRef.current) {
+                  chipsRef.current.scrollBy({ left: -240, behavior: 'smooth' });
+                }
+              }}
+              aria-label="Slide left"
+              className="hidden sm:flex shrink-0 w-8 h-8 rounded-full bg-white/95 border border-[#DDD5C7] items-center justify-center text-[#182018] shadow-xs hover:bg-[#FAF5EE] hover:border-[#1A3824] transition-all cursor-pointer"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+
+            <div
+              ref={chipsRef}
+              className="flex-1 flex items-center gap-2.5 overflow-x-auto pb-3 pt-1 scroll-smooth custom-horizontal-scrollbar"
+            >
+              {activeChips.map((chip) => {
+                const isActive = filters.category === chip.slug;
+                return (
+                  <button
+                    key={chip.slug}
+                    onClick={() => setFilters((prev) => ({ ...prev, category: chip.slug }))}
+                    className={`shrink-0 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs font-semibold transition-all duration-200 shadow-xs cursor-pointer ${
+                      isActive
+                        ? 'bg-[#1A3824] text-white shadow-sm ring-1 ring-[#1A3824]'
+                        : 'bg-white/90 border border-[#DDD5C7] text-[#3D372E] hover:border-[#1A3824] hover:bg-white'
+                    }`}
+                  >
+                    {chip.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            <button
+              onClick={() => {
+                if (chipsRef.current) {
+                  chipsRef.current.scrollBy({ left: 240, behavior: 'smooth' });
+                }
+              }}
+              aria-label="Slide right"
+              className="hidden sm:flex shrink-0 w-8 h-8 rounded-full bg-white/95 border border-[#DDD5C7] items-center justify-center text-[#182018] shadow-xs hover:bg-[#FAF5EE] hover:border-[#1A3824] transition-all cursor-pointer"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
           </div>
         </div>
 

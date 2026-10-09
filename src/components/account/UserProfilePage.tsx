@@ -18,7 +18,8 @@ import {
   ArrowRight,
   ShoppingBag,
   Truck,
-  Search
+  Search,
+  PackageOpen
 } from '../common/Icons';
 import { useAuth } from '../../context/AuthContext';
 import { useWishlist } from '../../context/WishlistContext';
@@ -471,7 +472,7 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
                 <div>
                   <h3 className="font-serif font-bold text-lg text-[#13301B] flex items-center gap-2">
                     <Truck className="w-5 h-5 text-[#2D4A27]" />
-                    Live Shipment &amp; Order Tracker
+                    My Orders &amp; Shipments
                   </h3>
                   <p className="text-xs text-[#5A5A5A] mt-0.5">
                     Monitor real-time dispatch, transit milestones, courier AWB, and doorstep delivery for all your plant orders.
@@ -479,70 +480,94 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
                 </div>
                 {customerOrders.length > 0 && (
                   <span className="px-3 py-1 bg-[#EBF5EC] border border-[#C5E1C9] text-[#2D6A4F] text-xs font-bold rounded-full self-start sm:self-auto">
-                    {customerOrders.length} Recorded Shipments
+                    {customerOrders.length} Recorded Shipment{customerOrders.length > 1 ? 's' : ''}
                   </span>
                 )}
               </div>
 
-              {/* Embedded Live Order Tracker Module */}
-              <OrderTrackingPage embedded={true} initialOrderNumber={selectedOrderToTrack} />
-
-              {/* If customer has past orders, show order cards with 1-click track button */}
-              {customerOrders.length > 0 && (
-                <div className="pt-6 border-t border-[#E8F0E7] space-y-4">
-                  <h4 className="font-bold text-xs uppercase tracking-wider text-[#6B6B6B]">
-                    Your Recent Orders
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {customerOrders.map((ord) => (
-                      <div
-                        key={ord.id}
-                        className="p-4 bg-[#F6F2EA] rounded-2xl flex flex-col justify-between space-y-3 hover:border-[#2D4A27]/40 transition-colors"
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <div>
-                            <span className="font-bold text-xs text-[#13301B] block">{ord.orderNumber}</span>
-                            <span className="text-[11px] text-[#7A7A7A]">
-                              {new Date(ord.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                            </span>
-                          </div>
-                          <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
-                            ord.orderStatus === 'Delivered'
-                              ? 'bg-emerald-100 text-emerald-800'
-                              : ord.orderStatus === 'Cancelled' || ord.orderStatus === 'Refunded'
-                              ? 'bg-rose-100 text-rose-800'
-                              : ord.orderStatus === 'Shipped' || ord.orderStatus === 'Out for Delivery'
-                              ? 'bg-blue-100 text-blue-800'
-                              : 'bg-amber-100 text-amber-800'
-                          }`}>
-                            {ord.orderStatus}
-                          </span>
-                        </div>
-
-                        <div className="text-xs text-[#5A5A5A] space-y-1">
-                          <p className="font-medium text-[#1A1A1A]">
-                            ₹{Number(ord.total ?? ord.totalAmount ?? 0).toLocaleString('en-IN')} • {(ord.items || []).length} item{(ord.items || []).length === 1 ? '' : 's'}
-                          </p>
-                          <p className="text-[11px] text-[#7A7A7A] truncate">
-                            Shipping to: {ord.shippingAddress?.city || '-'}, {ord.shippingAddress?.state || ''}
-                          </p>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedOrderToTrack(ord.orderNumber);
-                            window.scrollTo({ top: 380, behavior: 'smooth' });
-                          }}
-                          className="w-full py-2 bg-[#13301B] hover:bg-[#1F4A2B] text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-                        >
-                          <Truck className="w-3.5 h-3.5" />
-                          <span>{ord.orderStatus === 'Cancelled' || ord.orderStatus === 'Refunded' ? 'View Cancelled Order' : 'Track This Package Live'}</span>
-                        </button>
-                      </div>
-                    ))}
+              {customerOrders.length === 0 ? (
+                <div className="py-12 sm:py-16 px-4 text-center bg-[#FAF7F1] rounded-2xl border border-[#ECE6DA] space-y-4">
+                  <div className="w-20 h-20 mx-auto rounded-full bg-[#EBF3EB] border border-[#C5E1C9] flex items-center justify-center text-[#2D4A27]">
+                    <PackageOpen className="w-10 h-10 text-[#2D4A27]" />
+                  </div>
+                  <div className="space-y-1.5 max-w-sm mx-auto">
+                    <h4 className="font-serif font-bold text-xl text-[#13301B]">No Orders Yet</h4>
+                    <p className="text-xs sm:text-sm text-[#5A5A5A] leading-relaxed">
+                      Looks like you haven't placed any plant orders yet. Start browsing our curated botanical collection and bring nature to your doorstep.
+                    </p>
+                  </div>
+                  <div className="pt-2">
+                    <button
+                      type="button"
+                      onClick={() => navigate('/plants')}
+                      className="px-7 py-3 bg-[#13301B] hover:bg-[#1F4A2B] text-white text-xs sm:text-sm font-semibold rounded-full shadow-xs transition-all cursor-pointer inline-flex items-center gap-2"
+                    >
+                      <span>Start Browsing</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
+              ) : (
+                <>
+                  {/* Embedded Live Order Tracker Module */}
+                  <OrderTrackingPage embedded={true} initialOrderNumber={selectedOrderToTrack} />
+
+                  {/* If customer has past orders, show order cards with 1-click track button */}
+                  <div className="pt-6 border-t border-[#E8F0E7] space-y-4">
+                    <h4 className="font-bold text-xs uppercase tracking-wider text-[#6B6B6B]">
+                      Your Recent Orders
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {customerOrders.map((ord) => (
+                        <div
+                          key={ord.id}
+                          className="p-4 bg-[#F6F2EA] rounded-2xl flex flex-col justify-between space-y-3 hover:border-[#2D4A27]/40 transition-colors"
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <span className="font-bold text-xs text-[#13301B] block">{ord.orderNumber}</span>
+                              <span className="text-[11px] text-[#7A7A7A]">
+                                {new Date(ord.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                              </span>
+                            </div>
+                            <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
+                              ord.orderStatus === 'Delivered'
+                                ? 'bg-emerald-100 text-emerald-800'
+                                : ord.orderStatus === 'Cancelled' || ord.orderStatus === 'Refunded'
+                                ? 'bg-rose-100 text-rose-800'
+                                : ord.orderStatus === 'Shipped' || ord.orderStatus === 'Out for Delivery'
+                                ? 'bg-blue-100 text-blue-800'
+                                : 'bg-amber-100 text-amber-800'
+                            }`}>
+                              {ord.orderStatus}
+                            </span>
+                          </div>
+
+                          <div className="text-xs text-[#5A5A5A] space-y-1">
+                            <p className="font-medium text-[#1A1A1A]">
+                              ₹{Number(ord.total ?? ord.totalAmount ?? 0).toLocaleString('en-IN')} • {(ord.items || []).length} item{(ord.items || []).length === 1 ? '' : 's'}
+                            </p>
+                            <p className="text-[11px] text-[#7A7A7A] truncate">
+                              Shipping to: {ord.shippingAddress?.city || '-'}, {ord.shippingAddress?.state || ''}
+                            </p>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedOrderToTrack(ord.orderNumber);
+                              window.scrollTo({ top: 380, behavior: 'smooth' });
+                            }}
+                            className="w-full py-2 bg-[#13301B] hover:bg-[#1F4A2B] text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                          >
+                            <Truck className="w-3.5 h-3.5" />
+                            <span>{ord.orderStatus === 'Cancelled' || ord.orderStatus === 'Refunded' ? 'View Cancelled Order' : 'Track This Package Live'}</span>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
               )}
             </div>
           </div>

@@ -53,6 +53,8 @@ const unmarkProductDeleted = (id: string) => {
   } catch (e) {}
 };
 
+export const getCachedProducts = (): Product[] => getLocalProducts();
+
 const getLocalProducts = (): Product[] => {
   const deletedIds = getDeletedProductIds();
   try {

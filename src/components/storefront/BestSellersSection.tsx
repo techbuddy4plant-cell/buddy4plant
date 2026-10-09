@@ -36,8 +36,8 @@ export const BestSellersSection: React.FC<BestSellersSectionProps> = ({
             </h2>
           </div>
           <button
-            onClick={() => navigate('/plants?sortBy=bestseller')}
-            className="pill-btn-light self-start sm:self-auto text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 group"
+            onClick={() => navigate('/plants')}
+            className="pill-btn-light self-start sm:self-auto text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 group cursor-pointer"
           >
             Explore All Best Sellers
             <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />

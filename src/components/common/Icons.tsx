@@ -162,3 +162,4 @@ export const CreditCard = make('credit-card', { regular: true });
 export const Banknote = make('money-bill-wave');
 export const Download = make('download');
 export const PackageCheck = make('box-open');
+export const PackageOpen = make('box-open');

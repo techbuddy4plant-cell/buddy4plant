@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Product, Category, Review } from '../../types';
-import { getProducts } from '../../services/productService';
-import { getCategories } from '../../services/categoryService';
+import { getProducts, getCachedProducts } from '../../services/productService';
+import { getCategories, getCachedCategories } from '../../services/categoryService';
 import { getRecentReviews } from '../../services/reviewService';
 import { HeroBanner } from './HeroBanner';
 import { setSeo, DEFAULT_TITLE, DEFAULT_DESCRIPTION } from '../../utils/seo';
@@ -28,17 +28,17 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate, onQuickView }) => 
   useEffect(() => {
     setSeo({ title: DEFAULT_TITLE, description: DEFAULT_DESCRIPTION, path: '/' });
   }, []);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [products, setProducts] = useState<Product[]>(() => getCachedProducts());
+  const [categories, setCategories] = useState<Category[]>(() => getCachedCategories());
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const loadData = () => {
     Promise.all([getProducts(), getCategories(), getRecentReviews()]).then(
       ([pList, cList, rList]) => {
-        setProducts(pList);
-        setCategories(cList);
-        setReviews(rList);
+        if (pList && pList.length > 0) setProducts(pList);
+        if (cList && cList.length > 0) setCategories(cList);
+        if (rList) setReviews(rList);
         setLoading(false);
       }
     );

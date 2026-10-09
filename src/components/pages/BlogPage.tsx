@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'motion/react';
-import { ArrowRight, BookOpen, Calendar, ChevronDown, Clock, Leaf, ListTree, Search, Share2, CheckCircle2 } from '../common/Icons';
+import { ArrowRight, ArrowLeft, BookOpen, Calendar, ChevronDown, Clock, Leaf, ListTree, Search, Share2, CheckCircle2 } from '../common/Icons';
 import { BlogPost, getBlogPosts, INITIAL_BLOG_POSTS } from '../../services/blogService';
 import { BLOG_SECTIONS } from '../../data/pillarArticles';
 import { MarkdownBlock, extractHeadings } from '../blog/MarkdownBlock';
@@ -127,17 +127,28 @@ const ArticleView: React.FC<{ post: BlogPost; posts: BlogPost[]; navigate: (p: s
 
   return (
     <article className="max-w-6xl mx-auto" itemScope itemType="https://schema.org/BlogPosting">
-      <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-xs text-[#7A7A7A] mb-6">
-        <Link to="/" navigate={navigate} className="hover:text-[#141414]">Home</Link>
-        <span>/</span>
-        <Link to="/blog" navigate={navigate} className="hover:text-[#141414]">Blog</Link>
-        {section && (
-          <>
-            <span>/</span>
-            <Link to={`/blog/${section}`} navigate={navigate} className="hover:text-[#141414]">{BLOG_SECTIONS[section]}</Link>
-          </>
-        )}
-      </nav>
+      <div className="flex flex-wrap items-center gap-2.5 mb-6">
+        <button
+          onClick={() => (window.history.length > 1 ? window.history.back() : navigate('/blog'))}
+          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/95 border border-[#DDD5C7] text-xs font-semibold text-[#182018] hover:bg-[#FAF5EE] hover:border-[#1A3824] transition-all shadow-xs cursor-pointer"
+          aria-label="Go back"
+        >
+          <ArrowLeft className="w-3.5 h-3.5 text-[#1F3B22]" />
+          <span>Back</span>
+        </button>
+
+        <nav aria-label="Breadcrumb" className="inline-flex items-center gap-2 text-xs text-[#524B40] font-sans px-3.5 py-1.5 rounded-full bg-white/70 border border-[#E8DFD3]/80 shadow-xs">
+          <Link to="/" navigate={navigate} className="hover:text-[#142817] font-medium transition-colors">Home</Link>
+          <span className="text-[#8C8275] font-light">/</span>
+          <Link to="/blog" navigate={navigate} className="hover:text-[#142817] font-medium transition-colors">Blog</Link>
+          {section && (
+            <>
+              <span className="text-[#8C8275] font-light">/</span>
+              <Link to={`/blog/${section}`} navigate={navigate} className="text-[#182018] font-semibold hover:text-[#142817]">{BLOG_SECTIONS[section]}</Link>
+            </>
+          )}
+        </nav>
+      </div>
 
       <header className="max-w-3xl space-y-4">
         <span className="inline-block bg-[#1F3B22] text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">{post.category}</span>

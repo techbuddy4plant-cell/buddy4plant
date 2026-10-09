@@ -103,7 +103,7 @@ export default function App() {
       return <HomePage navigate={navigate} onQuickView={setQuickViewProduct} />;
     }
 
-    if (path === '/plants' || path === '/plants/') {
+    if (path === '/plants' || path === '/plants/' || path.startsWith('/plants?') || path.startsWith('/plants#')) {
       return (
         <ProductListingPage
           initialCategorySlug="all"
@@ -124,7 +124,7 @@ export default function App() {
       );
     }
 
-    if (path === '/collections' || path === '/collections/') {
+    if (path === '/collections' || path === '/collections/' || path.startsWith('/collections?') || path.startsWith('/collections#')) {
       return (
         <ProductListingPage
           initialCategorySlug="all"

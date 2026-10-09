@@ -18,7 +18,9 @@ import {
   ShieldCheck,
   ChevronRight,
   ExternalLink,
-  Plus
+  Plus,
+  PackageOpen,
+  ArrowRight
 } from '../common/Icons';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
@@ -389,22 +391,29 @@ export const UserOrdersPage: React.FC<UserOrdersPageProps> = ({ navigate }) => {
             <p className="text-xs font-medium text-[#556955]">Loading orders...</p>
           </div>
         ) : filteredOrders.length === 0 ? (
-          <div className="bg-white rounded-2xl p-12 text-center border border-[#E2ECE0]">
-            <Package className="w-12 h-12 text-[#95D5B2] mx-auto mb-3" />
-            <h3 className="font-serif font-bold text-base text-[#182319]">
-              {orderSearchQuery ? 'No matching orders found' : 'No orders in selected filter'}
-            </h3>
-            <p className="text-xs text-[#556955] mt-1 max-w-sm mx-auto">
-              {orderSearchQuery
-                ? 'Try searching with a different order ID or plant name.'
-                : 'Explore our live plant collection and place your first order.'}
-            </p>
-            <button
-              onClick={() => navigate('/plants')}
-              className="mt-5 px-6 py-2.5 bg-[#2D4A27] text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-xs"
-            >
-              Explore Plants &rarr;
-            </button>
+          <div className="bg-white rounded-2xl p-12 text-center border border-[#E2ECE0] space-y-4">
+            <div className="w-20 h-20 mx-auto rounded-full bg-[#EBF3EB] border border-[#C5E1C9] flex items-center justify-center text-[#2D4A27]">
+              <PackageOpen className="w-10 h-10 text-[#2D4A27]" />
+            </div>
+            <div className="space-y-1.5 max-w-sm mx-auto">
+              <h3 className="font-serif font-bold text-lg sm:text-xl text-[#182319]">
+                {orderSearchQuery ? 'No matching orders found' : 'No Orders Yet'}
+              </h3>
+              <p className="text-xs sm:text-sm text-[#556955] leading-relaxed">
+                {orderSearchQuery
+                  ? 'Try searching with a different order ID or plant name.'
+                  : "You haven't placed any orders yet. Start browsing our live plant collection and bring green joy to your home."}
+              </p>
+            </div>
+            <div className="pt-2">
+              <button
+                onClick={() => navigate('/plants')}
+                className="px-7 py-3 bg-[#13301B] hover:bg-[#1F4A2B] text-white rounded-full text-xs sm:text-sm font-semibold shadow-xs transition-all cursor-pointer inline-flex items-center gap-2"
+              >
+                <span>Start Browsing</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         ) : (
           filteredOrders.map((ord) => {

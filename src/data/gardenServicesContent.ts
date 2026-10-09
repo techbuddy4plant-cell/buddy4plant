@@ -165,6 +165,7 @@ export const DEFAULT_GARDEN_CONTENT: GardenServicesContent = {
       title: 'Institutional & Campus Landscaping',
       text: 'Complete landscaping for government offices, training institutes, colleges, industrial units and defence campuses - from layout to lawns, hedges, green belts and plantation.',
       points: ['Site survey & landscape layout', 'Lawn, hedge & green-belt development', 'Large-scale plantation drives'],
+      image: '/projects/giti-campuses-1.jpg',
       enquiryType: 'New landscaping project',
     },
     {
@@ -173,6 +174,7 @@ export const DEFAULT_GARDEN_CONTENT: GardenServicesContent = {
       title: 'Annual Maintenance Contracts (AMC)',
       text: 'Year-round garden care by trained gardeners - mowing, pruning, weeding, manuring, seasonal flowers and plant replacement, on a fixed yearly contract.',
       points: ['Scheduled gardener visits or deployment', 'Seasonal flower & plant replacement', 'Monthly work reporting'],
+      image: '/projects/van-vibhag-head-office-1.jpg',
       enquiryType: 'Annual maintenance (AMC)',
     },
     {
@@ -181,6 +183,7 @@ export const DEFAULT_GARDEN_CONTENT: GardenServicesContent = {
       title: 'Home, Balcony & Terrace Gardens',
       text: 'Beautiful green corners for homes and apartments - balcony makeovers, terrace gardens, kitchen gardens and small lawns designed for Lucknow weather.',
       points: ['Plant selection for your sunlight', 'Pots, planters & soil setup', 'Drip / easy watering options'],
+      image: '/projects/private-home-landscaping-1.jpg',
       enquiryType: 'Balcony & terrace garden',
     },
     {
@@ -189,6 +192,7 @@ export const DEFAULT_GARDEN_CONTENT: GardenServicesContent = {
       title: 'Office & Indoor Plant Styling',
       text: 'Healthy indoor plants for offices, reception areas and showrooms, with regular care visits so they always look fresh.',
       points: ['Low-light, air-purifying plants', 'Matching planters for your interiors', 'Routine care & replacement'],
+      image: '/editorial/kyari-living-plants-hero.jpg',
       enquiryType: 'Indoor & office plants',
     },
   ],

@@ -50,6 +50,8 @@ const unmarkCategoryDeleted = (id: string) => {
   } catch (e) {}
 };
 
+export const getCachedCategories = (): Category[] => getLocalCategories();
+
 const getLocalCategories = (): Category[] => {
   const deletedIds = getDeletedCategoryIds();
   try {

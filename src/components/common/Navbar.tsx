@@ -36,15 +36,12 @@ import { Buddy4PlantLogo } from './Buddy4PlantLogo';
 import { AnnouncementTicker } from './AnnouncementTicker';
 import CardNav, { CardNavItem } from './CardNav';
 
-/** One soft leaf green for every menu card (white text stays easy to read on it). */
-const NAV_CARD_GREEN = '#4A7A43';
-
-/** Cards shown when the menu is opened. */
+/** Curated neutral palette in the natural botanical theme of the site. */
 const NAV_CARDS: CardNavItem[] = [
   {
     label: 'Plants',
-    bgColor: NAV_CARD_GREEN,
-    textColor: '#FFFFFF',
+    bgColor: '#1F3B22', // Deep Forest Green
+    textColor: '#FAF7F2',
     links: [
       { label: 'All Plants', href: '/plants' },
       { label: 'Indoor Plants', href: '/plants/indoor-plants' },
@@ -55,8 +52,8 @@ const NAV_CARDS: CardNavItem[] = [
   },
   {
     label: 'Pots & Care',
-    bgColor: NAV_CARD_GREEN,
-    textColor: '#FFFFFF',
+    bgColor: '#EFE6D8', // Warm Ceramic Sand
+    textColor: '#2A2621',
     links: [
       { label: 'Pots & Planters', href: '/plants/pots-planters' },
       { label: 'Ceramic Pots', href: '/plants/ceramic-pots' },
@@ -67,8 +64,8 @@ const NAV_CARDS: CardNavItem[] = [
   },
   {
     label: 'Gardening',
-    bgColor: NAV_CARD_GREEN,
-    textColor: '#FFFFFF',
+    bgColor: '#36533A', // Muted Olive Pine
+    textColor: '#FAF7F2',
     links: [
       { label: 'Gardening Services', href: '/garden-services' },
       { label: 'Our Projects', href: '/projects' },
@@ -77,8 +74,8 @@ const NAV_CARDS: CardNavItem[] = [
   },
   {
     label: 'Company',
-    bgColor: NAV_CARD_GREEN,
-    textColor: '#FFFFFF',
+    bgColor: '#E3EBE1', // Soft Herbal Sage
+    textColor: '#192B1C',
     links: [
       { label: 'About Us', href: '/about' },
       { label: 'Blog', href: '/blog' },
@@ -210,54 +207,54 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
 
   // Store search box - in the header on desktop, in its own row on phones and tablets
   const searchBox = (
-                <div className="relative">
-                  <form onSubmit={handleSearchSubmit} role="search">
-                    <Search className="w-4 h-4 text-[#7A7A7A] absolute left-2.5 lg:left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
-                    <input
-                      type="search"
-                      value={searchQuery}
-                      onChange={(e) => {
-                        setSearchQuery(e.target.value);
-                        document.documentElement.style.setProperty('--b4p-search-top', `${Math.round(e.currentTarget.getBoundingClientRect().bottom + 8)}px`);
-                      }}
-                      onKeyDown={(e) => e.key === 'Escape' && setSearchQuery('')}
-                      data-b4p-typing=""
-                      placeholder={searchFocused ? (isDesktop ? 'Search plants, pots, plant care...' : 'Search') : typedPlaceholder}
-                      onFocus={() => setSearchFocused(true)}
-                      onBlur={() => setSearchFocused(false)}
-                      aria-label="Search the store"
-                      className="w-full h-10 lg:h-11 pl-7 lg:pl-11 pr-1.5 lg:pr-4 rounded-full bg-[#F1ECE2] border border-transparent text-[13px] lg:text-sm text-[#1A1A1A] placeholder-[#7A7A7A] focus:outline-none focus:bg-white focus:border-[#2D4A27] focus:ring-2 focus:ring-[#2D4A27]/15 transition-colors"
-                    />
-                  </form>
-                  {searchQuery.trim().length > 1 && !isSearchOpen && (
-                    <div className="max-lg:fixed max-lg:inset-x-3 max-lg:top-[var(--b4p-search-top,112px)] lg:absolute lg:left-0 lg:right-0 lg:top-full lg:mt-2 z-50 overflow-hidden rounded-2xl border border-[#E5E2D9] bg-white shadow-xl">
-                      {searchSuggestions.length > 0 ? (
-                        searchSuggestions.map((item) => (
-                          <button
-                            key={item.id}
-                            type="button"
-                            onClick={() => handleProductSelect(item.slug)}
-                            className="flex w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-[#F7F4EC]"
-                          >
-                            <span className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-[#F0EDE6]">
-                              <PlantImage src={item.images[0]} alt="" className="h-full w-full object-cover" />
-                            </span>
-                            <span className="min-w-0 flex-1">
-                              <span className="block truncate text-sm font-semibold text-[#1A1A1A]">{item.name}</span>
-                              <span className="block truncate text-[11px] text-[#7A7A7A]">{item.category.replace(/-/g, ' ')}</span>
-                            </span>
-                            <span className="text-sm font-semibold text-[#13301B]">₹{item.price}</span>
-                          </button>
-                        ))
-                      ) : (
-                        <p className="px-4 py-3 text-sm text-[#7A7A7A]">No products found</p>
-                      )}
-                      <button type="button" onClick={handleSearchSubmit} className="block w-full bg-[#F7F4EC] px-4 py-2.5 text-center text-xs font-semibold text-[#2D4A27] hover:underline">
-                        View all results for &ldquo;{searchQuery.trim()}&rdquo;
-                      </button>
-                    </div>
-                  )}
-                </div>
+    <div className="relative">
+      <form onSubmit={handleSearchSubmit} role="search">
+        <Search className="w-4 h-4 text-[#7A7A7A] absolute left-2.5 lg:left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+        <input
+          type="search"
+          value={searchQuery}
+          onChange={(e) => {
+            setSearchQuery(e.target.value);
+            document.documentElement.style.setProperty('--b4p-search-top', `${Math.round(e.currentTarget.getBoundingClientRect().bottom + 8)}px`);
+          }}
+          onKeyDown={(e) => e.key === 'Escape' && setSearchQuery('')}
+          data-b4p-typing=""
+          placeholder={searchFocused ? (isDesktop ? 'Search plants, pots, plant care...' : 'Search') : typedPlaceholder}
+          onFocus={() => setSearchFocused(true)}
+          onBlur={() => setSearchFocused(false)}
+          aria-label="Search the store"
+          className="w-full h-10 lg:h-11 pl-7 lg:pl-11 pr-1.5 lg:pr-4 rounded-full bg-[#F1ECE2] border border-transparent text-[13px] lg:text-sm text-[#1A1A1A] placeholder-[#7A7A7A] focus:outline-none focus:bg-white focus:border-[#2D4A27] focus:ring-2 focus:ring-[#2D4A27]/15 transition-colors"
+        />
+      </form>
+      {searchQuery.trim().length > 1 && !isSearchOpen && (
+        <div className="max-lg:fixed max-lg:inset-x-3 max-lg:top-[var(--b4p-search-top,112px)] lg:absolute lg:left-0 lg:right-0 lg:top-full lg:mt-2 z-50 overflow-hidden rounded-2xl border border-[#E5E2D9] bg-white shadow-xl">
+          {searchSuggestions.length > 0 ? (
+            searchSuggestions.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => handleProductSelect(item.slug)}
+                className="flex w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-[#F7F4EC]"
+              >
+                <span className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-[#F0EDE6]">
+                  <PlantImage src={item.images[0]} alt="" className="h-full w-full object-cover" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-semibold text-[#1A1A1A]">{item.name}</span>
+                  <span className="block truncate text-[11px] text-[#7A7A7A]">{item.category.replace(/-/g, ' ')}</span>
+                </span>
+                <span className="text-sm font-semibold text-[#13301B]">₹{item.price}</span>
+              </button>
+            ))
+          ) : (
+            <p className="px-4 py-3 text-sm text-[#7A7A7A]">No products found</p>
+          )}
+          <button type="button" onClick={handleSearchSubmit} className="block w-full bg-[#F7F4EC] px-4 py-2.5 text-center text-xs font-semibold text-[#2D4A27] hover:underline">
+            View all results for &ldquo;{searchQuery.trim()}&rdquo;
+          </button>
+        </div>
+      )}
+    </div>
   );
 
   return (
@@ -285,143 +282,143 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
               ease="power3.out"
               actions={
                 <>
-                {/* Locate our store */}
-                <button
-                  id="store-locator-btn"
-                  type="button"
-                  onClick={() => navigate('/store-locator')}
-                  className="hidden sm:inline-flex p-2 text-[#1F341C] hover:text-[#182319] hover:bg-[#EBF3EC] rounded-full transition-colors"
-                  aria-label="Locate our store"
-                  title="Locate our store"
-                >
-                  <MapPin className="w-5 h-5" />
-                </button>
-  
-                {/* Search Button */}
-                <button
-                  id="search-btn"
-                  type="button"
-                  onClick={() => {
-                    setIsSearchOpen(!isSearchOpen);
-                    setTimeout(() => searchInputRef.current?.focus(), 100);
-                  }}
-                  className="p-2 text-[#1F341C] hover:text-[#182319] hover:bg-[#EBF3EC] rounded-full transition-colors hidden"
-                  aria-label="Search nursery catalogue"
-                >
-                  <Search className="w-5 h-5" />
-                </button>
-  
-                {/* Wishlist Icon */}
-                <button
-                  id="wishlist-btn"
-                  type="button"
-                  onClick={() => navigate('/wishlist')}
-                  className="hidden sm:flex p-2 text-[#1F341C] hover:text-[#182319] hover:bg-[#EBF3EC] rounded-full relative transition-colors"
-                  aria-label="Wishlist"
-                >
-                  <Heart className="w-5 h-5" />
-                  {wishlistCount > 0 && (
-                    <span
-                      id="wishlist-badge"
-                      className="absolute -top-0.5 -right-0.5 bg-[#2D4A27] text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-xs"
-                    >
-                      {wishlistCount}
-                    </span>
-                  )}
-                </button>
-  
-                {/* Cart Icon */}
-                <button
-                  id="cart-btn"
-                  type="button"
-                  onClick={() => setIsCartDrawerOpen(true)}
-                  className="p-2 text-[#1F341C] hover:text-[#182319] hover:bg-[#EBF3EC] rounded-full relative transition-colors"
-                  aria-label="Shopping Cart"
-                >
-                  <ShoppingBag className="w-5 h-5" />
-                  {itemCount > 0 && (
-                    <span
-                      id="cart-badge"
-                      className="absolute -top-0.5 -right-0.5 bg-[#2D6A4F] text-white text-[9px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center shadow-xs animate-bounce"
-                    >
-                      {itemCount}
-                    </span>
-                  )}
-                </button>
-  
-                {/* Account Icon & Dropdown */}
-                <div className="relative hidden sm:block" ref={accountMenuRef}>
+                  {/* Locate our store */}
                   <button
-                    id="account-menu-btn"
+                    id="store-locator-btn"
+                    type="button"
+                    onClick={() => navigate('/store-locator')}
+                    className="hidden sm:inline-flex p-2 text-[#1F341C] hover:text-[#182319] hover:bg-[#EBF3EC] rounded-full transition-colors"
+                    aria-label="Locate our store"
+                    title="Locate our store"
+                  >
+                    <MapPin className="w-5 h-5" />
+                  </button>
+
+                  {/* Search Button */}
+                  <button
+                    id="search-btn"
                     type="button"
                     onClick={() => {
-                      if (!user && !isAdmin) {
-                        openAuthModal('login');
-                      } else {
-                        setIsAccountMenuOpen(!isAccountMenuOpen);
-                      }
+                      setIsSearchOpen(!isSearchOpen);
+                      setTimeout(() => searchInputRef.current?.focus(), 100);
                     }}
-                    className="flex items-center gap-1.5 p-2 text-[#1F341C] hover:text-[#182319] hover:bg-[#EBF3EC] rounded-full transition-colors"
-                    aria-label="Account options"
+                    className="p-2 text-[#1F341C] hover:text-[#182319] hover:bg-[#EBF3EC] rounded-full transition-colors hidden"
+                    aria-label="Search nursery catalogue"
                   >
-                    <UserIcon className="w-5 h-5" />
-                    {isAdmin && (
-                      <span className="hidden xl:inline-block text-[9px] font-bold uppercase tracking-wider bg-[#2D4A27] text-white px-2 py-0.5 rounded-xs">
-                        Admin
+                    <Search className="w-5 h-5" />
+                  </button>
+
+                  {/* Wishlist Icon */}
+                  <button
+                    id="wishlist-btn"
+                    type="button"
+                    onClick={() => navigate('/wishlist')}
+                    className="hidden sm:flex p-2 text-[#1F341C] hover:text-[#182319] hover:bg-[#EBF3EC] rounded-full relative transition-colors"
+                    aria-label="Wishlist"
+                  >
+                    <Heart className="w-5 h-5" />
+                    {wishlistCount > 0 && (
+                      <span
+                        id="wishlist-badge"
+                        className="absolute -top-0.5 -right-0.5 bg-[#2D4A27] text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-xs"
+                      >
+                        {wishlistCount}
                       </span>
                     )}
                   </button>
-  
-                  {/* Account Dropdown Menu */}
-                  {isAccountMenuOpen && (user || isAdmin) && (
-                    <div
-                      id="account-dropdown"
-                      className="absolute right-0 top-full mt-2 w-56 bg-[#FDFCF9] border border-[#E5E2D9] shadow-2xl py-2 z-50 rounded-lg animate-fadeIn"
+
+                  {/* Cart Icon */}
+                  <button
+                    id="cart-btn"
+                    type="button"
+                    onClick={() => setIsCartDrawerOpen(true)}
+                    className="p-2 text-[#1F341C] hover:text-[#182319] hover:bg-[#EBF3EC] rounded-full relative transition-colors"
+                    aria-label="Shopping Cart"
+                  >
+                    <ShoppingBag className="w-5 h-5" />
+                    {itemCount > 0 && (
+                      <span
+                        id="cart-badge"
+                        className="absolute -top-0.5 -right-0.5 bg-[#2D6A4F] text-white text-[9px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center shadow-xs animate-bounce"
+                      >
+                        {itemCount}
+                      </span>
+                    )}
+                  </button>
+
+                  {/* Account Icon & Dropdown */}
+                  <div className="relative hidden sm:block" ref={accountMenuRef}>
+                    <button
+                      id="account-menu-btn"
+                      type="button"
+                      onClick={() => {
+                        if (!user && !isAdmin) {
+                          openAuthModal('login');
+                        } else {
+                          setIsAccountMenuOpen(!isAccountMenuOpen);
+                        }
+                      }}
+                      className="flex items-center gap-1.5 p-2 text-[#1F341C] hover:text-[#182319] hover:bg-[#EBF3EC] rounded-full transition-colors"
+                      aria-label="Account options"
                     >
-                      <div className="px-4 py-2.5 border-b border-[#E5E2D9]">
-                        <p className="text-xs font-bold text-[#1A1A1A] truncate">
-                          {profile?.displayName || user?.displayName || (isAdmin ? 'Admin User' : 'Valued Customer')}
-                        </p>
-                        <p className="text-[11px] text-[#7A7A7A] truncate">{user?.email || (isAdmin ? 'admin@buddy4plant.com' : '')}</p>
+                      <UserIcon className="w-5 h-5" />
+                      {isAdmin && (
+                        <span className="hidden xl:inline-block text-[9px] font-bold uppercase tracking-wider bg-[#2D4A27] text-white px-2 py-0.5 rounded-xs">
+                          Admin
+                        </span>
+                      )}
+                    </button>
+
+                    {/* Account Dropdown Menu */}
+                    {isAccountMenuOpen && (user || isAdmin) && (
+                      <div
+                        id="account-dropdown"
+                        className="absolute right-0 top-full mt-2 w-56 bg-[#FDFCF9] border border-[#E5E2D9] shadow-2xl py-2 z-50 rounded-lg animate-fadeIn"
+                      >
+                        <div className="px-4 py-2.5 border-b border-[#E5E2D9]">
+                          <p className="text-xs font-bold text-[#1A1A1A] truncate">
+                            {profile?.displayName || user?.displayName || (isAdmin ? 'Admin User' : 'Valued Customer')}
+                          </p>
+                          <p className="text-[11px] text-[#7A7A7A] truncate">{user?.email || (isAdmin ? 'admin@buddy4plant.com' : '')}</p>
+                        </div>
+
+                        <button
+                          onClick={() => {
+                            setIsAccountMenuOpen(false);
+                            navigate('/profile');
+                          }}
+                          className="w-full text-left px-4 py-2 text-xs text-[#4A4A4A] hover:bg-[#F5F2EB] flex items-center gap-2"
+                        >
+                          <UserIcon className="w-4 h-4" />
+                          My Profile
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            setIsAccountMenuOpen(false);
+                            navigate('/orders');
+                          }}
+                          className="w-full text-left px-4 py-2 text-xs text-[#4A4A4A] hover:bg-[#F5F2EB] flex items-center gap-2"
+                        >
+                          <ShoppingBag className="w-4 h-4" />
+                          My Orders
+                        </button>
+
+                        <div className="border-t border-[#E5E2D9] my-1"></div>
+
+                        <button
+                          onClick={() => {
+                            setIsAccountMenuOpen(false);
+                            promptSignOut();
+                          }}
+                          className="w-full text-left px-4 py-2 text-xs text-rose-700 hover:bg-rose-50 flex items-center gap-2 font-medium"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          Sign Out
+                        </button>
                       </div>
-  
-                      <button
-                        onClick={() => {
-                          setIsAccountMenuOpen(false);
-                          navigate('/profile');
-                        }}
-                        className="w-full text-left px-4 py-2 text-xs text-[#4A4A4A] hover:bg-[#F5F2EB] flex items-center gap-2"
-                      >
-                        <UserIcon className="w-4 h-4" />
-                        My Profile
-                      </button>
-  
-                      <button
-                        onClick={() => {
-                          setIsAccountMenuOpen(false);
-                          navigate('/orders');
-                        }}
-                        className="w-full text-left px-4 py-2 text-xs text-[#4A4A4A] hover:bg-[#F5F2EB] flex items-center gap-2"
-                      >
-                        <ShoppingBag className="w-4 h-4" />
-                        My Orders
-                      </button>
-  
-                      <div className="border-t border-[#E5E2D9] my-1"></div>
-  
-                      <button
-                        onClick={() => {
-                          setIsAccountMenuOpen(false);
-                          promptSignOut();
-                        }}
-                        className="w-full text-left px-4 py-2 text-xs text-rose-700 hover:bg-rose-50 flex items-center gap-2 font-medium"
-                      >
-                        <LogOut className="w-4 h-4" />
-                        Sign Out
-                      </button>
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
                 </>
               }
             />
@@ -570,9 +567,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
                       Plants
                     </span>
                     <ChevronDown
-                      className={`w-4 h-4 text-[#5A6E55] transition-transform ${
-                        mobileExpandedCat === 'plants' ? 'rotate-180' : ''
-                      }`}
+                      className={`w-4 h-4 text-[#5A6E55] transition-transform ${mobileExpandedCat === 'plants' ? 'rotate-180' : ''
+                        }`}
                     />
                   </div>
 
@@ -712,9 +708,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
                       Pots &amp; Planters
                     </span>
                     <ChevronDown
-                      className={`w-4 h-4 text-[#5A6E55] transition-transform ${
-                        mobileExpandedCat === 'pots' ? 'rotate-180' : ''
-                      }`}
+                      className={`w-4 h-4 text-[#5A6E55] transition-transform ${mobileExpandedCat === 'pots' ? 'rotate-180' : ''
+                        }`}
                     />
                   </div>
 
@@ -784,9 +779,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
                       Plant Care
                     </span>
                     <ChevronDown
-                      className={`w-4 h-4 text-[#5A6E55] transition-transform ${
-                        mobileExpandedCat === 'care' ? 'rotate-180' : ''
-                      }`}
+                      className={`w-4 h-4 text-[#5A6E55] transition-transform ${mobileExpandedCat === 'care' ? 'rotate-180' : ''
+                        }`}
                     />
                   </div>
 
@@ -876,9 +870,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
                       Gifting
                     </span>
                     <ChevronDown
-                      className={`w-4 h-4 text-[#5A6E55] transition-transform ${
-                        mobileExpandedCat === 'gifting' ? 'rotate-180' : ''
-                      }`}
+                      className={`w-4 h-4 text-[#5A6E55] transition-transform ${mobileExpandedCat === 'gifting' ? 'rotate-180' : ''
+                        }`}
                     />
                   </div>
 
@@ -1064,9 +1057,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
       >
         <button
           onClick={() => navigate('/')}
-          className={`flex flex-col items-center justify-center p-1 min-w-[54px] ${
-            currentPath === '/' ? 'text-[#2D4A27] font-bold' : 'text-[#6A7B6B]'
-          }`}
+          className={`flex flex-col items-center justify-center p-1 min-w-[54px] ${currentPath === '/' ? 'text-[#2D4A27] font-bold' : 'text-[#6A7B6B]'
+            }`}
         >
           <Home className="w-5 h-5" />
           <span className="text-[9px] uppercase tracking-tighter mt-0.5">Home</span>
@@ -1074,9 +1066,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
 
         <button
           onClick={() => navigate('/plants')}
-          className={`flex flex-col items-center justify-center p-1 min-w-[54px] ${
-            currentPath.startsWith('/plants') ? 'text-[#2D4A27] font-bold' : 'text-[#6A7B6B]'
-          }`}
+          className={`flex flex-col items-center justify-center p-1 min-w-[54px] ${currentPath.startsWith('/plants') ? 'text-[#2D4A27] font-bold' : 'text-[#6A7B6B]'
+            }`}
         >
           <Grid className="w-5 h-5" />
           <span className="text-[9px] uppercase tracking-tighter mt-0.5">Shop</span>
@@ -1084,9 +1075,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
 
         <button
           onClick={() => navigate('/track-order')}
-          className={`flex flex-col items-center justify-center p-1 min-w-[54px] ${
-            currentPath.includes('track-order') ? 'text-[#2D4A27] font-bold' : 'text-[#6A7B6B]'
-          }`}
+          className={`flex flex-col items-center justify-center p-1 min-w-[54px] ${currentPath.includes('track-order') ? 'text-[#2D4A27] font-bold' : 'text-[#6A7B6B]'
+            }`}
         >
           <Truck className="w-5 h-5" />
           <span className="text-[9px] uppercase tracking-tighter mt-0.5">Track</span>
@@ -1094,9 +1084,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
 
         <button
           onClick={() => navigate('/wishlist')}
-          className={`flex flex-col items-center justify-center p-1 min-w-[54px] relative ${
-            currentPath === '/wishlist' ? 'text-[#2D4A27] font-bold' : 'text-[#6A7B6B]'
-          }`}
+          className={`flex flex-col items-center justify-center p-1 min-w-[54px] relative ${currentPath === '/wishlist' ? 'text-[#2D4A27] font-bold' : 'text-[#6A7B6B]'
+            }`}
         >
           <Heart className="w-5 h-5" />
           {wishlistCount > 0 && (
@@ -1110,9 +1099,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
         {/* Account (the cart is already in the top bar on phones) */}
         <button
           onClick={() => (user || isAdmin ? navigate('/profile') : openAuthModal('login'))}
-          className={`flex flex-col items-center justify-center p-1 min-w-[54px] relative hover:text-[#2D4A27] ${
-            currentPath.startsWith('/profile') || currentPath.startsWith('/orders') ? 'text-[#13301B] font-bold' : 'text-[#6A7B6B]'
-          }`}
+          className={`flex flex-col items-center justify-center p-1 min-w-[54px] relative hover:text-[#2D4A27] ${currentPath.startsWith('/profile') || currentPath.startsWith('/orders') ? 'text-[#13301B] font-bold' : 'text-[#6A7B6B]'
+            }`}
         >
           <UserIcon className="w-5 h-5" />
           <span className="text-[9px] uppercase tracking-tighter mt-0.5">{user || isAdmin ? 'Account' : 'Sign In'}</span>

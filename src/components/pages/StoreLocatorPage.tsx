@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Clock, MapPin, MessageCircle, Navigation, Truck } from '../common/Icons';
+import { Clock, MapPin, MessageCircle, Navigation, Phone, Truck, ArrowLeft } from '../common/Icons';
 
 /** The nursery's pin on Google Maps */
 const STORE_MAPS_LINK = 'https://maps.app.goo.gl/kF5HbobUaLwzu3vu9';
@@ -27,10 +27,22 @@ export const StoreLocatorPage: React.FC<{ navigate: (path: string) => void }> = 
   return (
     <div className="bg-[#FAF5EE] min-h-screen text-[#182018]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
-        <div className="flex items-center gap-2 text-xs text-[#7A746B] mb-6">
-          <button onClick={() => navigate('/')} className="hover:text-[#182018]">Home</button>
-          <span className="text-[#B5ACA0]">/</span>
-          <span className="text-[#1A3824] font-semibold">Locate Our Store</span>
+        {/* Navigation Bar with Back Button & Breadcrumbs */}
+        <div className="flex flex-wrap items-center gap-2.5 mb-6">
+          <button
+            onClick={() => (window.history.length > 1 ? window.history.back() : navigate('/'))}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/95 border border-[#DDD5C7] text-xs font-semibold text-[#182018] hover:bg-[#FAF5EE] hover:border-[#1A3824] transition-all shadow-xs cursor-pointer"
+            aria-label="Go back"
+          >
+            <ArrowLeft className="w-3.5 h-3.5 text-[#1F3B22]" />
+            <span>Back</span>
+          </button>
+
+          <nav aria-label="Breadcrumb" className="inline-flex items-center gap-2 text-xs text-[#524B40] font-sans px-3.5 py-1.5 rounded-full bg-white/70 border border-[#E8DFD3]/80 shadow-xs">
+            <button onClick={() => navigate('/')} className="hover:text-[#142817] font-medium transition-colors">Home</button>
+            <span className="text-[#8C8275] font-light">/</span>
+            <span className="text-[#182018] font-semibold">Locate Our Store</span>
+          </nav>
         </div>
 
         <div className="max-w-2xl mb-8">

@@ -323,29 +323,41 @@ const ProjectCard: React.FC<{ project: BotanicalProject; index: number; onOpen: 
           onOpen();
         }
       }}
-      className="group cursor-pointer rounded-2xl overflow-hidden bg-[#173A22] flex flex-col h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2E8B4E] focus-visible:ring-offset-2"
+      className="group cursor-pointer rounded-2xl overflow-hidden bg-white border border-[#E3DBCD] hover:border-[#1F6B3A]/40 shadow-xs hover:shadow-md transition-all duration-300 flex flex-col h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2E8B4E] focus-visible:ring-offset-2"
     >
-      <div className="relative aspect-[4/3] overflow-hidden bg-[#22402A]">
+      <div className="relative aspect-[16/10] overflow-hidden bg-[#F0EBE1]">
         <img
           src={project.image}
           alt={project.title}
           loading="lazy"
-          className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+          className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
         />
-        <span className="absolute top-3 left-3 rounded-md bg-white/95 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#173A22]">
+        <span className="absolute top-3 left-3 rounded-full bg-white/90 backdrop-blur-xs px-3 py-1 text-[11px] font-semibold text-[#1F4A2C] border border-[#E3DBCD] shadow-2xs">
           {project.category}
         </span>
         <ProjectMediaBadge project={project} className="absolute bottom-3 left-3" />
       </div>
-      <div className="flex-1 flex flex-col items-center justify-center text-center px-5 py-6 sm:py-7">
-        <h3 className="font-editorial text-lg sm:text-[1.35rem] font-semibold text-white leading-snug">{project.title}</h3>
-        <p className="mt-2 text-sm text-white/70 leading-relaxed">
-          {project.location}
-          {sites.length > 1 ? ` · ${sites.length} sites` : ''}
-        </p>
-        <span className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#BFE3B0] underline-offset-4 group-hover:underline">
-          View project <ArrowRight className="w-3.5 h-3.5" />
-        </span>
+      <div className="flex-1 flex flex-col p-5 sm:p-6 justify-between">
+        <div>
+          <h3 className="font-sans text-base sm:text-lg font-bold text-[#141C14] group-hover:text-[#1F6B3A] transition-colors leading-snug">
+            {project.title}
+          </h3>
+          <p className="mt-1.5 text-xs sm:text-sm text-[#6B645A] flex items-center gap-1.5 font-sans">
+            <MapPin className="w-3.5 h-3.5 text-[#1F6B3A] shrink-0" />
+            {project.location}
+            {sites.length > 1 ? ` (${sites.length} sites)` : ''}
+          </p>
+        </div>
+        <div className="mt-4 pt-3.5 border-t border-[#EFE8DD] flex items-center justify-between">
+          <span className="text-xs font-semibold text-[#1F6B3A] group-hover:underline inline-flex items-center gap-1">
+            View Project Details <ArrowRight className="w-3.5 h-3.5" />
+          </span>
+          {project.client && (
+            <span className="text-[11px] text-[#8C8479] truncate max-w-[140px] text-right font-sans">
+              {project.client}
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -493,17 +505,17 @@ const IconField: React.FC<{ icon: React.ComponentType<{ className?: string }>; e
 }) => (
   <div>
     <div
-      className={`flex items-center gap-3 h-12 px-4 rounded-xl bg-white border transition-colors ${
+      className={`flex items-center gap-2.5 sm:gap-3 h-11 sm:h-12 px-3.5 sm:px-4 rounded-xl bg-white border transition-colors ${
         error ? 'border-[#D64545]' : 'border-[#DCD3C4] focus-within:border-[#1F6B3A] focus-within:ring-2 focus-within:ring-[#1F6B3A]/15'
       }`}
     >
-      <Icon className="w-[18px] h-[18px] text-[#6E7769] shrink-0" />
+      <Icon className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-[#6E7769] shrink-0" />
       {children}
     </div>
     {error && <span className="text-xs text-[#C93C3C] mt-1.5 block">{error}</span>}
   </div>
 );
-const fieldInput = 'flex-1 min-w-0 h-full bg-transparent text-[15px] text-[#182018] placeholder:text-[#8C887F] focus:outline-none';
+const fieldInput = 'flex-1 min-w-0 h-full bg-transparent text-xs sm:text-[15px] text-[#182018] placeholder:text-[#8C887F] focus:outline-none';
 
 /** One-tap choice buttons instead of a dropdown */
 const ChoiceChips: React.FC<{ label: string; options: string[]; value: string; onChange: (v: string) => void }> = ({
@@ -512,9 +524,9 @@ const ChoiceChips: React.FC<{ label: string; options: string[]; value: string; o
   value,
   onChange,
 }) => (
-  <fieldset>
-    <legend className="text-sm font-semibold text-[#1F4A2C] mb-2.5">{label.replace(/\s*\*$/, '')}</legend>
-    <div className="flex flex-wrap gap-2">
+  <fieldset className="space-y-1.5 sm:space-y-2">
+    <legend className="text-xs font-bold text-[#1F4A2C] uppercase tracking-wider font-sans">{label.replace(/\s*\*$/, '')}</legend>
+    <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-1.5 sm:gap-2">
       {options.map((o) => {
         const active = value === o;
         return (
@@ -523,11 +535,14 @@ const ChoiceChips: React.FC<{ label: string; options: string[]; value: string; o
             key={o}
             aria-pressed={active}
             onClick={() => onChange(o)}
-            className={`px-4 py-2.5 rounded-xl border text-sm font-medium transition-colors ${
-              active ? 'bg-[#1F6B3A] border-[#1F6B3A] text-white' : 'bg-white border-[#DCD3C4] text-[#2B2A26] hover:border-[#1F6B3A]'
+            className={`px-2.5 py-2 sm:px-3.5 sm:py-2 rounded-xl border text-[11px] sm:text-xs font-semibold transition-all cursor-pointer flex items-center justify-between text-left leading-snug ${
+              active
+                ? 'bg-[#1F6B3A] border-[#1F6B3A] text-white shadow-xs font-bold'
+                : 'bg-[#FAF5EE] border-[#E2DDD0] text-[#2B2A26] hover:border-[#1F6B3A] hover:bg-white'
             }`}
           >
-            {o}
+            <span className="truncate">{o}</span>
+            {active && <Check className="w-3 h-3 text-white shrink-0 ml-1 sm:hidden" />}
           </button>
         );
       })}
@@ -585,7 +600,7 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
   const [showAllProjects, setShowAllProjects] = useState(false);
   const [openProject, setOpenProject] = useState<BotanicalProject | null>(null);
   const [season, setSeason] = useState(SEASONS[0].id);
-  const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<'idle' | 'saving' | 'done'>('idle');
@@ -640,19 +655,13 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
   const heroTextY = useTransform(heroProgress, [0, 1], [0, reduce ? 0 : 60]);
 
   // Process line
-  const stepsRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress: stepsProgress } = useScroll({ target: stepsRef, offset: ['start 80%', 'end 60%'] });
+  const stepsRef = useRef<HTMLOListElement>(null);
 
-  // Rotating hero covers
-  const [heroIdx, setHeroIdx] = useState(0);
-  useEffect(() => {
-    if (reduce || heroPool.length < 3) return;
-    const t = setInterval(() => setHeroIdx((i) => (i + 1) % heroPool.length), 3500);
-    return () => clearInterval(t);
-  }, [reduce, heroPool.length]);
-  const heroCards = [0, 1, 2].map((k) => heroPool[(heroIdx + k) % Math.max(heroPool.length, 1)]).filter(Boolean);
+  const scrollToForm = () => {
+    const el = document.getElementById('book-consultation');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
-  const scrollToForm = () => document.getElementById('book-consultation')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   // "Inquire Now" in the header links here with ?enquire=1
   useEffect(() => {
     if (new URLSearchParams(window.location.search).get('enquire') === '1') {
@@ -700,7 +709,7 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
       area: isHelp ? undefined : form.area,
       message: form.message.trim() || undefined,
     });
-    // Automatic WhatsApp confirmation to the customer (works once WhatsApp Business API is set up on the server)
+    // Automatic WhatsApp confirmation to the customer
     setWaConfirmed(false);
     fetch('/api/notify/enquiry', {
       method: 'POST',
@@ -719,96 +728,84 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
     }${form.organisation ? `\nOrganisation: ${form.organisation}` : ''}${form.message ? `\nDetails: ${form.message}` : ''}`
   );
 
-  const headline = C.hero.headline.split(/\s+/).filter(Boolean);
-  const highlight = new Set(C.hero.highlightWords.split(/\s+/).filter(Boolean).map((w) => w.replace(/[^\w&]/g, '').toLowerCase()));
   const activeSeason = SEASONS.find((s) => s.id === season) || SEASONS[0];
-
-  const inputCls = (err?: string) =>
-    `w-full px-3.5 py-3 bg-[#FAF5EE] border rounded-xl text-sm text-[#182018] placeholder:text-[#A59F94] focus:outline-none focus:ring-2 focus:ring-[#2D6A4F]/25 focus:border-[#2D6A4F] transition-all ${
-      err ? 'border-[#D64545]' : 'border-[#DDD5C7]'
-    }`;
 
   return (
     <div className="min-h-screen bg-[#FAF5EE] font-sans text-[#182018] overflow-x-hidden">
-      {/* ---------------- HERO ---------------- */}
-      <section className="relative bg-[#142817] text-white overflow-hidden py-12 sm:py-20">
+      {/* ---------------- HERO WITH STATIC DIMMED PHOTO BACKGROUND ---------------- */}
+      <section className="relative min-h-[480px] sm:min-h-[540px] text-white flex flex-col justify-center py-16 sm:py-24">
+        {/* Static Background Image with Gentle Dimming Overlay */}
+        <div
+          className="absolute inset-0 z-0"
+          style={{
+            backgroundImage: `url('/editorial/kyari-living-plants-hero.jpg')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+        >
+          {/* Dimmed Overlay */}
+          <div className="absolute inset-0 bg-black/45" />
+        </div>
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
-          {/* Breadcrumb */}
-          <div className="flex items-center gap-2 text-xs text-white/60 mb-8 font-sans">
+        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 z-10 w-full text-center flex flex-col items-center">
+          {/* Breadcrumb Centered */}
+          <div className="flex items-center justify-center gap-2 text-xs text-white/80 mb-6 font-sans">
             <button onClick={() => navigate('/')} className="hover:text-white transition-colors">
               Home
             </button>
-            <span className="text-white/40">/</span>
-            <span className="text-white font-medium">Landscaping &amp; Gardening Services</span>
+            <span className="text-white/50">/</span>
+            <span className="text-white">Landscaping &amp; Gardening Services</span>
+            <span className="text-white/50">/</span>
+            <span className="text-white font-medium">Inquire Now</span>
           </div>
 
-          <div className="grid lg:grid-cols-12 gap-10 lg:gap-14 items-center">
-            <div className="lg:col-span-7 space-y-6">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#B7D7A8] font-sans">
-                {C.hero.badge || 'Gardening · Landscaping · AMC'}
-              </p>
+          <div className="max-w-3xl space-y-5 sm:space-y-6 flex flex-col items-center text-center">
+            <h1 className="font-sans text-2xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-[1.18] sm:leading-[1.12] tracking-tight text-center">
+              Greener Campuses, Offices &amp; Homes across Uttar Pradesh &amp; Delhi
+            </h1>
 
-              <h1 className="font-editorial text-4xl sm:text-5xl lg:text-[3.5rem] font-bold text-white leading-[1.1] tracking-tight">
-                {C.hero.headline}
-              </h1>
+            <p className="text-sm sm:text-lg text-white/90 leading-relaxed font-normal max-w-2xl text-center font-sans">
+              {C.hero.subtitle ||
+                'From UP 112 and Nagar Nigam Lucknow to 8 GITI campuses and the BrahMos unit in the Defence Corridor - we design, build and maintain green spaces that stay beautiful all year.'}
+            </p>
 
-              <p className="text-sm sm:text-base text-white/80 max-w-xl leading-relaxed font-normal">
-                {C.hero.subtitle}
-              </p>
-
-              <div className="flex flex-wrap gap-3.5 pt-2 font-sans">
-                <button
-                  onClick={scrollToForm}
-                  className="px-7 py-3.5 rounded-full bg-[#F3EEE3] hover:bg-white text-[#142817] text-sm font-semibold inline-flex items-center gap-2 transition-colors"
-                >
-                  {noFreeVisit(C.hero.primaryButton, 'Plan My Dream Garden')} <ArrowRight className="w-4 h-4" />
-                </button>
-                <a
-                  href={`https://wa.me/${whatsappNum}?text=${encodeURIComponent(C.hero.whatsappMessage || 'Hi Buddy4Plant, I want to book a gardening consultation')}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="px-6 py-3.5 rounded-full border border-white/30 hover:bg-white/10 text-white text-sm font-semibold inline-flex items-center gap-2 transition-colors"
-                >
-                  <MessageCircle className="w-4 h-4 text-[#25D366]" /> {C.hero.whatsappButton || 'WhatsApp Consultation'}
-                </a>
-              </div>
-            </div>
-
-            {/* Clean Editorial Showcase Banner */}
-            <div className="lg:col-span-5 relative">
-              <div className="relative aspect-[4/3] rounded-3xl overflow-hidden bg-white/5">
-                <img
-                  src={projects[0]?.image || '/projects/giti-campuses.jpg'}
-                  alt="Landscaping Projects by Buddy4Plant"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                {projects[0] && (
-                  <div className="absolute bottom-5 left-5 right-5 font-sans">
-                    <p className="text-white font-semibold text-sm leading-snug">{projects[0].title}</p>
-                    <p className="text-white/70 text-xs mt-0.5">{projects[0].location}</p>
-                  </div>
-                )}
-              </div>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full sm:w-auto pt-2 font-sans">
+              <button
+                onClick={scrollToForm}
+                className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-white text-[#142817] hover:bg-[#F3EEE3] text-sm font-semibold transition-colors shadow-md text-center cursor-pointer"
+              >
+                {noFreeVisit(C.hero.primaryButton, 'Plan My Dream Garden')}
+              </button>
+              <a
+                href={`https://wa.me/${whatsappNum}?text=${encodeURIComponent(C.hero.whatsappMessage || 'Hi Buddy4Plant, I want to book a gardening consultation')}`}
+                target="_blank"
+                rel="noreferrer"
+                className="w-full sm:w-auto px-7 py-3.5 rounded-full border border-white/60 hover:bg-white/15 text-white text-sm font-semibold transition-colors text-center cursor-pointer"
+              >
+                {C.hero.whatsappButton || 'WhatsApp Us'}
+              </a>
             </div>
           </div>
         </div>
       </section>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-20 sm:space-y-28 py-14">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16 sm:space-y-28 py-10 sm:py-14">
         {/* ---------------- STATS ---------------- */}
         <div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 bg-white rounded-3xl border border-[#E8DFD3] overflow-hidden">
+          <div className="grid grid-cols-2 lg:grid-cols-4 bg-white rounded-2xl sm:rounded-3xl border border-[#E8DFD3] shadow-xs overflow-hidden">
             {statItems.map((st, i) => (
               <div
                 key={i}
-                className={`px-5 py-6 sm:px-8 sm:py-8 border-[#EFE8DD] ${i % 2 === 1 ? 'border-l' : ''} ${i >= 2 ? 'border-t lg:border-t-0' : ''} ${i === 2 ? 'lg:border-l' : ''}`}
+                className={`px-4 py-5 sm:px-8 sm:py-8 border-[#EFE8DD] ${i % 2 === 1 ? 'border-l' : ''} ${i >= 2 ? 'border-t lg:border-t-0' : ''} ${i === 2 ? 'lg:border-l' : ''}`}
               >
-                <span className="font-editorial text-3xl sm:text-4xl font-bold text-[#141C14] block tracking-tight">
+                <div className="flex items-center gap-1.5 sm:gap-2 text-[#2D6A4F] mb-1 sm:mb-1.5">
+                  <st.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-[#6B645A] font-sans">Verified</span>
+                </div>
+                <span className="font-editorial text-2xl sm:text-4xl font-bold text-[#141C14] block tracking-tight">
                   <CountUp to={st.n} suffix={st.s} />
                 </span>
-                <span className="text-xs sm:text-sm text-[#6B645A] mt-1 block font-sans">{st.label}</span>
+                <span className="text-xs sm:text-sm text-[#6B645A] mt-0.5 sm:mt-1 block font-sans">{st.label}</span>
               </div>
             ))}
           </div>
@@ -876,28 +873,72 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
           )}
         </section>
 
-        {/* ---------------- PRIVATE PROJECTS ---------------- */}
+        {/* ---------------- PRIVATE PROJECTS (TRANSLUCENT BG & EDITORIAL SHOWCASE) ---------------- */}
         {showPrivate && (
           <section id="private-projects" className="scroll-mt-24">
-            <div className="text-center max-w-2xl mx-auto">
-              <span className="text-[11px] font-semibold text-[#486B44] uppercase tracking-[0.18em] block mb-3 font-sans">{C.privateSection.eyebrow}</span>
-              <h2 className="font-editorial text-3xl sm:text-4xl lg:text-5xl font-bold text-[#141C14] leading-tight">{C.privateSection.title}</h2>
-              <p className="text-sm sm:text-base text-[#5C554B] mt-3 leading-relaxed">{C.privateSection.subtitle}</p>
-              <button
-                type="button"
-                onClick={() => {
-                  setForm((f) => ({ ...f, enquiryType: 'Balcony & terrace garden', propertyType: 'Home / Villa' }));
-                  setTimeout(scrollToForm, 50);
-                }}
-                className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-[#1F6B3A] underline underline-offset-4 decoration-[#1F6B3A]/30 hover:decoration-[#1F6B3A]"
-              >
-                {C.privateSection.button} <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-            <div className={`mt-8 sm:mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 ${privateProjects.length < 3 ? 'lg:flex lg:justify-center [&>*]:lg:w-[calc((100%-2.5rem)/3)]' : ''}`}>
-              {privateProjects.map((p, i) => (
-                <ProjectCard key={p.id} project={p} index={i} onOpen={() => setOpenProject(p)} />
-              ))}
+            <div
+              className="relative rounded-3xl overflow-hidden border border-[#E3DBCD] p-7 sm:p-10 lg:p-12 shadow-xs bg-cover bg-center"
+              style={{ backgroundImage: `url('/projects/private-home-landscaping-1.jpg')` }}
+            >
+              {/* Translucent background overlay */}
+              <div className="absolute inset-0 bg-[#FAF5EE]/92 backdrop-blur-md" />
+
+              <div className="relative z-10 grid lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+                {/* Editorial Left Column */}
+                <div className="lg:col-span-6 space-y-4">
+                  <span className="text-[11px] font-semibold text-[#486B44] uppercase tracking-[0.18em] block font-sans">
+                    {C.privateSection.eyebrow || 'Homes & Private Spaces'}
+                  </span>
+                  <h2 className="font-sans text-2xl sm:text-4xl font-bold text-[#141C14] leading-tight tracking-tight">
+                    {C.privateSection.title || 'Private Villas, Balconies & Terrace Sanctuaries'}
+                  </h2>
+                  <p className="text-sm sm:text-base text-[#5C554B] leading-relaxed font-sans">
+                    {C.privateSection.subtitle ||
+                      'Home gardens, terraces, balconies and villas we have designed, planted and maintained for families across Lucknow — tailored to your space, sunlight and aesthetic preference.'}
+                  </p>
+
+                  <ul className="space-y-2.5 pt-1 text-xs sm:text-sm text-[#332E27] font-sans">
+                    <li className="flex items-center gap-2.5">
+                      <Check className="w-4 h-4 text-[#1F6B3A] shrink-0" />
+                      <span>Custom Balcony &amp; Terrace Garden Architecture</span>
+                    </li>
+                    <li className="flex items-center gap-2.5">
+                      <Check className="w-4 h-4 text-[#1F6B3A] shrink-0" />
+                      <span>Lucknow Climate-Tested Flowering &amp; Foliage Plants</span>
+                    </li>
+                    <li className="flex items-center gap-2.5">
+                      <Check className="w-4 h-4 text-[#1F6B3A] shrink-0" />
+                      <span>Automated Drip Irrigation &amp; Drainage Setup</span>
+                    </li>
+                    <li className="flex items-center gap-2.5">
+                      <Check className="w-4 h-4 text-[#1F6B3A] shrink-0" />
+                      <span>Dedicated Routine Care &amp; Plant Replacement</span>
+                    </li>
+                  </ul>
+
+                  <div className="pt-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setForm((f) => ({ ...f, enquiryType: 'Balcony & terrace garden', propertyType: 'Home / Villa' }));
+                        setTimeout(scrollToForm, 50);
+                      }}
+                      className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#1F6B3A] hover:bg-[#185730] text-white text-xs sm:text-sm font-semibold transition-all shadow-xs"
+                    >
+                      {C.privateSection.button || 'Plan My Home Garden'} <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Right Column: Real Private Projects */}
+                <div className="lg:col-span-6">
+                  <div className={`grid grid-cols-1 ${privateProjects.length > 1 ? 'sm:grid-cols-2 gap-4' : 'gap-4'}`}>
+                    {privateProjects.map((p, i) => (
+                      <ProjectCard key={p.id} project={p} index={i} onOpen={() => setOpenProject(p)} />
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           </section>
         )}
@@ -905,37 +946,42 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
         {/* ---------------- SERVICES ---------------- */}
         <section>
           <div className="text-center max-w-2xl mx-auto">
-            <span className="text-[11px] font-semibold text-[#486B44] uppercase tracking-[0.18em] block mb-3 font-sans">{C.servicesSection.eyebrow}</span>
-            <h2 className="font-editorial text-3xl sm:text-4xl lg:text-5xl font-bold text-[#141C14] tracking-tight">{C.servicesSection.title}</h2>
-            {C.servicesSection.subtitle && <p className="text-sm sm:text-base text-[#5C554B] mt-3 leading-relaxed">{C.servicesSection.subtitle}</p>}
+            <span className="text-[11px] font-semibold text-[#486B44] uppercase tracking-[0.18em] block mb-2 font-sans">{C.servicesSection.eyebrow}</span>
+            <h2 className="font-sans text-3xl sm:text-4xl font-bold text-[#141C14] tracking-tight">{C.servicesSection.title}</h2>
+            {C.servicesSection.subtitle && <p className="text-sm sm:text-base text-[#5C554B] mt-2.5 leading-relaxed">{C.servicesSection.subtitle}</p>}
           </div>
-          <div className="mt-10 sm:mt-12 grid sm:grid-cols-2 gap-x-10 lg:gap-x-16 gap-y-12">
+          <div className="mt-10 sm:mt-12 grid sm:grid-cols-2 gap-6 lg:gap-8">
             {SERVICES.map((s, i) => (
-              <div key={s.id} className="border-t border-[#D9D1C2] pt-6 flex flex-col">
-                {s.image && (
-                  <div className="mb-6 aspect-[16/9] overflow-hidden rounded-2xl">
-                    <img src={s.image} alt={s.title} loading="lazy" className="w-full h-full object-cover" />
+              <div key={s.id} className="bg-white rounded-2xl border border-[#E3DBCD] p-6 sm:p-7 flex flex-col justify-between shadow-xs hover:shadow-md transition-all hover:border-[#1F6B3A]/30">
+                <div>
+                  {s.image && (
+                    <div className="mb-5 aspect-[16/9] overflow-hidden rounded-xl bg-[#F0EBE1]">
+                      <img src={s.image} alt={s.title} loading="lazy" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xs font-bold text-[#1F6B3A] bg-[#EBF5EC] px-2.5 py-0.5 rounded-full font-sans">{String(i + 1).padStart(2, '0')}</span>
+                    <span className="text-xs font-semibold text-[#6B645A] uppercase tracking-wider font-sans">Specialized Service</span>
                   </div>
-                )}
-                <span className="text-sm font-semibold text-[#2E8B4E] tabular-nums">{String(i + 1).padStart(2, '0')}</span>
-                <h3 className="font-editorial text-2xl sm:text-[1.75rem] font-bold text-[#141C14] mt-2 leading-tight">{s.title}</h3>
-                <p className="text-[15px] text-[#5C554B] leading-relaxed mt-3">{s.text}</p>
-                <ul className="mt-4 space-y-2">
-                  {s.points.map((pt) => (
-                    <li key={pt} className="flex items-start gap-3 text-sm text-[#332E27]">
-                      <Check className="w-4 h-4 text-[#2E8B4E] shrink-0 mt-0.5" />
-                      {pt}
-                    </li>
-                  ))}
-                </ul>
+                  <h3 className="font-sans text-xl sm:text-2xl font-bold text-[#141C14] leading-tight">{s.title}</h3>
+                  <p className="text-sm text-[#5C554B] leading-relaxed mt-2.5 font-sans">{s.text}</p>
+                  <ul className="mt-4 space-y-2">
+                    {s.points.map((pt) => (
+                      <li key={pt} className="flex items-start gap-2.5 text-xs sm:text-sm text-[#332E27] font-sans">
+                        <Check className="w-4 h-4 text-[#1F6B3A] shrink-0 mt-0.5" />
+                        {pt}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
                 <button
                   onClick={() => {
                     setForm((f) => ({ ...f, enquiryType: s.enquiryType || ENQUIRY_TYPES[0] }));
                     scrollToForm();
                   }}
-                  className="mt-6 self-start inline-flex items-center gap-1.5 text-sm font-semibold text-[#1F6B3A] underline underline-offset-4 decoration-[#1F6B3A]/30 hover:decoration-[#1F6B3A] transition-colors"
+                  className="mt-6 self-start inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-[#1F6B3A] hover:underline transition-colors"
                 >
-                  {C.servicesSection.quoteButton} <ArrowRight className="w-3.5 h-3.5" />
+                  {C.servicesSection.quoteButton || 'Get a Quotation'} <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>
             ))}
@@ -1046,27 +1092,27 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
           </div>
         </section>
 
-        {/* ---------------- ENQUIRY FORM ---------------- */}
+        {/* ---------------- ENQUIRY FORM (COMPACT RECTANGULAR LAYOUT) ---------------- */}
         <section id="book-consultation" className="scroll-mt-24">
-          <div className="max-w-3xl mx-auto">
-            <div className="rounded-[28px] bg-[#F3EEE3] border border-[#E3DBCD] px-5 py-8 sm:px-10 sm:py-11">
-              <div className="text-center">
-                <span className="text-[11px] font-semibold text-[#486B44] uppercase tracking-[0.18em] block mb-3">{C.contact.eyebrow}</span>
-                <h2 className="font-editorial text-3xl sm:text-4xl font-bold text-[#1F6B3A] tracking-tight leading-tight">{C.contact.title}</h2>
-                <p className="text-sm sm:text-[15px] text-[#4F5A4C] mt-3 leading-relaxed max-w-xl mx-auto">{C.contact.text}</p>
+          <div className="max-w-5xl mx-auto">
+            <div className="rounded-2xl sm:rounded-3xl bg-white border border-[#E3DBCD] p-4 sm:p-9 lg:p-11 shadow-sm">
+              <div className="text-center max-w-2xl mx-auto mb-6 sm:mb-8">
+                <span className="text-[10px] sm:text-[11px] font-semibold text-[#486B44] uppercase tracking-[0.18em] block mb-1.5 sm:mb-2 font-sans">{C.contact.eyebrow}</span>
+                <h2 className="font-sans text-xl sm:text-3xl lg:text-4xl font-bold text-[#141C14] tracking-tight leading-tight">{C.contact.title}</h2>
+                <p className="text-xs sm:text-sm text-[#5C554B] mt-1.5 sm:mt-2 leading-relaxed">{C.contact.text}</p>
               </div>
 
-              <div className="mt-8">
+              <div>
                 <AnimatePresence mode="wait">
                   {status === 'done' ? (
-                    <div className="flex flex-col items-center justify-center text-center py-8 space-y-5 animate-fadeIn">
-                      <div className="w-16 h-16 rounded-full bg-white text-[#1F6B3A] flex items-center justify-center border border-[#CFE3C6]">
-                        <CheckCircle2 className="w-8 h-8" />
+                    <div className="flex flex-col items-center justify-center text-center py-8 sm:py-10 space-y-4 sm:space-y-5 animate-fadeIn">
+                      <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[#EBF5EC] text-[#1F6B3A] flex items-center justify-center border border-[#CFE3C6]">
+                        <CheckCircle2 className="w-7 h-7 sm:w-8 sm:h-8" />
                       </div>
-                      <h3 className="font-editorial text-2xl sm:text-3xl font-bold text-[#141C14]">
+                      <h3 className="font-sans text-xl sm:text-3xl font-bold text-[#141C14]">
                         {C.form.successTitle}, {form.fullName.split(' ')[0]}!
                       </h3>
-                      <p className="text-sm text-[#5C554B] max-w-md leading-relaxed">
+                      <p className="text-xs sm:text-sm text-[#5C554B] max-w-md leading-relaxed font-sans">
                         {C.form.successText ? (
                           C.form.successText
                         ) : (
@@ -1077,16 +1123,16 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
                         )}
                       </p>
                       {waConfirmed && (
-                        <p className="text-xs font-semibold text-[#1F7A3E] bg-white border border-[#BFE5CB] rounded-full px-4 py-2 inline-flex items-center gap-2">
+                        <p className="text-xs font-semibold text-[#1F7A3E] bg-[#FAF5EE] border border-[#BFE5CB] rounded-full px-4 py-2 inline-flex items-center gap-2 font-sans">
                           <MessageCircle className="w-4 h-4" /> We have sent a confirmation to your WhatsApp.
                         </p>
                       )}
-                      <div className="flex flex-wrap justify-center gap-3 pt-2">
+                      <div className="flex flex-wrap justify-center gap-3 pt-2 font-sans">
                         <a
                           href={`https://wa.me/${whatsappNum}?text=${waText}`}
                           target="_blank"
                           rel="noreferrer"
-                          className="px-6 py-3 rounded-xl bg-[#1F6B3A] hover:bg-[#185730] text-white text-sm font-semibold inline-flex items-center gap-2 transition-colors"
+                          className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#1F6B3A] hover:bg-[#185730] text-white text-xs sm:text-sm font-semibold inline-flex items-center justify-center gap-2 transition-colors"
                         >
                           <MessageCircle className="w-4 h-4" /> Also send on WhatsApp
                         </a>
@@ -1095,111 +1141,142 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
                             setForm(emptyForm);
                             setStatus('idle');
                           }}
-                          className="px-6 py-3 rounded-xl bg-white border border-[#DCD3C4] text-sm font-semibold text-[#1F4A2C] hover:border-[#1F6B3A] transition-colors"
+                          className="w-full sm:w-auto px-6 py-3 rounded-xl bg-white border border-[#DCD3C4] text-xs sm:text-sm font-semibold text-[#1F4A2C] hover:border-[#1F6B3A] transition-colors"
                         >
                           New enquiry
                         </button>
                       </div>
                     </div>
                   ) : (
-                    <form onSubmit={handleSubmit} noValidate className="space-y-6">
-                      <ChoiceChips label={C.form.labels.need} options={ENQUIRY_TYPES} value={form.enquiryType} onChange={(v) => setForm({ ...form, enquiryType: v })} />
+                    <form onSubmit={handleSubmit} noValidate className="grid lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+                      {/* Left Column: Scope & Site Requirements */}
+                      <div className="lg:col-span-6 space-y-4 sm:space-y-5">
+                        <ChoiceChips label={C.form.labels.need} options={ENQUIRY_TYPES} value={form.enquiryType} onChange={(v) => setForm({ ...form, enquiryType: v })} />
 
-                      <div className="grid sm:grid-cols-2 gap-3">
-                        <IconField icon={User} error={errors.fullName}>
-                          <input
-                            className={fieldInput}
-                            aria-label={C.form.labels.name}
-                            value={form.fullName}
-                            onChange={(e) => setForm({ ...form, fullName: e.target.value })}
-                            placeholder={asPlaceholder(C.form.labels.name)}
-                            autoComplete="name"
-                          />
-                        </IconField>
-                        <IconField icon={Phone} error={errors.phone}>
-                          <input
-                            type="tel"
-                            inputMode="numeric"
-                            className={fieldInput}
-                            aria-label={C.form.labels.phone}
-                            value={form.phone}
-                            onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                            placeholder={asPlaceholder(C.form.labels.phone)}
-                            autoComplete="tel"
-                          />
-                        </IconField>
-                        <IconField icon={Mail} error={errors.email}>
-                          <input
-                            type="email"
-                            className={fieldInput}
-                            aria-label={C.form.labels.email}
-                            value={form.email}
-                            onChange={(e) => setForm({ ...form, email: e.target.value })}
-                            placeholder={C.form.labels.email}
-                            autoComplete="email"
-                          />
-                        </IconField>
-                        <IconField icon={Building2}>
-                          <input
-                            className={fieldInput}
-                            aria-label={C.form.labels.organisation}
-                            value={form.organisation}
-                            onChange={(e) => setForm({ ...form, organisation: e.target.value })}
-                            placeholder={C.form.labels.organisation}
-                            autoComplete="organization"
-                          />
-                        </IconField>
-                      </div>
+                        <ChoiceChips label={C.form.labels.propertyType} options={PROPERTY_TYPES} value={form.propertyType} onChange={(v) => setForm({ ...form, propertyType: v })} />
 
-                      <ChoiceChips label={C.form.labels.propertyType} options={PROPERTY_TYPES} value={form.propertyType} onChange={(v) => setForm({ ...form, propertyType: v })} />
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                          <label className="block">
+                            <span className="block text-xs font-bold text-[#1F4A2C] uppercase tracking-wider mb-1.5 font-sans">{C.form.labels.city}</span>
+                            <IconField icon={MapPin}>
+                              <select className={`${fieldInput} cursor-pointer text-xs sm:text-sm`} value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })}>
+                                {CITIES.map((c) => (
+                                  <option key={c}>{c}</option>
+                                ))}
+                              </select>
+                            </IconField>
+                          </label>
 
-                      <div className="space-y-6">
-                        <label className="block sm:max-w-[calc(50%-6px)]">
-                          <span className="block text-sm font-semibold text-[#1F4A2C] mb-2.5">{C.form.labels.city}</span>
-                          <IconField icon={MapPin}>
-                            <select className={`${fieldInput} cursor-pointer`} value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })}>
-                              {CITIES.map((c) => (
-                                <option key={c}>{c}</option>
-                              ))}
-                            </select>
-                          </IconField>
-                        </label>
-                        {!isHelp && (
-                          <ChoiceChips label={C.form.labels.area} options={AREAS} value={form.area} onChange={(v) => setForm({ ...form, area: v })} />
-                        )}
-                      </div>
-
-                      <label className="block">
-                        <span className="block text-sm font-semibold text-[#1F4A2C] mb-2.5">{isHelp ? C.form.labels.question : C.form.labels.message}</span>
-                        <textarea
-                          rows={4}
-                          className={`w-full px-4 py-3 bg-white border rounded-xl text-[15px] text-[#182018] placeholder:text-[#8C887F] focus:outline-none focus:border-[#1F6B3A] focus:ring-2 focus:ring-[#1F6B3A]/15 transition-colors ${
-                            errors.message ? 'border-[#D64545]' : 'border-[#DCD3C4]'
-                          }`}
-                          value={form.message}
-                          onChange={(e) => setForm({ ...form, message: e.target.value })}
-                          placeholder={isHelp ? C.form.labels.questionPlaceholder : C.form.labels.messagePlaceholder}
-                        />
-                        {errors.message && <span className="text-xs text-[#C93C3C] mt-1.5 block">{errors.message}</span>}
-                      </label>
-
-                      <div>
-                        <button
-                          type="submit"
-                          disabled={status === 'saving'}
-                          className="w-full h-14 rounded-xl bg-[#1F6B3A] hover:bg-[#185730] disabled:opacity-60 text-white text-base font-semibold flex items-center justify-center gap-2 transition-colors"
-                        >
-                          {status === 'saving' ? (
-                            <>
-                              <Loader2 className="w-4 h-4 animate-spin" /> Sending...
-                            </>
-                          ) : (
-                            <>
-                              {isHelp ? C.form.helpSubmitButton : noFreeVisit(C.form.submitButton, 'Get My Garden Plan & Quote')} <ArrowRight className="w-4 h-4" />
-                            </>
+                          {!isHelp && (
+                            <label className="block">
+                              <span className="block text-xs font-bold text-[#1F4A2C] uppercase tracking-wider mb-1.5 font-sans">{C.form.labels.area}</span>
+                              <IconField icon={Home}>
+                                <select className={`${fieldInput} cursor-pointer text-xs sm:text-sm`} value={form.area} onChange={(e) => setForm({ ...form, area: e.target.value })}>
+                                  {AREAS.map((a) => (
+                                    <option key={a}>{a}</option>
+                                  ))}
+                                </select>
+                              </IconField>
+                            </label>
                           )}
-                        </button>
-                        <p className="text-xs text-center text-[#7A746B] mt-3">{C.form.privacyNote}</p>
+                        </div>
+                      </div>
+
+                      {/* Right Column: Contact Details & Submit */}
+                      <div className="lg:col-span-6 space-y-3.5 sm:space-y-4 flex flex-col justify-between">
+                        <div className="grid sm:grid-cols-2 gap-3">
+                          <div>
+                            <span className="block text-xs font-bold text-[#1F4A2C] uppercase tracking-wider mb-1.5 font-sans">Your Name *</span>
+                            <IconField icon={User} error={errors.fullName}>
+                              <input
+                                className={fieldInput}
+                                aria-label={C.form.labels.name}
+                                value={form.fullName}
+                                onChange={(e) => setForm({ ...form, fullName: e.target.value })}
+                                placeholder={asPlaceholder(C.form.labels.name)}
+                                autoComplete="name"
+                              />
+                            </IconField>
+                          </div>
+                          <div>
+                            <span className="block text-xs font-bold text-[#1F4A2C] uppercase tracking-wider mb-1.5 font-sans">Phone Number *</span>
+                            <IconField icon={Phone} error={errors.phone}>
+                              <input
+                                type="tel"
+                                inputMode="numeric"
+                                className={fieldInput}
+                                aria-label={C.form.labels.phone}
+                                value={form.phone}
+                                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                                placeholder={asPlaceholder(C.form.labels.phone)}
+                                autoComplete="tel"
+                              />
+                            </IconField>
+                          </div>
+                        </div>
+
+                        <div className="grid sm:grid-cols-2 gap-3">
+                          <div>
+                            <span className="block text-xs font-bold text-[#1F4A2C] uppercase tracking-wider mb-1.5 font-sans">Email Address</span>
+                            <IconField icon={Mail} error={errors.email}>
+                              <input
+                                type="email"
+                                className={fieldInput}
+                                aria-label={C.form.labels.email}
+                                value={form.email}
+                                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                                placeholder={C.form.labels.email}
+                                autoComplete="email"
+                              />
+                            </IconField>
+                          </div>
+                          <div>
+                            <span className="block text-xs font-bold text-[#1F4A2C] uppercase tracking-wider mb-1.5 font-sans">Organisation / Society</span>
+                            <IconField icon={Building2}>
+                              <input
+                                className={fieldInput}
+                                aria-label={C.form.labels.organisation}
+                                value={form.organisation}
+                                onChange={(e) => setForm({ ...form, organisation: e.target.value })}
+                                placeholder={C.form.labels.organisation}
+                                autoComplete="organization"
+                              />
+                            </IconField>
+                          </div>
+                        </div>
+
+                        <label className="block">
+                          <span className="block text-xs font-bold text-[#1F4A2C] uppercase tracking-wider mb-1.5 font-sans">{isHelp ? C.form.labels.question : C.form.labels.message}</span>
+                          <textarea
+                            rows={3}
+                            className={`w-full px-3.5 sm:px-4 py-2.5 bg-[#FAF5EE] border rounded-xl text-xs sm:text-sm text-[#182018] placeholder:text-[#8C887F] focus:outline-none focus:border-[#1F6B3A] focus:bg-white focus:ring-2 focus:ring-[#1F6B3A]/15 transition-all ${
+                              errors.message ? 'border-[#D64545]' : 'border-[#DCD3C4]'
+                            }`}
+                            value={form.message}
+                            onChange={(e) => setForm({ ...form, message: e.target.value })}
+                            placeholder={isHelp ? C.form.labels.questionPlaceholder : C.form.labels.messagePlaceholder}
+                          />
+                          {errors.message && <span className="text-xs text-[#C93C3C] mt-1 block">{errors.message}</span>}
+                        </label>
+
+                        <div className="pt-1">
+                          <button
+                            type="submit"
+                            disabled={status === 'saving'}
+                            className="w-full h-11 sm:h-12 rounded-xl bg-[#1F6B3A] hover:bg-[#185730] disabled:opacity-60 text-white text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer"
+                          >
+                            {status === 'saving' ? (
+                              <>
+                                <Loader2 className="w-4 h-4 animate-spin" /> Submitting Request...
+                              </>
+                            ) : (
+                              <>
+                                {isHelp ? C.form.helpSubmitButton : C.form.submitButton} <ArrowRight className="w-4 h-4" />
+                              </>
+                            )}
+                          </button>
+                          <p className="text-[10px] sm:text-[11px] text-center text-[#7A746B] mt-2 font-sans">{C.form.privacyNote || '🔒 Your information is confidential and will only be used for this consultation.'}</p>
+                        </div>
                       </div>
                     </form>
                   )}
@@ -1208,9 +1285,9 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
 
               {/* who we work with - real clients and numbers */}
               {shortClients.length > 0 && (
-                <div className="mt-8 pt-7 border-t border-[#DDD4C4] text-center">
-                  <p className="text-sm font-semibold text-[#1F4A2C]">{C.trustedByLabel || 'Trusted by'}</p>
-                  <p className="mt-3 flex flex-wrap justify-center gap-x-3 gap-y-1.5 font-editorial text-[15px] sm:text-base font-semibold text-[#2B3A2C]">
+                <div className="mt-6 sm:mt-8 pt-5 sm:pt-6 border-t border-[#EFE8DD] text-center">
+                  <p className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#486B44] font-sans">{C.trustedByLabel || 'Trusted by'}</p>
+                  <p className="mt-2 flex flex-wrap justify-center gap-x-3 gap-y-1 text-xs sm:text-sm font-semibold text-[#2B3A2C] font-sans">
                     {shortClients.map((n, i) => (
                       <React.Fragment key={n}>
                         {i > 0 && (
@@ -1222,30 +1299,26 @@ export const GardenServicesPage: React.FC<{ navigate: (path: string) => void }> 
                       </React.Fragment>
                     ))}
                   </p>
-                  <p className="mt-5 inline-flex flex-col sm:flex-row justify-center gap-1 sm:gap-0 rounded-xl bg-white px-5 py-3 text-[13px] font-semibold text-[#1F2A1F]">
-                    {statItems.slice(0, 2).map((st, i) => (
-                      <span key={i} className={i > 0 ? 'sm:ml-3 sm:pl-3 sm:border-l sm:border-[#DCD3C4]' : ''}>
-                        {st.n}
-                        {st.s} {st.label.toLowerCase()}
-                      </span>
-                    ))}
-                    <span className="sm:ml-3 sm:pl-3 sm:border-l sm:border-[#DCD3C4]">Lucknow · Kanpur · Delhi</span>
-                  </p>
                 </div>
               )}
             </div>
 
             {/* direct contact */}
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm">
-              <span className="text-[#6B645A]">Prefer to talk?</span>
-              <a href={`https://wa.me/${whatsappNum}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 font-semibold text-[#1F4A2C] hover:text-[#1F6B3A]">
-                <MessageCircle className="w-4 h-4 text-[#1FA855]" /> Chat on WhatsApp
-              </a>
-              {settings.contactEmail && (
-                <a href={`mailto:${settings.contactEmail}`} className="inline-flex items-center gap-2 font-semibold text-[#1F4A2C] hover:text-[#1F6B3A]">
-                  <Mail className="w-4 h-4" /> {settings.contactEmail}
+            <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-x-6 text-xs sm:text-sm text-center">
+              <span className="text-[#6B645A]">Prefer to talk directly?</span>
+              <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+                <a href={`https://wa.me/${whatsappNum}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 font-semibold text-[#1F4A2C] hover:text-[#1F6B3A]">
+                  <MessageCircle className="w-4 h-4 text-[#1FA855]" /> WhatsApp {prettyPhone(whatsappNum)}
                 </a>
-              )}
+                <a href={`tel:+${whatsappNum}`} className="inline-flex items-center gap-1.5 font-semibold text-[#1F4A2C] hover:text-[#1F6B3A]">
+                  <Phone className="w-4 h-4" /> {C.contact.callLabel || 'Call us'}
+                </a>
+                {settings.contactEmail && (
+                  <a href={`mailto:${settings.contactEmail}`} className="inline-flex items-center gap-1.5 font-semibold text-[#1F4A2C] hover:text-[#1F6B3A]">
+                    <Mail className="w-4 h-4" /> {settings.contactEmail}
+                  </a>
+                )}
+              </div>
             </div>
           </div>
         </section>

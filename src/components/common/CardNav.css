@@ -151,21 +151,29 @@
 .nav-card {
   flex: 1 1 0;
   min-width: 0;
-  border-radius: 0.8rem;
+  border-radius: 0.85rem;
   position: relative;
   display: flex;
   flex-direction: column;
-  padding: 16px 18px 18px;
+  padding: 18px 20px 20px;
   gap: 14px;
   user-select: none;
+  box-shadow: 0 4px 16px -6px rgba(19, 48, 27, 0.12);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.nav-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px -6px rgba(19, 48, 27, 0.18);
 }
 
 .nav-card-label {
   font-family: 'Fraunces', Georgia, serif;
-  font-weight: 500;
-  font-size: 22px;
-  letter-spacing: -0.3px;
-  line-height: 1.1;
+  font-weight: 600;
+  font-size: 21px;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
 }
 
 .nav-card-links {
@@ -208,6 +216,7 @@
 }
 
 @media (max-width: 768px) {
+
   .card-nav-container,
   .card-nav,
   .card-nav-top {
@@ -263,6 +272,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   .hamburger-line,
   .nav-card-link {
     transition: none;
@@ -293,9 +303,11 @@
   .card-nav-center {
     margin: 0 0.25rem 0 0.35rem;
   }
+
   .card-nav-top.has-center .logo-container {
     margin-left: 0;
   }
+
   .card-nav-top.has-center .card-nav-left {
     gap: 0.35rem;
   }
@@ -313,9 +325,11 @@
     height: 38px !important;
     width: 48px !important;
   }
+
   .card-nav-top.has-center .card-nav-center {
     margin: 0 0.15rem 0 0.25rem;
   }
+
   .card-nav-top.has-center .card-nav-cta-button {
     padding: 0 0.6rem;
     margin-left: 0.1rem;
@@ -327,6 +341,7 @@
   .nav-card-link-icon {
     display: none;
   }
+
   .nav-card-link::before {
     content: '';
     width: 5px;
@@ -352,12 +367,14 @@
     transform: translate(-50%, -50%);
     margin: 0;
   }
+
   .card-nav-top.has-center .card-nav-center {
     flex: 0 1 auto;
     width: calc(50% - 150px);
     max-width: 440px;
     margin: 0 0 0 0.75rem;
   }
+
   .card-nav-top.has-center .card-nav-actions {
     margin-left: auto;
   }

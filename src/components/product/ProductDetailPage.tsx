@@ -12,6 +12,7 @@ import {
   Leaf,
   CheckCircle2,
   ArrowRight,
+  ArrowLeft,
   Package,
   Plus,
   Tag,
@@ -246,20 +247,31 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
   return (
     <div className="bg-[#FAF7F1] min-h-screen py-6 sm:py-10 text-[#141414]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Breadcrumb matching Ugaoo */}
-        <div className="flex items-center gap-2 text-xs text-[#7A7A7A] mb-6">
-          <button onClick={() => navigate('/')} className="hover:text-[#1A1A1A]">
-            Home
-          </button>
-          <span>/</span>
+        {/* Navigation Bar with Back Button & Breadcrumbs */}
+        <div className="flex flex-wrap items-center gap-2.5 mb-6">
           <button
-            onClick={() => navigate(isPlantCare ? '/collections/plant-care' : `/plants/${product.category}`)}
-            className="hover:text-[#1A1A1A] capitalize"
+            onClick={() => (window.history.length > 1 ? window.history.back() : navigate(isPlantCare ? '/collections/plant-care' : '/plants'))}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/95 border border-[#DDD5C7] text-xs font-semibold text-[#182018] hover:bg-[#FAF5EE] hover:border-[#1A3824] transition-all shadow-xs cursor-pointer"
+            aria-label="Go back"
           >
-            {isPlantCare ? 'Plant Care' : product.category.replace('-', ' ')}
+            <ArrowLeft className="w-3.5 h-3.5 text-[#1F3B22]" />
+            <span>Back</span>
           </button>
-          <span>/</span>
-          <span className="font-semibold text-[#1A1A1A]">{product.name}</span>
+
+          <nav aria-label="Breadcrumb" className="inline-flex items-center gap-2 text-xs text-[#524B40] px-3.5 py-1.5 rounded-full bg-white/70 border border-[#E8DFD3]/80 shadow-xs">
+            <button onClick={() => navigate('/')} className="hover:text-[#142817] font-medium transition-colors">
+              Home
+            </button>
+            <span className="text-[#8C8275] font-light">/</span>
+            <button
+              onClick={() => navigate(isPlantCare ? '/collections/plant-care' : `/plants/${product.category}`)}
+              className="hover:text-[#142817] font-medium capitalize transition-colors"
+            >
+              {isPlantCare ? 'Plant Care' : product.category.replace('-', ' ')}
+            </button>
+            <span className="text-[#8C8275] font-light">/</span>
+            <span className="font-semibold text-[#182018]">{product.name}</span>
+          </nav>
         </div>
 
         {/* Top Product View: Gallery + Buy Section */}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, MapPin, CheckCircle, ArrowRight, MessageCircle, Leaf, ShieldCheck, Sun } from '../common/Icons';
+import { Sparkles, MapPin, CheckCircle, ArrowRight, ArrowLeft, MessageCircle, Leaf, ShieldCheck, Sun } from '../common/Icons';
 import { PlantImage } from '../../utils/imageFallback';
 import { LANDSCAPE_PROJECTS } from '../../data/landscapeProjects';
 import { useStoreSettings } from '../../context/StoreSettingsContext';
@@ -43,13 +43,24 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({ navigate }) => {
   return (
     <div className="bg-[#FAF5EE] min-h-screen py-12 text-[#141414]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-xs text-[#7A7A7A] mb-8">
-          <button onClick={() => navigate('/')} className="hover:text-[#141414] transition-colors">
-            Home
+        {/* Navigation Bar with Back Button & Breadcrumbs */}
+        <div className="flex flex-wrap items-center gap-2.5 mb-8">
+          <button
+            onClick={() => (window.history.length > 1 ? window.history.back() : navigate('/'))}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/95 border border-[#DDD5C7] text-xs font-semibold text-[#182018] hover:bg-[#FAF5EE] hover:border-[#1A3824] transition-all shadow-xs cursor-pointer"
+            aria-label="Go back"
+          >
+            <ArrowLeft className="w-3.5 h-3.5 text-[#1F3B22]" />
+            <span>Back</span>
           </button>
-          <span>/</span>
-          <span className="text-[#141414] font-medium">Botanical Projects &amp; Landscaping</span>
+
+          <nav aria-label="Breadcrumb" className="inline-flex items-center gap-2 text-xs text-[#524B40] font-sans px-3.5 py-1.5 rounded-full bg-white/70 border border-[#E8DFD3]/80 shadow-xs">
+            <button onClick={() => navigate('/')} className="hover:text-[#142817] font-medium transition-colors">
+              Home
+            </button>
+            <span className="text-[#8C8275] font-light">/</span>
+            <span className="text-[#182018] font-semibold">Botanical Projects &amp; Landscaping</span>
+          </nav>
         </div>
 
         {/* Hero Header */}
