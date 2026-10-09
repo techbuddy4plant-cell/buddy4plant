@@ -67,7 +67,7 @@ export const INITIAL_HOMEPAGE_CMS: HomepageCMS = {
   trustBadge3: '100% Organic Nutrition — Cold-pressed kelp & mycorrhizae for lush chlorophyll',
   trustBadge4: 'Free Plant Doctor Help — Direct 1-on-1 WhatsApp guidance from botanists anytime',
   livingSpacesTitle: 'Shop by Living Space',
-  livingSpacesSubtitle: 'Every room possesses its own natural light and humidity rhythm. Select flora calibrated to thrive.',
+  livingSpacesSubtitle: 'Every room gets different light. Pick plants that will be happy in yours.',
   projectsTitle: 'Curated Botanical Projects',
   projectsSubtitle: 'From compact urban balconies to full corporate atriums, explore living spaces thoughtfully greenscaped with our nurtured flora.',
   whyChooseUsTitle: 'Cultivated with Patience & Precision',
