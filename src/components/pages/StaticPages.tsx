@@ -640,7 +640,7 @@ export const TermsAndConditionsPage: React.FC<{ navigate?: (path: string) => voi
   const { settings } = useStoreSettings();
   const email = settings.contactEmail || 'contactus@buddy4plant.in';
   const phone = settings.contactPhone || '+91 80048 81668';
-  const address = settings.storeAddress || 'Buddy4Plant Nursery & Botanical Sanctuary, Lucknow, Uttar Pradesh, India';
+  const address = settings.storeAddress || 'Buddy4Plant Nursery, Lucknow, Uttar Pradesh, India';
 
   return (
     <div className="bg-[#FAF5EE] min-h-screen py-12 font-sans text-[#182018]">
