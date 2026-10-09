@@ -8,7 +8,7 @@ export const INITIAL_STORE_SETTINGS: StoreSettings = {
   contactPhone: '+91 80048 81668',
   whatsappSupportNumber: '+91 80048 81668',
   storeAddress: 'Lucknow, Uttar Pradesh, India',
-  storeMapsUrl: '',
+  storeMapsUrl: 'https://maps.app.goo.gl/kF5HbobUaLwzu3vu9',
   storeHours: '',
   currency: 'INR',
   currencySymbol: '₹',
