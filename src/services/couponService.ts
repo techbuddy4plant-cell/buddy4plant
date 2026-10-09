@@ -9,7 +9,7 @@ import {
   limit,
   writeBatch
 } from 'firebase/firestore';
-import { db } from '../config/firebase';
+import { db, withTimeout } from '../config/firebase';
 import { Coupon } from '../types';
 import { INITIAL_COUPONS } from '../data/initialSettings';
 
@@ -95,14 +95,15 @@ export async function seedCouponsIfEmpty(): Promise<void> {
 
   try {
     const colRef = collection(db, COUPONS_COLLECTION);
-    const snap = await getDocs(query(colRef, limit(1)));
+    const snap = await withTimeout(getDocs(query(colRef, limit(1))));
     if (snap.empty) {
       const batch = writeBatch(db);
       for (const coup of INITIAL_COUPONS) {
         const docRef = doc(db, COUPONS_COLLECTION, coup.id);
         batch.set(docRef, coup);
       }
-      await batch.commit();
+      // saved in the background - the page never waits for it
+      void batch.commit().catch((e) => console.warn('Background save to Firestore failed (kept in this browser):', e));
       if (typeof window !== 'undefined') {
         localStorage.setItem(SEEDED_FLAG_KEY, 'true');
       }
@@ -130,7 +131,7 @@ export async function getAllCoupons(): Promise<Coupon[]> {
     if (!isSeeded && saved === null) {
       await seedCouponsIfEmpty();
     }
-    const snap = await getDocs(collection(db, COUPONS_COLLECTION));
+    const snap = await withTimeout(getDocs(collection(db, COUPONS_COLLECTION)));
     if (!snap.empty) {
       const remoteCoupons = snap.docs
         .map((d) => ({ id: d.id, ...d.data() } as Coupon))
