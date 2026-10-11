@@ -68,6 +68,7 @@ const NAV_CARDS: CardNavItem[] = [
     textColor: '#FAF7F2',
     links: [
       { label: 'Gardening Services', href: '/garden-services' },
+      { label: 'Inquire Now', href: '/garden-services?enquire=1' },
       { label: 'Our Projects', href: '/projects' },
       { label: 'Plant Care Guide', href: '/care-guide' },
     ],
@@ -259,12 +260,12 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
 
   return (
     <>
-      <header id="navbar-main" className="b4p-fixed-theme sticky top-0 z-40 bg-[#FAF5EE]/95 backdrop-blur-md transition-all">
+      <header id="navbar-main" className="b4p-fixed-theme sticky top-0 z-40 bg-white max-lg:border-b max-lg:border-[#ECE7DD] lg:bg-[#FAF5EE]/95 lg:backdrop-blur-md transition-all">
         {/* Dynamic News Motion Announcement Ticker */}
         <AnnouncementTicker />
 
         {/* Main navigation: CardNav (React Bits) */}
-        <div className="px-3 sm:px-5 lg:px-8 py-2.5 sm:py-3">
+        <div className="lg:px-8 lg:py-3">
           <div className="max-w-6xl mx-auto">
             <CardNav
               items={NAV_CARDS}
@@ -332,7 +333,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
                     id="cart-btn"
                     type="button"
                     onClick={() => setIsCartDrawerOpen(true)}
-                    className="p-2 text-[#1F341C] hover:text-[#182319] hover:bg-[#EBF3EC] rounded-full relative transition-colors"
+                    className="max-lg:order-2 p-2 text-[#1F341C] hover:text-[#182319] hover:bg-[#EBF3EC] rounded-full relative transition-colors"
                     aria-label="Shopping Cart"
                   >
                     <ShoppingBag className="w-5 h-5" />
@@ -347,7 +348,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
                   </button>
 
                   {/* Account Icon & Dropdown */}
-                  <div className="relative hidden sm:block" ref={accountMenuRef}>
+                  <div className="relative max-lg:order-1" ref={accountMenuRef}>
                     <button
                       id="account-menu-btn"
                       type="button"
@@ -423,6 +424,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath = '/', navigate }) =
               }
             />
           </div>
+          {/* Phones & tablets: full-width search bar under the logo row */}
+          <div className="lg:hidden px-4 pb-3 pt-0.5 b4p-mobile-search">{searchBox}</div>
         </div>
 
         {/* Global Search Pop-Down Panel */}
