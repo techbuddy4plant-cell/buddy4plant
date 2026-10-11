@@ -42,6 +42,87 @@
 </head>
 
 <body class="bg-[#FDFCF9] text-[#1A1A1A] antialiased">
+  <!-- Intro: logo video, then the logo splits and the site opens (once per visit) -->
+  <style>
+    #b4p-intro{position:fixed;inset:0;z-index:2147483000;background:#ECECE2;overflow:hidden;cursor:pointer;transition:background-color .2s}
+    #b4p-intro .b4p-stage{position:absolute;left:50%;top:50%;width:min(100vw,166.667vh);aspect-ratio:5/3;transform:translate(-50%,-50%)}
+    #b4p-intro video{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:cover;background:#ECECE2}
+    /* the two halves cover the whole screen; the logo image is sized exactly like the video frame */
+    #b4p-intro .b4p-half{position:absolute;inset:0;background:#ECECE2 center/min(100vw,166.667vh) auto no-repeat;opacity:0;transition:transform .95s cubic-bezier(.76,0,.24,1)}
+    #b4p-intro .b4p-l{clip-path:inset(0 50% 0 0)}
+    #b4p-intro .b4p-r{clip-path:inset(0 0 0 50%)}
+    #b4p-intro.b4p-ready .b4p-half{opacity:1}
+    #b4p-intro.b4p-ready video{visibility:hidden}
+    #b4p-intro.b4p-split{background-color:transparent;pointer-events:none}
+    #b4p-intro.b4p-split .b4p-l{transform:translateX(-100%)}
+    #b4p-intro.b4p-split .b4p-r{transform:translateX(100%)}
+    /* phones (portrait): show the logo bigger */
+    @media (max-aspect-ratio:1/1){
+      #b4p-intro .b4p-stage{width:150vw}
+      #b4p-intro .b4p-half{background-size:150vw auto}
+    }
+    /* the site grows into place behind the opening logo */
+    html.b4p-intro-on body{overflow:hidden}
+    html.b4p-intro-on #root{transform:scale(.94);opacity:.4}
+    html.b4p-intro-open #root{transform:none;opacity:1;transition:transform .95s cubic-bezier(.22,1,.36,1),opacity .6s ease}
+  </style>
+  <script>
+    (function () {
+      try {
+        var p = location.pathname;
+        var skip = sessionStorage.getItem('b4p_intro_seen') ||
+          /[?&]nointro\b/.test(location.search) || navigator.webdriver ||
+          /^\/(b4padmin|admin)/.test(p) ||
+          (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+        if (skip) return;
+        sessionStorage.setItem('b4p_intro_seen', '1');
+      } catch (e) { return; }
+      document.documentElement.classList.add('b4p-intro-on');
+      document.write(
+        '<div id="b4p-intro" role="presentation" aria-hidden="true" title="Tap to skip"><div class="b4p-stage">' +
+        '<video muted playsinline autoplay preload="auto">' +
+        '<source src="/b4p-intro.mp4" type="video/mp4"></video>' +
+        '</div><div class="b4p-half b4p-l"></div><div class="b4p-half b4p-r"></div></div>'
+      );
+      var box = document.getElementById('b4p-intro');
+      var vid = box.querySelector('video');
+      var started = false, t0 = Date.now();
+      function siteReady() { var r = document.getElementById('root'); return r && r.childElementCount > 0; }
+      function open() {
+        if (started) return;
+        // give the site up to 3 more seconds to appear behind the logo
+        if (!siteReady() && Date.now() - t0 < 6500) { setTimeout(open, 150); return; }
+        started = true;
+        // the two halves show the video's last frame, then slide apart
+        try {
+          if (vid.readyState >= 2 && vid.videoWidth) {
+            var c = document.createElement('canvas');
+            c.width = vid.videoWidth; c.height = vid.videoHeight;
+            c.getContext('2d').drawImage(vid, 0, 0);
+            var url = 'url(' + c.toDataURL('image/jpeg', 0.9) + ')';
+            box.querySelectorAll('.b4p-half').forEach(function (h) { h.style.backgroundImage = url; });
+          }
+        } catch (e) {}
+        box.classList.add('b4p-ready');
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () {
+            box.classList.add('b4p-split');
+            document.documentElement.classList.add('b4p-intro-open');
+            setTimeout(function () {
+              box.remove();
+              document.documentElement.classList.remove('b4p-intro-on', 'b4p-intro-open');
+            }, 1000);
+          });
+        });
+      }
+      vid.addEventListener('ended', open);
+      vid.addEventListener('error', open, true);
+      box.addEventListener('click', open);
+      var pr = vid.play && vid.play();
+      if (pr && pr.catch) pr.catch(function () { setTimeout(open, 900); });
+      setTimeout(open, 3500); // never keep anyone waiting
+    })();
+  </script>
   <div id="root"></div>
   <script type="module" src="/src/main.tsx"></script>
 </body>
