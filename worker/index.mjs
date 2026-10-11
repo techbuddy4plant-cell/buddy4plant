@@ -3,6 +3,7 @@
 // It reuses the same Razorpay and Shiprocket code as the other hosts.
 import razorpay from '../netlify/functions/razorpay.mjs';
 import shiprocket, { syncAll } from '../netlify/functions/shiprocket.mjs';
+import notify, { notifyAll } from '../netlify/functions/notify.mjs';
 
 // make the dashboard's Variables and Secrets readable as process.env.NAME
 const loadEnv = (env) => {
@@ -16,6 +17,8 @@ export default {
   async scheduled(event, env, ctx) {
     loadEnv(env);
     ctx.waitUntil(syncAll().then((r) => console.log('Shiprocket sync', JSON.stringify(r))).catch((e) => console.error('Shiprocket sync failed', e)));
+    // WhatsApp / SMS: order messages that were missed + cart reminders
+    ctx.waitUntil(notifyAll().then((r) => console.log('Notify', JSON.stringify(r))).catch((e) => console.error('Notify failed', e)));
   },
 
   async fetch(request, env) {
@@ -23,6 +26,7 @@ export default {
     const { pathname } = new URL(request.url);
     if (pathname.startsWith('/api/razorpay/')) return razorpay(request);
     if (pathname.startsWith('/api/shiprocket/')) return shiprocket(request);
+    if (pathname.startsWith('/api/notify/')) return notify(request);
     if (pathname.startsWith('/api/')) {
       return new Response(JSON.stringify({ error: 'Not found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
     }
