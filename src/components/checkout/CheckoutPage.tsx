@@ -18,6 +18,7 @@ import { useStoreSettings } from '../../context/StoreSettingsContext';
 import { Address, Order, OrderItem, PaymentMethod } from '../../types';
 import { createOrder, updatePaymentStatus } from '../../services/orderService';
 import { pushOrderToShiprocket } from '../../services/shiprocketService';
+import { orderPlaced } from '../../services/notifyService';
 import { processRazorpayCheckout, getPaymentConfig, PaymentConfig } from '../../services/paymentService';
 import confetti from 'canvas-confetti';
 import { PlantImage } from '../../utils/imageFallback';
@@ -289,6 +290,8 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ navigate }) => {
         clearCart();
         // Send the COD order to Shiprocket straight away (never blocks the customer)
         void pushOrderToShiprocket(newOrder);
+        // order details on WhatsApp + SMS
+        orderPlaced(newOrder);
         navigate(`/order-success/${newOrder.orderNumber}`);
       } catch (err: any) {
         setErrorMsg(err.message || 'Failed to place order');
@@ -336,6 +339,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ navigate }) => {
               });
               // Send the paid order to Shiprocket straight away (never blocks the customer)
               void pushOrderToShiprocket(paidOrder);
+              orderPlaced(paidOrder);
               // Re-ensure the address is saved after a successful payment
               try {
                 await saveAddress(shippingAddress);
