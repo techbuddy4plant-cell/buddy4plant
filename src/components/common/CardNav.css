@@ -379,3 +379,82 @@
     margin-left: auto;
   }
 }
+/* ------------------------------------------------------------------ */
+/* Phones & tablets: flat full-width header                            */
+/* [menu]        [logo]        [account][bag]                          */
+/* [ search bar - full width                    ]                      */
+/* ------------------------------------------------------------------ */
+@media (max-width: 1023px) {
+  .card-nav-container,
+  .card-nav,
+  .card-nav-top {
+    height: 60px;
+  }
+
+  .card-nav {
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    background-color: #fff !important;
+  }
+
+  .card-nav-top {
+    padding: 0 0.5rem;
+  }
+
+  /* search moves to its own row below */
+  .card-nav-top.has-center .card-nav-center {
+    display: none;
+  }
+
+  /* logo exactly in the middle */
+  .card-nav-top.has-center .logo-container,
+  .logo-container {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+  }
+
+  .card-nav-top.has-center .logo-container img {
+    height: 44px !important;
+    width: auto !important;
+  }
+
+  .card-nav-top .card-nav-actions {
+    margin-left: auto;
+    gap: 0;
+  }
+
+  /* Inquire Now lives in the menu on phones */
+  .card-nav-cta-button {
+    display: none;
+  }
+
+  .card-nav-content {
+    top: 60px;
+    padding: 0.5rem 0.75rem 0.75rem;
+  }
+
+  .hamburger-line {
+    width: 22px;
+  }
+}
+
+/* search bar row (phones & tablets) */
+.b4p-mobile-search input[type='search'] {
+  height: 46px;
+  border-radius: 12px;
+  padding-left: 2.6rem;
+  padding-right: 0.75rem;
+  background: #f3f1ec;
+  font-size: 15px;
+}
+
+.b4p-mobile-search form > svg {
+  left: 0.95rem;
+  width: 18px;
+  height: 18px;
+  color: #2d4a27;
+}
