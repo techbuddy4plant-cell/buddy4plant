@@ -32,6 +32,7 @@ import { ReviewList } from './ReviewList';
 import { ProductCard } from '../common/ProductCard';
 import { StickyBuyBar } from './StickyBuyBar';
 import { setSeo, productLd, breadcrumbLd } from '../../utils/seo';
+import { recordProductView } from '../../services/notifyService';
 
 interface ProductDetailPageProps {
   slug: string;
@@ -88,6 +89,10 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
       }
     });
   };
+
+  useEffect(() => {
+    if (product) recordProductView(product);
+  }, [product?.id]);
 
   useEffect(() => {
     if (!product) return;
