@@ -4,6 +4,7 @@ import { storefrontBackground, StoreSettingsProvider, useStoreSettings } from '.
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
+import { useReminderTracking } from './services/notifyService';
 
 import { Navbar } from './components/common/Navbar';
 import { Footer } from './components/common/Footer';
@@ -278,6 +279,7 @@ const AppShell: React.FC<{
   setQuickViewProduct: (p: Product | null) => void;
 }> = ({ currentPath, navigate, renderCurrentView, quickViewProduct, setQuickViewProduct }) => {
   const { homepageCMS, isDarkMode, effectiveTextColor } = useStoreSettings();
+  useReminderTracking();
   const isB4PAdminRoute = (currentPath || '').startsWith('/b4padmin');
 
   const siteBg = storefrontBackground(homepageCMS.siteBackground);
