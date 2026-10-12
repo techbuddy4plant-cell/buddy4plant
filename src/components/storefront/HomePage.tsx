@@ -10,7 +10,6 @@ import { INITIAL_REVIEWS } from '../../data/initialSettings';
 import { CategoryBar } from './CategoryBar';
 import { BestSellersSection } from './BestSellersSection';
 import { ShopBySpaceSection } from './ShopBySpaceSection';
-import { TrustStrip } from './TrustStrip';
 import { ComboPacksSection } from './ComboPacksSection';
 import { CustomerReviewsSection } from './CustomerReviewsSection';
 import { ProjectsSection } from './ProjectsSection';
@@ -70,7 +69,13 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate, onQuickView }) => 
     >
       {/* Unified Sylva Living Green 3D Hero Banner */}
       <HeroBanner navigate={navigate} />
-      <TrustStrip />
+
+      {/* Bestsellers right under the banner */}
+      <BestSellersSection
+        products={products}
+        navigate={navigate}
+        onQuickView={onQuickView}
+      />
 
       {/* Botanica Section - Slow-grown stone slab presentation */}
       <BotanicaSection navigate={navigate} />
@@ -79,13 +84,6 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate, onQuickView }) => 
       {/* Category Pills & Grid */}
       <CategoryBar categories={categories} products={products} navigate={navigate} />
 
-
-      {/* Bestsellers Section */}
-      <BestSellersSection
-        products={products}
-        navigate={navigate}
-        onQuickView={onQuickView}
-      />
 
       {/* Shop by Living Space */}
       <ShopBySpaceSection navigate={navigate} products={products} onQuickView={onQuickView} />
