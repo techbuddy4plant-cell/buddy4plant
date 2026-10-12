@@ -23,7 +23,13 @@ export default {
 
   async fetch(request, env) {
     loadEnv(env);
-    const { pathname } = new URL(request.url);
+    const url = new URL(request.url);
+    // www.buddy4plant.in -> buddy4plant.in (pages are redirected by a line in index.html)
+    if (url.hostname.startsWith('www.')) {
+      url.hostname = url.hostname.slice(4);
+      return Response.redirect(url.toString(), 301);
+    }
+    const { pathname } = url;
     if (pathname.startsWith('/api/razorpay/')) return razorpay(request);
     if (pathname.startsWith('/api/shiprocket/')) return shiprocket(request);
     if (pathname.startsWith('/api/notify/')) return notify(request);
