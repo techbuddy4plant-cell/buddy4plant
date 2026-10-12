@@ -23,7 +23,7 @@ export const BestSellersSection: React.FC<BestSellersSectionProps> = ({
   if (bestsellers.length === 0) return null;
 
   return (
-    <section className="py-20 sm:py-28 bg-[#F8F7F3] border-b border-[#E8E5DC]">
+    <section className="pt-12 pb-16 sm:pt-16 sm:pb-24 bg-[#F8F7F3] border-b border-[#E8E5DC]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 gap-4">
           <div>
