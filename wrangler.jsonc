@@ -13,7 +13,9 @@
   },
   // the website's own addresses - Cloudflare keeps the records and certificates for these
   "routes": [
-    { "pattern": "buddy4plant.in", "custom_domain": true }
+    { "pattern": "buddy4plant.in", "custom_domain": true },
+    // www works too: Cloudflare adds its DNS record and certificate; visitors are sent on to buddy4plant.in
+    { "pattern": "www.buddy4plant.in", "custom_domain": true }
   ],
   "workers_dev": true,
   // keeps orders in step with Shiprocket (sends waiting orders, brings back AWB / courier / status)
