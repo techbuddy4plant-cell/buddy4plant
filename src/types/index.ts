@@ -142,6 +142,8 @@ export interface OrderItem {
   selectedSize?: string;
   selectedWeight?: string;
   selectedPotColor?: string;
+  /** product category (for the HSN code / GST rate on the invoice) */
+  category?: string;
 }
 
 export interface Order {
@@ -177,7 +179,14 @@ export interface Order {
   shiprocketStatus?: string;
   shiprocketTrackUrl?: string;
   shiprocketError?: string;
+  /** pickup date booked from Admin > Orders */
+  shiprocketPickupDate?: string;
   notes?: string;
+  /** given by the server when the order is processed, e.g. B4P/26-27/0012 (never changes) */
+  invoiceNumber?: string;
+  invoiceDate?: number;
+  /** private key kept by the browser that placed the order (lets a guest open / cancel it) - never shown */
+  viewKey?: string;
   createdAt: number;
   updatedAt: number;
   statusHistory?: {
