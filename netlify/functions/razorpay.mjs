@@ -1,6 +1,7 @@
 // Razorpay endpoints for the Netlify-hosted site (same behaviour as server.ts).
 // Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in Netlify > Site configuration > Environment variables.
 import crypto from 'node:crypto';
+import { rateLimit, tooMany } from './firebaseServer.mjs';
 
 // Read a variable from Netlify (Functions v2) or process.env, trimming stray spaces/quotes
 const env = (name) => {
@@ -68,6 +69,7 @@ export default async (req) => {
   }
 
   if (action === 'create-order' && req.method === 'POST') {
+    if (!(await rateLimit(req, 'rzp-create-order', 15, 60))) return tooMany();
     try {
       if (!keys().ok) return json({ success: false, error: 'Online payment is not set up yet. Please choose Cash on Delivery.' }, 503);
       const body = await req.json().catch(() => ({}));
@@ -92,6 +94,7 @@ export default async (req) => {
   }
 
   if (action === 'verify-payment' && req.method === 'POST') {
+    if (!(await rateLimit(req, 'rzp-verify-payment', 20, 60))) return tooMany();
     try {
       const { ok, keySecret } = keys();
       if (!ok) return json({ verified: false, error: 'Online payment is not set up' }, 503);
