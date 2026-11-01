@@ -11,6 +11,7 @@ import {
 import { db, withTimeout } from '../config/firebase';
 import { Category } from '../types';
 import { INITIAL_CATEGORIES, REQUIRED_CATEGORY_IDS } from '../data/initialCategories';
+import { isAdminSession } from '../utils/adminSession';
 
 const CATEGORIES_COLLECTION = 'categories';
 const LOCAL_STORAGE_KEY = 'b4p_categories_db';
@@ -112,7 +113,7 @@ export async function seedCategoriesIfEmpty(): Promise<void> {
         batch.set(docRef, cat);
       }
       // saved in the background - the page never waits for it
-      void batch.commit().catch((e) => console.warn('Background save to Firestore failed (kept in this browser):', e));
+      if (isAdminSession()) void batch.commit().catch((e) => console.warn('Background save to Firestore failed (kept in this browser):', e));
       if (typeof window !== 'undefined') {
         localStorage.setItem(SEEDED_FLAG_KEY, 'true');
       }
@@ -209,7 +210,7 @@ export async function getAllCategories(): Promise<Category[]> {
     const batch = writeBatch(db);
     for (const cat of missing) batch.set(doc(db, CATEGORIES_COLLECTION, cat.id), cat);
     // saved in the background - the page never waits for it
-    void batch.commit().catch((e) => console.warn('Background save to Firestore failed (kept in this browser):', e));
+    if (isAdminSession()) void batch.commit().catch((e) => console.warn('Background save to Firestore failed (kept in this browser):', e));
   } catch (error) {
     console.warn('Could not save new categories to Firestore (kept locally):', error);
   }
