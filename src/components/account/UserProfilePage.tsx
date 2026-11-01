@@ -36,7 +36,8 @@ interface UserProfilePageProps {
 }
 
 export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQuickView, initialTab }) => {
-  const { user, profile, promptSignOut, saveAddress, removeAddress, setDefaultAddress, updateProfileDetails, resetPassword, openAuthModal } = useAuth();
+  const { user, profile, promptSignOut, saveAddress, removeAddress, setDefaultAddress, updateProfileDetails, resetPassword, openAuthModal, resendVerification } = useAuth();
+  const [verifyMsg, setVerifyMsg] = useState('');
   const { wishlistIds } = useWishlist();
 
   const getInitialTab = (): 'profile' | 'track-order' | 'addresses' | 'wishlist' | 'settings' => {
@@ -421,6 +422,29 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({ navigate, onQu
           </aside>
 
           <main className="min-w-0 space-y-6">
+        {/* email not verified yet (email + password accounts) */}
+        {user && !user.emailVerified && user.providerData.some((p) => p.providerId === 'password') && (
+          <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 flex flex-col sm:flex-row sm:items-center gap-2 sm:justify-between">
+            <span>
+              <i className="fa-solid fa-envelope-circle-check mr-2" aria-hidden="true" />
+              Please verify your email <b>{user.email}</b> - we sent you a link when you signed up.
+            </span>
+            <button
+              type="button"
+              className="shrink-0 font-semibold underline underline-offset-2"
+              onClick={async () => {
+                try {
+                  await resendVerification();
+                  setVerifyMsg('Sent! Check your inbox and spam folder.');
+                } catch {
+                  setVerifyMsg('Please wait a few minutes before asking again.');
+                }
+              }}
+            >
+              {verifyMsg || 'Send the link again'}
+            </button>
+          </div>
+        )}
         {/* TAB 1: MY PROFILE INFO */}
         {activeTab === 'profile' && (
           <div className="bg-white rounded-[22px] ring-1 ring-[#ECE6DA] shadow-[0_14px_32px_-26px_rgba(19,48,27,0.5)] p-5 sm:p-8 space-y-6">
