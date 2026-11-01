@@ -1,9 +1,11 @@
 rules_version = '2';
+// Files (photos) can be read by everyone; only admins can upload or change them.
 service firebase.storage {
   match /b/{bucket}/o {
     match /{allPaths=**} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if request.auth != null
+        && firestore.exists(/databases/(default)/documents/admins/$(request.auth.uid));
     }
   }
 }
