@@ -1,7 +1,9 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getFirestore, initializeFirestore, Firestore } from 'firebase/firestore';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
+import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
 import firebaseConfigJson from '../../firebase-applet-config.json';
+import { APP_CHECK_SITE_KEY } from './integrations';
 
 const metaEnv = (import.meta as any).env || {};
 
@@ -28,6 +30,16 @@ try {
 }
 export const db = firestore;
 export const auth = getAuth(app);
+
+// App Check: proves requests come from this website (blocks bots and scripts using the database directly).
+// Runs invisibly; only switched on when a reCAPTCHA site key is set in src/config/integrations.ts.
+if (typeof window !== 'undefined' && APP_CHECK_SITE_KEY) {
+  try {
+    initializeAppCheck(app, { provider: new ReCaptchaV3Provider(APP_CHECK_SITE_KEY), isTokenAutoRefreshEnabled: true });
+  } catch {
+    /* already started (hot reload) */
+  }
+}
 
 export const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: 'select_account' });
