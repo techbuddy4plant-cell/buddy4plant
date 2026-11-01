@@ -26,6 +26,8 @@ import {
   BookOpen,
   Building2,
   FileText,
+  Menu,
+  X,
 } from 'lucide-react';
 import { Order, Product, Category, Coupon } from '../../types';
 import { getOrders, subscribeToAllOrders } from '../../services/orderService';
@@ -76,6 +78,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
   const { profile, user, promptSignOut } = useAuth();
   const { adminDarkMode, toggleAdminDarkMode } = useStoreSettings();
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
+  // phones: the menu is a slide-out drawer
+  const [navOpen, setNavOpen] = useState(false);
   const [gardenTab, setGardenTab] = useState<'projects' | 'content' | 'enquiries'>('projects');
 
   const [orders, setOrders] = useState<Order[]>([]);
@@ -186,11 +190,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
   };
 
   return (
-    <div className={`admin-root b4p-fixed-theme h-screen flex flex-col md:flex-row font-sans overflow-hidden transition-colors duration-200 ${
+    <div className={`admin-root b4p-fixed-theme h-[100dvh] flex flex-row font-sans overflow-hidden transition-colors duration-200 ${
       adminDarkMode ? 'admin-dark-mode bg-[#0E150F] text-[#E5EAE3]' : 'bg-[#FDFCF9] text-[#1A1A1A]'
     }`}>
-      {/* Sidebar Navigation - Fixed & Sticky */}
-      <aside className="w-full md:w-64 bg-[#182319] text-[#E5E2D9] flex flex-col justify-between shrink-0 md:h-screen md:sticky md:top-0 md:overflow-y-auto z-40 border-r border-[#2A3B2C] shadow-lg">
+      {/* Phones: dark backdrop behind the open menu */}
+      {navOpen && (
+        <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={() => setNavOpen(false)} aria-hidden="true" />
+      )}
+
+      {/* Sidebar Navigation - drawer on phones, fixed column on larger screens */}
+      <aside
+        className={`fixed inset-y-0 left-0 w-72 max-w-[85vw] md:static md:w-64 md:max-w-none h-[100dvh] overflow-y-auto bg-[#182319] text-[#E5E2D9] flex flex-col justify-between shrink-0 z-50 md:z-40 border-r border-[#2A3B2C] shadow-lg transition-transform duration-200 md:translate-x-0 ${
+          navOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
         <div>
           {/* Top Admin Brand */}
           <div className="p-4 sm:p-5 border-b border-[#2A3B2C] flex items-center justify-between sticky top-0 bg-[#182319] z-10">
@@ -203,6 +216,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
                 </span>
               </div>
             </div>
+            <button
+              onClick={() => setNavOpen(false)}
+              className="md:hidden p-2 -mr-1 rounded-lg text-[#B0BBAA] hover:text-white hover:bg-[#253222]"
+              aria-label="Close menu"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
 
           {/* Nav list */}
@@ -210,8 +230,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
             {navItems.map((item) => (
               <button
                 key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                className={`w-full flex items-center justify-between px-3 py-2.5 text-xs font-medium rounded-lg transition-all ${
+                onClick={() => {
+                  setActiveTab(item.id);
+                  setNavOpen(false);
+                }}
+                className={`w-full flex items-center justify-between px-3 py-3 md:py-2.5 text-sm md:text-xs font-medium rounded-lg transition-all ${
                   activeTab === item.id
                     ? 'bg-[#2D4A27] text-white shadow-xs font-bold'
                     : 'text-[#B0BBAA] hover:text-white hover:bg-[#253222]'
@@ -253,23 +276,30 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
       </aside>
 
       {/* Main Admin Content Canvas */}
-      <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+      <main className="flex-1 flex flex-col min-w-0 h-[100dvh] overflow-hidden">
         {/* Top bar */}
-        <header className={`h-16 px-6 flex items-center justify-between shrink-0 sticky top-0 z-30 transition-colors ${
+        <header className={`h-14 sm:h-16 px-3 sm:px-6 gap-2 flex items-center justify-between shrink-0 sticky top-0 z-30 transition-colors ${
           adminDarkMode ? 'bg-[#152016] border-b border-[#243525] text-white' : 'bg-white border-b border-[#E5E2D9] text-[#1A1A1A]'
         }`}>
-          <div className="flex items-center gap-3">
-            <span className={`font-serif font-bold text-lg ${adminDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <button
+              onClick={() => setNavOpen(true)}
+              className={`md:hidden p-2 -ml-1 rounded-lg shrink-0 ${adminDarkMode ? 'text-white hover:bg-[#253222]' : 'text-[#1A1A1A] hover:bg-[#F5F2EB]'}`}
+              aria-label="Open admin menu"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            <span className={`font-serif font-bold text-base sm:text-lg truncate ${adminDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>
               {getTabTitle(activeTab)}
             </span>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1 sm:gap-3 shrink-0">
             {/* Direct Link to Storefront */}
             <button
               id="header-visit-storefront"
               onClick={() => navigate('/')}
-              className="px-3.5 py-1.5 bg-[#2D4A27] hover:bg-[#1F341C] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 shadow-xs transition-all"
+              className="hidden sm:flex px-3.5 py-1.5 bg-[#2D4A27] hover:bg-[#1F341C] text-white text-xs font-bold rounded-lg items-center gap-1.5 shadow-xs transition-all"
               title="Visit live storefront in customer view"
             >
               <ExternalLink className="w-3.5 h-3.5 text-emerald-300" />
@@ -302,7 +332,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             </button>
 
-            <div className={`flex items-center gap-2 pl-3 border-l text-xs ${adminDarkMode ? 'border-[#283A2A]' : 'border-[#E5E2D9]'}`}>
+            <div className={`hidden sm:flex items-center gap-2 pl-3 border-l text-xs ${adminDarkMode ? 'border-[#283A2A]' : 'border-[#E5E2D9]'}`}>
               <span className="w-7 h-7 bg-[#2D4A27] text-white flex items-center justify-center font-bold text-xs rounded-full">
                 <i className="fa-solid fa-user-shield text-xs" />
               </span>
@@ -322,7 +352,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
         </header>
 
         {/* Body content based on active tab */}
-        <div className="flex-1 p-6 sm:p-8 max-w-7xl w-full mx-auto overflow-y-auto">
+        <div className="flex-1 min-h-0 p-3 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto overflow-y-auto overflow-x-hidden">
           {activeTab === 'overview' && (
             <AdminOverview
               orders={orders}
