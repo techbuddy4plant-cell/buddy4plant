@@ -12,6 +12,7 @@ import {
 import { db, withTimeout } from '../config/firebase';
 import { Coupon } from '../types';
 import { INITIAL_COUPONS } from '../data/initialSettings';
+import { isAdminSession } from '../utils/adminSession';
 
 const COUPONS_COLLECTION = 'coupons';
 const LOCAL_STORAGE_KEY = 'b4p_coupons_db';
@@ -103,7 +104,7 @@ export async function seedCouponsIfEmpty(): Promise<void> {
         batch.set(docRef, coup);
       }
       // saved in the background - the page never waits for it
-      void batch.commit().catch((e) => console.warn('Background save to Firestore failed (kept in this browser):', e));
+      if (isAdminSession()) void batch.commit().catch((e) => console.warn('Background save to Firestore failed (kept in this browser):', e));
       if (typeof window !== 'undefined') {
         localStorage.setItem(SEEDED_FLAG_KEY, 'true');
       }
