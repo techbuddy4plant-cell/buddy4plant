@@ -1,7 +1,7 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { storefrontBackground, StoreSettingsProvider, useStoreSettings } from './context/StoreSettingsContext';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
 import { useReminderTracking } from './services/notifyService';
@@ -47,11 +47,6 @@ export default function App() {
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   useBackClose(!!quickViewProduct, () => setQuickViewProduct(null));
 
-  // Admin authentication state checked from sessionStorage
-  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(() => {
-    return sessionStorage.getItem('b4p_admin_secured_session') === 'authenticated_true';
-  });
-
   // Client-side router navigation helper
   const navigate = (path: string) => {
     // an open drawer/modal added its own history entry - reuse it instead of stacking another
@@ -76,19 +71,7 @@ export default function App() {
 
     // Secure Admin Portal: Accessible ONLY at /b4padmin
     if (path === '/b4padmin' || path.startsWith('/b4padmin')) {
-      const isAuthed = sessionStorage.getItem('b4p_admin_secured_session') === 'authenticated_true' || isAdminAuthenticated;
-      if (isAuthed) {
-        return <AdminDashboard navigate={navigate} />;
-      }
-      return (
-        <AdminLoginPage
-          onLoginSuccess={() => {
-            sessionStorage.setItem('b4p_admin_secured_session', 'authenticated_true');
-            setIsAdminAuthenticated(true);
-          }}
-          navigate={navigate}
-        />
-      );
+      return <AdminGate navigate={navigate} />;
     }
 
     // Redirect legacy or public /admin attempts away to maintain absolute security
@@ -338,3 +321,16 @@ const AppShell: React.FC<{
   );
 };
 
+/** /b4padmin: only a signed-in account listed in the database collection "admins" gets the dashboard. */
+const AdminGate: React.FC<{ navigate: (path: string) => void }> = ({ navigate }) => {
+  const { user, isAdmin, loading } = useAuth();
+  if (loading) {
+    return (
+      <div className="admin-root b4p-fixed-theme min-h-screen bg-[#111A12] text-[#A3B899] flex items-center justify-center text-sm">
+        <i className="fa-solid fa-circle-notch fa-spin mr-2" /> Checking your admin access...
+      </div>
+    );
+  }
+  if (user && isAdmin) return <AdminDashboard navigate={navigate} />;
+  return <AdminLoginPage navigate={navigate} notAdminEmail={user ? user.email : null} onLoginSuccess={() => undefined} />;
+};
