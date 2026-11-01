@@ -23,6 +23,10 @@
 //   REMINDER_AFTER_HOURS      - default 3
 // Anything not set is simply skipped, so WhatsApp can go live before SMS (or the other way round).
 
+import { fsFetch, rateLimit, tooMany, requestAuth } from './firebaseServer.mjs';
+import { assignInvoiceNumber, needsInvoice } from './invoiceServer.mjs';
+import { emailReady, sendOrderEmail } from './orderEmail.mjs';
+
 const SITE = 'https://buddy4plant.in';
 const FIREBASE_PROJECT = 'buddy4plant-24f6f';
 const FS_DOCS = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT}/databases/(default)/documents`;
@@ -82,7 +86,7 @@ const toFs = (x) => {
 };
 
 async function readDoc(path) {
-  const r = await fetch(`${FS_DOCS}/${path}`);
+  const r = await fsFetch(`/${path}`);
   if (!r.ok) return null;
   const d = await r.json();
   return { data: fsObject(d.fields || {}), updateTime: d.updateTime };
@@ -92,7 +96,7 @@ async function patchDoc(path, fields, updateTime) {
   const keys = Object.keys(fields);
   const q = keys.map((k) => `updateMask.fieldPaths=${encodeURIComponent(k)}`);
   if (updateTime) q.push(`currentDocument.updateTime=${encodeURIComponent(updateTime)}`);
-  const r = await fetch(`${FS_DOCS}/${path}?${q.join('&')}`, {
+  const r = await fsFetch(`/${path}?${q.join('&')}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ fields: Object.fromEntries(keys.map((k) => [k, toFs(fields[k])])) }),
@@ -102,7 +106,7 @@ async function patchDoc(path, fields, updateTime) {
 /** Documents whose numeric `field` is between min and max (inclusive). */
 async function query(collectionId, field, min, max, limit = 300) {
   const f = (op, n) => ({ fieldFilter: { field: { fieldPath: field }, op, value: { integerValue: String(Math.round(n)) } } });
-  const r = await fetch(`${FS_DOCS}:runQuery`, {
+  const r = await fsFetch(':runQuery', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -190,7 +194,14 @@ function orderEligible(o) {
 
 export async function notifyOrder(id) {
   if (!/^[\w-]{3,80}$/.test(String(id || ''))) return { ok: false, error: 'Invalid order' };
-  if (!waReady() && !smsReady()) return { ok: false, error: 'Messaging is not set up' };
+  // 1. invoice number (always, even when no messages are set up)
+  let invoiceNumber = '';
+  try {
+    invoiceNumber = await assignInvoiceNumber(id);
+  } catch (e) {
+    console.error('invoice number', e);
+  }
+  if (!waReady() && !smsReady() && !emailReady()) return { ok: true, invoiceNumber, skipped: 'Messaging is not set up' };
   const doc = await readDoc(`orders/${encodeURIComponent(id)}`);
   const o = doc && doc.data;
   const why = orderEligible(o);
@@ -206,16 +217,19 @@ export async function notifyOrder(id) {
   const payment = o.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Paid online';
   const address = v([a.street, a.city, a.pincode].filter(Boolean).join(', '), 200);
   const track = `${SITE}/track-order?id=${encodeURIComponent(o.orderNumber)}`;
-  const result = { orderNumber: o.orderNumber };
+  const result = { orderNumber: o.orderNumber, invoiceNumber: o.invoiceNumber || invoiceNumber };
 
-  if (phone) {
+  // "You got a new order" email to the shop
+  if (emailReady()) result.storeEmail = await sendOrderEmail({ ...o, id, invoiceNumber: o.invoiceNumber || invoiceNumber });
+
+  if (phone && (waReady() || smsReady())) {
     // {{1}} name {{2}} order no {{3}} items {{4}} total {{5}} payment {{6}} address + tracking link
     result.customerWhatsApp = await sendWhatsApp(phone, env('WA_TEMPLATE_ORDER') || 'order_confirmation', [
       name, o.orderNumber, itemsText(o.items), rupees(o.total), payment, `${address}. Track: ${track}`,
     ]);
     // DLT (3 variables; the tracking link is written in the approved template itself): name | order no | amount
     result.customerSms = await sendSms(phone, env('FAST2SMS_ORDER_MSG_ID'), [name, o.orderNumber, rupees(o.total)]);
-  } else {
+  } else if (!phone) {
     result.customer = 'no valid mobile number';
   }
 
@@ -264,12 +278,19 @@ async function remindOne(row) {
 
 /** Run from the cron: missed order messages + due reminders. */
 export async function notifyAll() {
-  const report = { orders: [], reminders: [], errors: [] };
-  if (!waReady() && !smsReady()) return { ...report, errors: ['Messaging is not set up'] };
+  const report = { orders: [], invoices: [], reminders: [], errors: [] };
+  const messaging = waReady() || smsReady() || emailReady();
   try {
     const orders = await query('orders', 'createdAt', Date.now() - 6 * 3600000, Date.now());
     for (const o of orders) {
-      if (orderEligible(o)) continue;
+      // invoice numbers for orders that don't have one yet (e.g. the page was closed right after ordering)
+      if (needsInvoice(o) && Date.now() - Number(o.createdAt) > 2 * 60000) {
+        try {
+          const n = await assignInvoiceNumber(o._id);
+          if (n) report.invoices.push(n);
+        } catch (e) { report.errors.push(String(e.message || e)); }
+      }
+      if (!messaging || orderEligible(o)) continue;
       // give the website's own call a couple of minutes first
       if (Date.now() - Number(o.createdAt) < 3 * 60000) continue;
       const r = await notifyOrder(o._id);
@@ -278,7 +299,7 @@ export async function notifyAll() {
   } catch (e) { report.errors.push(String(e.message || e)); }
 
   const h = istHour();
-  if (h >= 9 && h < 21) {
+  if (h >= 9 && h < 21 && (waReady() || smsReady())) {
     try {
       const after = (Number(env('REMINDER_AFTER_HOURS')) || 3) * 3600000;
       const rows = await query('cartActivity', 'updatedAt', Date.now() - 48 * 3600000, Date.now() - after);
@@ -309,15 +330,25 @@ export default async (req) => {
   const action = pathname.split('/').filter(Boolean).pop();
   try {
     if (action === 'config') {
-      const r = { whatsapp: waReady(), sms: smsReady(), orderSms: Boolean(env('FAST2SMS_ORDER_MSG_ID')), reminderSms: Boolean(env('FAST2SMS_REMINDER_MSG_ID')), storeAlerts: Boolean(mobile10(env('ORDER_ALERT_PHONE'))) };
+      const r = { email: emailReady(), whatsapp: waReady(), sms: smsReady(), orderSms: Boolean(env('FAST2SMS_ORDER_MSG_ID')), reminderSms: Boolean(env('FAST2SMS_REMINDER_MSG_ID')), storeAlerts: Boolean(mobile10(env('ORDER_ALERT_PHONE'))) };
       // ?test=1 sends one "new order" style test to the store number, so the setup can be checked
       if (searchParams.get('test') === '1' && mobile10(env('ORDER_ALERT_PHONE')) && (await testAllowed())) {
         const shop = mobile10(env('ORDER_ALERT_PHONE'));
         r.testWhatsApp = await sendWhatsApp(shop, env('WA_TEMPLATE_ADMIN') || 'new_order_alert', ['TEST-000', 'Test customer', 'Test plant x1', 'Rs 1', 'Test', 'Lucknow']);
       }
+      // ?testEmail=1 (signed-in admin only) sends a sample "new order" email
+      if (searchParams.get('testEmail') === '1' && emailReady() && (await requestAuth(req)).admin && (await testAllowed())) {
+        r.testEmail = await sendOrderEmail({
+          orderNumber: 'B4P-TEST01', invoiceNumber: 'B4P/26-27/0000', createdAt: Date.now(), paymentMethod: 'cod',
+          customerName: 'Test Customer', customerPhone: '9876543210', customerEmail: 'test@example.com',
+          shippingAddress: { fullName: 'Test Customer', street: '12 Garden Road', city: 'Lucknow', state: 'Uttar Pradesh', pincode: '226001', phone: '9876543210' },
+          items: [{ name: 'Snake Plant', quantity: 2, price: 299 }], subtotal: 598, discount: 0, shippingCharge: 0, total: 598,
+        });
+      }
       return json(r);
     }
     if (action === 'order' && req.method === 'POST') {
+      if (!(await rateLimit(req, 'notify-order', 10, 60))) return tooMany();
       const body = await req.json().catch(() => ({}));
       return json(await notifyOrder(body.id));
     }
