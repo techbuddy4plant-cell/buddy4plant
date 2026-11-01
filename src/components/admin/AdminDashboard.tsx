@@ -24,7 +24,8 @@ import {
   Sun,
   Moon,
   BookOpen,
-  Building2
+  Building2,
+  FileText,
 } from 'lucide-react';
 import { Order, Product, Category, Coupon } from '../../types';
 import { getOrders, subscribeToAllOrders } from '../../services/orderService';
@@ -45,6 +46,7 @@ import { AdminReviews } from './AdminReviews';
 import { AdminCoupons } from './AdminCoupons';
 import { AdminCMS } from './AdminCMS';
 import { AdminSettings } from './AdminSettings';
+import { AdminInvoiceSettings } from './AdminInvoiceSettings';
 import { AdminBlog } from './AdminBlog';
 import { AdminAboutUs } from './AdminAboutUs';
 import { Buddy4PlantLogo } from '../common/Buddy4PlantLogo';
@@ -64,6 +66,7 @@ type AdminTab =
   | 'garden-services'
   | 'about-us'
   | 'orders'
+  | 'invoice'
   | 'categories'
   | 'reviews'
   | 'coupons'
@@ -138,6 +141,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
     { id: 'about-us', label: 'ℹ️ About us', icon: <Building2 className="w-4 h-4" /> },
     // Core store operations
     { id: 'orders', label: 'Orders & Fulfillment', icon: <Truck className="w-4 h-4" />, badge: orders.filter((o) => o.orderStatus === 'Pending' || o.orderStatus === 'Confirmed').length },
+    { id: 'invoice', label: 'Invoice Settings', icon: <FileText className="w-4 h-4" /> },
     { id: 'categories', label: 'Collections & Categories', icon: <FolderTree className="w-4 h-4" /> },
     { id: 'reviews', label: 'Customer Reviews', icon: <Star className="w-4 h-4" /> },
     { id: 'coupons', label: 'Coupons & Promos', icon: <Tag className="w-4 h-4" /> },
@@ -166,6 +170,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
         return 'About us — Nursery Origins & Story';
       case 'orders':
         return 'Orders, Delivery Tracking & Courier Dispatch';
+      case 'invoice':
+        return 'Invoice Settings, GST & Numbering';
       case 'categories':
         return 'Product Collections & Navigation Taxonomy';
       case 'reviews':
@@ -236,7 +242,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
           </button>
           <button
             onClick={() => {
-              sessionStorage.removeItem('b4p_admin_secured_session');
               promptSignOut();
             }}
             className="w-full px-3.5 py-2 bg-rose-950/60 hover:bg-rose-900 text-rose-200 flex items-center justify-center gap-2 font-medium text-[11px] uppercase tracking-wider transition-colors rounded-lg border border-rose-800/40"
@@ -301,10 +306,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
               <span className="w-7 h-7 bg-[#2D4A27] text-white flex items-center justify-center font-bold text-xs rounded-full">
                 <i className="fa-solid fa-user-shield text-xs" />
               </span>
-              <span className="font-semibold text-[#1A1A1A] hidden sm:inline">b4padpl</span>
+              <span className="font-semibold text-[#1A1A1A] hidden sm:inline">{user?.email || 'Admin'}</span>
               <button
                 onClick={() => {
-                  sessionStorage.removeItem('b4p_admin_secured_session');
                   promptSignOut();
                 }}
                 className="ml-2 px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-semibold text-[11px] rounded transition-colors flex items-center gap-1 border border-rose-200"
@@ -414,6 +418,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
           {activeTab === 'orders' && (
             <AdminOrders orders={orders} onRefresh={loadAllData} />
           )}
+
+          {activeTab === 'invoice' && <AdminInvoiceSettings categories={categories} />}
 
           {activeTab === 'categories' && (
             <AdminCategories categories={categories} products={products} onRefresh={loadAllData} />
