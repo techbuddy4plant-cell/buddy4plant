@@ -1,91 +1,117 @@
 rules_version = '2';
+
+// Buddy4Plant database rules.
+//  - Everyone can read the shop (products, categories, settings, projects, reviews).
+//  - Only admins can change the shop. An admin = a signed-in account with a document admins/{uid}
+//    (created by the owner in the Firebase console - it can never be created from the website).
+//  - Customers can place orders and read only their own orders, profile, wishlist and cart.
+//    Looking up / cancelling orders as a guest goes through the website's server (/api/orders),
+//    which uses the project's service account and checks who is asking.
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Helper function to check if user is admin
+
+    function signedIn() {
+      return request.auth != null;
+    }
     function isAdmin() {
-      return request.auth != null && (
-        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
-        request.auth.token.admin == true ||
-        request.auth.token.email == "admin@buddy4plant.com" ||
-        request.auth.token.email == "admin@vanabotanica.com"
-      );
+      return signedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
-    
-    function isOwner(userId) {
-      return request.auth != null && request.auth.uid == userId;
+    function isUser(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+    function verifiedEmail() {
+      return signedIn() && request.auth.token.email_verified == true;
     }
 
-    // Public readable & manageable store catalogues
-    match /products/{productId} {
-      allow read, write: if true;
-    }
+    // ---------- the shop (public to read, admins to change) ----------
+    match /categories/{id}  { allow read: if true; allow write: if isAdmin(); }
+    match /collections/{id} { allow read: if true; allow write: if isAdmin(); }
+    match /homepage/{id}    { allow read: if true; allow write: if isAdmin(); }
+    match /settings/{id}    { allow read: if true; allow write: if isAdmin(); }
+    match /coupons/{id}     { allow read: if true; allow write: if isAdmin(); }
+    match /projects/{id}    { allow read: if true; allow write: if isAdmin(); }
+    match /inventory/{id}   { allow read: if true; allow write: if isAdmin(); }
+    match /analytics/{id}   { allow read: if isAdmin(); allow write: if isAdmin(); }
 
-    match /categories/{categoryId} {
-      allow read, write: if true;
-    }
-
-    match /collections/{collectionId} {
-      allow read, write: if true;
-    }
-
-    match /homepage/{docId} {
-      allow read, write: if true;
-    }
-
-    match /settings/{docId} {
-      allow read, write: if true;
-    }
-
-    match /coupons/{couponId} {
-      allow read, write: if true;
-    }
-
-    // Reviews: Public read & write
-    match /reviews/{reviewId} {
-      allow read, write: if true;
-    }
-
-    // Wishlist
-    match /wishlists/{userId} {
-      allow read, write: if true;
-    }
-
-    // Users
-    match /users/{userId} {
-      allow read, write: if true;
-    }
-
-    // Admins collection
-    match /admins/{userId} {
-      allow read, write: if true;
-    }
-
-    // Orders: Public create, read & update for checkout & order tracking
-    match /orders/{orderId} {
-      allow read, create, update: if true;
-      allow delete: if false;
-    }
-
-    // Landscaping projects shown on Gardening Services / Projects pages (edited in Admin > Projects)
-    match /projects/{projectId} {
+    match /products/{id} {
       allow read: if true;
-      allow write: if true; // TODO: restrict to admins once admin login uses Firebase Auth (see to-do A1/A2)
+      allow create, delete: if isAdmin();
+      // admins change anything; a customer's checkout may only lower the stock a little
+      allow update: if isAdmin() || stockDeduction();
+    }
+    function stockDeduction() {
+      let before = resource.data;
+      let after = request.resource.data;
+      return after.diff(before).affectedKeys().hasOnly(['stock', 'updatedAt'])
+        && before.stock is int && after.stock is int
+        && after.stock >= 0 && after.stock < before.stock
+        && before.stock - after.stock <= 50;
     }
 
-    // Landscaping / gardening service enquiries from the website form
-    match /serviceEnquiries/{enquiryId} {
-      allow read, create, update: if true;
-      allow delete: if false;
+    match /reviews/{id} {
+      allow read: if true;
+      allow create: if validReview(id);
+      allow update, delete: if isAdmin();
+    }
+    function validReview(id) {
+      let d = request.resource.data;
+      return d.id == id && id.size() <= 60
+        && d.rating is number && d.rating >= 1 && d.rating <= 5
+        && (!('comment' in d) || (d.comment is string && d.comment.size() <= 3000))
+        && d.keys().size() <= 25;
     }
 
-    // Inventory & Analytics
-    match /inventory/{productId} {
-      allow read, write: if true;
+    // ---------- orders ----------
+    match /orders/{orderId} {
+      allow get, list: if isAdmin()
+        || (signedIn() && resource.data.customerId == request.auth.uid)
+        || (verifiedEmail() && resource.data.customerEmail == request.auth.token.email);
+      allow create: if validNewOrder(orderId);
+      allow update, delete: if isAdmin();
     }
-    
-    match /analytics/{docId} {
-      allow read, write: if true;
+    function validNewOrder(orderId) {
+      let d = request.resource.data;
+      return d.id == orderId && orderId.size() <= 80
+        && (d.customerId == 'guest' || (signedIn() && d.customerId == request.auth.uid))
+        && d.orderNumber is string && d.orderNumber.size() <= 45
+        && d.orderStatus in ['Pending', 'Confirmed']
+        && d.paymentMethod in ['cod', 'razorpay']
+        && d.items is list && d.items.size() > 0 && d.items.size() <= 30
+        && d.total is number && d.total > 0 && d.total <= 500000
+        && !('shiprocketOrderId' in d) && !('notifiedAt' in d) && !('invoiceNumber' in d)
+        && d.keys().size() <= 60;
+    }
+
+    // ---------- customers ----------
+    match /users/{uid} {
+      allow read: if isUser(uid) || isAdmin();
+      allow create, update: if (isUser(uid) && (!('role' in request.resource.data) || request.resource.data.role == 'customer')) || isAdmin();
+      allow delete: if isAdmin();
+    }
+    match /wishlists/{uid} {
+      allow read, write: if isUser(uid);
+    }
+    // cart / recently viewed products, for the reminder message
+    match /cartActivity/{uid} {
+      allow read: if isUser(uid) || isAdmin();
+      allow create, update: if isUser(uid) && request.resource.data.uid == uid && request.resource.data.keys().size() <= 15;
+      allow delete: if isAdmin();
+    }
+
+    // gardening / landscaping enquiry form
+    match /serviceEnquiries/{id} {
+      allow create: if request.resource.data.status == 'new' && request.resource.data.keys().size() <= 30;
+      allow read, update: if isAdmin();
+    }
+
+    // admin list: each person may only check their own entry; nobody can add admins from the website
+    match /admins/{uid} {
+      allow get: if isUser(uid);
+    }
+
+    // invoice number counters etc. - only the server (service account) uses these
+    match /counters/{id} {
+      allow read: if isAdmin();
     }
   }
 }
