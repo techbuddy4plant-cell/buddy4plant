@@ -7,6 +7,8 @@
 // Online orders need a confirmed Razorpay payment; COD orders are checked against the saved order,
 // so nobody can create fake shipments. syncAll() keeps the website and Shiprocket in step.
 
+import { fsFetch, requestAuth, ownsOrder, rateLimit, tooMany, readDoc } from './firebaseServer.mjs';
+
 const API = 'https://apiv2.shiprocket.in/v1/external';
 
 const env = (name) => {
@@ -152,7 +154,7 @@ const fsObject = (fields) => Object.fromEntries(Object.entries(fields).map(([k, 
 
 async function codOrderFromDatabase(id) {
   if (!/^[\w-]{3,80}$/.test(String(id || ''))) return { error: 'Invalid order' };
-  const r = await fetch(`https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT}/databases/(default)/documents/orders/${encodeURIComponent(id)}`);
+  const r = await fsFetch(`/orders/${encodeURIComponent(id)}`);
   if (!r.ok) return { error: 'Order not found' };
   const doc = await r.json();
   const order = fsObject(doc.fields || {});
@@ -296,6 +298,124 @@ async function cancelInShiprocket(orderNumber, srId) {
   return { success: true, shiprocketOrderId: id };
 }
 
+/** Latest Shiprocket details for one website order, and the order fields that changed ({ t, f }). */
+async function trackingUpdate(o) {
+  const t = await trackShiprocket(String(o.shiprocketOrderId || '').replace(/\D/g, ''), String(o.shiprocketShipmentId || '').replace(/\D/g, ''));
+  const f = { shiprocketSyncedAt: Date.now() };
+  if (t.status && t.status !== o.shiprocketStatus) f.shiprocketStatus = t.status;
+  if (t.awb && t.awb !== o.trackingNumber) f.trackingNumber = t.awb;
+  if (t.courier && t.courier !== o.deliveryCourier) f.deliveryCourier = t.courier;
+  if (t.location && t.location !== o.currentLocation) f.currentLocation = t.location;
+  if (t.etd && t.etd !== o.estimatedDeliveryDate) f.estimatedDeliveryDate = t.etd;
+  if (t.trackUrl && t.trackUrl !== o.shiprocketTrackUrl) f.shiprocketTrackUrl = t.trackUrl;
+  const next = mapStatus(t.status);
+  if (next && RANK.indexOf(next) > RANK.indexOf(o.orderStatus)) {
+    f.orderStatus = next;
+    f.statusHistory = [...(Array.isArray(o.statusHistory) ? o.statusHistory : []), {
+      status: next,
+      timestamp: Date.now(),
+      location: t.location || o.currentLocation || 'In transit',
+      note: `${t.status}${t.courier ? ` - ${t.courier}` : ''}${t.awb ? ` (AWB ${t.awb})` : ''}`,
+    }];
+    if (next === 'Delivered' && o.paymentMethod === 'cod') f.paymentStatus = 'paid';
+  }
+  return { t, f };
+}
+
+
+// ---- Admin controls (Admin > Orders > Shipping): couriers & prices, assign courier, pickup, labels ----
+const srMsg = (r, fallback) => clean(r.data?.message || (r.data?.errors && Object.values(r.data.errors).flat().join(' ')) || fallback, 300);
+const ids = (v) => String(v || '').replace(/\D/g, '');
+
+async function adminOp(op, b) {
+  // whole-account summary for the top of Admin > Orders
+  if (op === 'summary') {
+    const [w, n] = await Promise.all([sr('/account/details/wallet-balance'), sr('/ndr/all?per_page=50').catch(() => ({ ok: false, data: {} }))]);
+    const ndr = Array.isArray(n.data?.data) ? n.data.data : [];
+    return {
+      success: w.ok,
+      wallet: Number(w.data?.data?.balance_amount ?? w.data?.balance_amount ?? NaN),
+      ndrCount: ndr.length,
+      ndr: ndr.slice(0, 10).map((x) => ({ awb: clean(x.awb_code || x.awb, 40), orderNumber: clean(x.channel_order_id || x.order_id, 45), reason: clean(x.reason || x.ndr_reason || x.status, 120) })),
+      error: w.ok ? undefined : srMsg(w, 'Could not read the wallet'),
+    };
+  }
+
+  // everything below works on one website order
+  const docId = String(b.id || '');
+  if (!/^[\w-]{3,80}$/.test(docId)) return { success: false, error: 'Missing order' };
+  const found = await readDoc(`orders/${encodeURIComponent(docId)}`);
+  if (!found) return { success: false, error: 'Order not found' };
+  const o = found.data;
+  const srOrder = ids(o.shiprocketOrderId);
+  const shipment = ids(o.shiprocketShipmentId);
+  if (!srOrder || !shipment) return { success: false, error: 'Send this order to Shiprocket first.' };
+
+  if (op === 'rates') {
+    const r = await sr(`/courier/serviceability/?order_id=${srOrder}`);
+    const d = r.data?.data || {};
+    const list = Array.isArray(d.available_courier_companies) ? d.available_courier_companies : [];
+    if (!r.ok || !list.length) return { success: false, error: srMsg(r, 'No courier can deliver to this pincode right now.') };
+    const couriers = list.map((c) => ({
+      id: Number(c.courier_company_id),
+      name: clean(c.courier_name, 80),
+      rate: Number(c.rate ?? c.freight_charge ?? 0),
+      days: clean(c.estimated_delivery_days ?? '', 10),
+      etd: clean(c.etd, 40),
+      rating: Number(c.rating || 0),
+      cod: Number(c.cod) === 1,
+      surface: !!c.is_surface,
+    })).sort((a, z) => a.rate - z.rate);
+    return { success: true, couriers, recommended: Number(d.recommended_courier_company_id || 0) || undefined };
+  }
+
+  if (op === 'assign') {
+    const courierId = Number(b.courierId || 0);
+    if (o.trackingNumber && /AWB|PICKUP|SHIPPED|TRANSIT|DELIVER/i.test(String(o.shiprocketStatus || ''))) return { success: false, error: `A courier is already assigned (AWB ${o.trackingNumber}).` };
+    const r = await sr('/courier/assign/awb', { method: 'POST', body: JSON.stringify({ shipment_id: Number(shipment), ...(courierId ? { courier_id: courierId } : {}) }) });
+    const d = r.data?.response?.data || r.data?.data || {};
+    const awb = clean(d.awb_code, 40);
+    if (!r.ok || !awb) return { success: false, error: srMsg(r, 'Shiprocket could not assign a courier (check the wallet balance).') };
+    const courier = clean(d.courier_name, 80);
+    await patchOrderDoc(docId, { trackingNumber: awb, deliveryCourier: courier, shiprocketStatus: 'AWB ASSIGNED', shiprocketError: '', updatedAt: Date.now() });
+    return { success: true, awb, courier };
+  }
+
+  if (op === 'pickup') {
+    const body = { shipment_id: [Number(shipment)] };
+    if (/^\d{4}-\d{2}-\d{2}$/.test(String(b.date || ''))) body.pickup_date = [b.date];
+    const r = await sr('/courier/generate/pickup', { method: 'POST', body: JSON.stringify(body) });
+    const d = r.data?.response || r.data || {};
+    if (!r.ok || Number(r.data?.pickup_status) === 0) return { success: false, error: srMsg(r, 'Pickup could not be scheduled.') };
+    const when = clean(d.pickup_scheduled_date || b.date || '', 40);
+    await patchOrderDoc(docId, { shiprocketStatus: 'PICKUP SCHEDULED', shiprocketPickupDate: when, updatedAt: Date.now() });
+    return { success: true, pickupDate: when, token: clean(d.pickup_token_number, 60) };
+  }
+
+  if (op === 'label') {
+    const r = await sr('/courier/generate/label', { method: 'POST', body: JSON.stringify({ shipment_id: [Number(shipment)] }) });
+    const url = r.data?.label_url;
+    return r.ok && url ? { success: true, url } : { success: false, error: srMsg(r, 'Label not ready - assign a courier first.') };
+  }
+
+  if (op === 'manifest') {
+    let r = await sr('/manifests/generate', { method: 'POST', body: JSON.stringify({ shipment_id: [Number(shipment)] }) });
+    if (!r.data?.manifest_url) r = await sr('/manifests/print', { method: 'POST', body: JSON.stringify({ order_ids: [Number(srOrder)] }) });
+    const url = r.data?.manifest_url;
+    return url ? { success: true, url } : { success: false, error: srMsg(r, 'Manifest not ready - schedule the pickup first.') };
+  }
+
+  if (op === 'invoice') {
+    const r = await sr('/orders/print/invoice', { method: 'POST', body: JSON.stringify({ ids: [Number(srOrder)] }) });
+    const url = r.data?.invoice_url;
+    return r.ok && url ? { success: true, url } : { success: false, error: srMsg(r, 'Shiprocket invoice not available.') };
+  }
+
+  return { success: false, error: 'Unknown action' };
+}
+
+export { cancelInShiprocket, trackShiprocket, configured as shiprocketConfigured };
+
 // ---- Background sync (runs every 30 minutes from the Cloudflare cron, see wrangler.jsonc) ----
 // Sends waiting orders to Shiprocket and copies status / AWB / courier / delivery date back to the website.
 const FS_DOCS = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT}/databases/(default)/documents`;
@@ -311,7 +431,7 @@ async function patchOrderDoc(id, fields) {
   const keys = Object.keys(fields);
   if (!keys.length) return;
   const mask = keys.map((k) => `updateMask.fieldPaths=${encodeURIComponent(k)}`).join('&');
-  const r = await fetch(`${FS_DOCS}/orders/${encodeURIComponent(id)}?${mask}`, {
+  const r = await fsFetch(`/orders/${encodeURIComponent(id)}?${mask}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ fields: Object.fromEntries(keys.map((k) => [k, toFs(fields[k])])) }),
@@ -319,7 +439,7 @@ async function patchOrderDoc(id, fields) {
   if (!r.ok) console.error('order update failed', id, r.status, (await r.text()).slice(0, 200));
 }
 async function recentOrders(days = 30) {
-  const r = await fetch(`${FS_DOCS}:runQuery`, {
+  const r = await fsFetch(':runQuery', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -406,25 +526,7 @@ export async function syncAll() {
   for (const o of shipped) {
     if (budget-- <= 0) break;
     try {
-      const t = await trackShiprocket(String(o.shiprocketOrderId || '').replace(/\D/g, ''), String(o.shiprocketShipmentId || '').replace(/\D/g, ''));
-      const f = { shiprocketSyncedAt: Date.now() };
-      if (t.status && t.status !== o.shiprocketStatus) f.shiprocketStatus = t.status;
-      if (t.awb && t.awb !== o.trackingNumber) f.trackingNumber = t.awb;
-      if (t.courier && t.courier !== o.deliveryCourier) f.deliveryCourier = t.courier;
-      if (t.location && t.location !== o.currentLocation) f.currentLocation = t.location;
-      if (t.etd && t.etd !== o.estimatedDeliveryDate) f.estimatedDeliveryDate = t.etd;
-      if (t.trackUrl && t.trackUrl !== o.shiprocketTrackUrl) f.shiprocketTrackUrl = t.trackUrl;
-      const next = mapStatus(t.status);
-      if (next && RANK.indexOf(next) > RANK.indexOf(o.orderStatus)) {
-        f.orderStatus = next;
-        f.statusHistory = [...(Array.isArray(o.statusHistory) ? o.statusHistory : []), {
-          status: next,
-          timestamp: Date.now(),
-          location: t.location || o.currentLocation || 'In transit',
-          note: `${t.status}${t.courier ? ` - ${t.courier}` : ''}${t.awb ? ` (AWB ${t.awb})` : ''}`,
-        }];
-        if (next === 'Delivered' && o.paymentMethod === 'cod') f.paymentStatus = 'paid';
-      }
+      const { t, f } = await trackingUpdate(o);
       const changed = Object.keys(f).length > 1;
       if (changed) f.updatedAt = Date.now();
       await patchOrderDoc(o.id, f);
@@ -474,6 +576,7 @@ export default async (req) => {
   }
 
   if (action === 'create-order' && req.method === 'POST') {
+    if (!(await rateLimit(req, 'sr-create', 10, 60))) return tooMany();
     try {
       const body = await req.json().catch(() => null);
       if (!body) return json({ success: false, error: 'Invalid order' }, 400);
@@ -497,7 +600,13 @@ export default async (req) => {
       }
 
       const made = await createInShiprocket(order);
-      if (!made.success) return json(made, 400);
+      const docId = /^[\w-]{3,80}$/.test(String(order.id || '')) ? order.id : '';
+      if (!made.success) {
+        if (docId) await patchOrderDoc(docId, { shiprocketError: String(made.error || '').slice(0, 300), updatedAt: Date.now() });
+        return json(made, 400);
+      }
+      // saved here (not by the visitor's browser), so it works with the locked database rules
+      if (docId) await patchOrderDoc(docId, { shiprocketOrderId: made.shiprocketOrderId, shiprocketShipmentId: made.shipmentId, shiprocketStatus: made.status, shiprocketError: '', updatedAt: Date.now() });
       return json(made);
     } catch (e) {
       console.error('shiprocket create-order', e);
@@ -505,22 +614,21 @@ export default async (req) => {
     }
   }
 
-  // Cancel an order that has not shipped yet. Works with the Shiprocket order id, or finds it from the
-  // website order (database) or the order number on Shiprocket. The order number must match.
+  // Cancel an order that has not shipped yet. Only the customer who placed it (signed in, or the browser that
+  // placed it - its private order key) or an admin may do this. The Shiprocket id always comes from the database.
   if (action === 'cancel' && req.method === 'POST') {
+    if (!(await rateLimit(req, 'sr-cancel', 10, 60))) return tooMany();
     try {
       const b = await req.json().catch(() => ({}));
-      const orderNumber = clean(b.orderNumber, 45);
-      if (!orderNumber) return json({ success: false, error: 'Missing order' }, 400);
-      let id = String(b.shiprocketOrderId || '').replace(/\D/g, '');
-      if (!id && /^[\w-]{3,80}$/.test(String(b.id || ''))) {
-        const r = await fetch(`${FS_DOCS}/orders/${encodeURIComponent(b.id)}`).catch(() => null);
-        if (r && r.ok) {
-          const o = fsObject((await r.json()).fields || {});
-          if (o.orderNumber === orderNumber) id = String(o.shiprocketOrderId || '').replace(/\D/g, '');
-        }
-      }
-      const out = await cancelInShiprocket(orderNumber, id);
+      if (!/^[\w-]{3,80}$/.test(String(b.id || ''))) return json({ success: false, error: 'Missing order' }, 400);
+      const found = await readDoc(`orders/${encodeURIComponent(b.id)}`);
+      if (!found) return json({ success: false, error: 'Order not found' }, 404);
+      const o = found.data;
+      const { user, admin } = await requestAuth(req);
+      const keyOk = !!o.viewKey && typeof b.key === 'string' && b.key === o.viewKey;
+      if (!admin && !ownsOrder(user, o) && !keyOk) return json({ success: false, error: 'Please sign in to cancel this order' }, 403);
+      const out = await cancelInShiprocket(String(o.orderNumber || ''), String(o.shiprocketOrderId || '').replace(/\D/g, ''));
+      if (out.success && !out.notOnShiprocket) await patchOrderDoc(b.id, { shiprocketStatus: 'CANCELED', updatedAt: Date.now() });
       return json(out, out.success ? 200 : out.code || 400);
     } catch (e) {
       console.error('shiprocket cancel', e);
@@ -528,9 +636,49 @@ export default async (req) => {
     }
   }
 
+  // Admin controls: POST /api/shiprocket/admin  { op, id?, courierId?, date?, ids? }  (signed-in admins only)
+  if (action === 'admin' && req.method === 'POST') {
+    if (!(await rateLimit(req, 'sr-admin', 60, 60))) return tooMany();
+    if (!(await requestAuth(req)).admin) return json({ success: false, error: 'Admins only' }, 403);
+    try {
+      const b = await req.json().catch(() => ({}));
+      const op = String(b.op || '');
+      // bulk: the same action for several orders (max 20 at a time)
+      if (Array.isArray(b.ids) && ['assign', 'pickup', 'label'].includes(op)) {
+        const results = [];
+        for (const id of b.ids.slice(0, 20)) results.push({ id, ...(await adminOp(op, { ...b, id })) });
+        return json({ success: results.some((x) => x.success), results });
+      }
+      const out = await adminOp(op, b);
+      return json(out, out.success ? 200 : 400);
+    } catch (e) {
+      console.error('shiprocket admin', e);
+      return json({ success: false, error: String(e.message || 'Could not reach Shiprocket').slice(0, 200) }, 500);
+    }
+  }
+
   // Live shipping details of one order: /api/shiprocket/track?order=<shiprocketOrderId>&shipment=<shipmentId>
   if (action === 'track' && req.method === 'GET') {
+    if (!(await rateLimit(req, 'sr-track', 30, 60))) return tooMany();
     try {
+      // ?id=<website order id>: reads the order, fetches the latest details and saves them on the order
+      const docId = url.searchParams.get('id') || '';
+      if (docId) {
+        if (!/^[\w-]{3,80}$/.test(docId)) return json({ success: false, error: 'Invalid order' }, 400);
+        const found = await readDoc(`orders/${encodeURIComponent(docId)}`);
+        const o = found && found.data;
+        if (!o || (!o.shiprocketOrderId && !o.shiprocketShipmentId)) return json({ success: false, error: 'Not on Shiprocket yet' }, 404);
+        const { user, admin } = await requestAuth(req);
+        const key = url.searchParams.get('key') || '';
+        if (!admin && !ownsOrder(user, o) && !(o.viewKey && key === o.viewKey)) return json({ success: false, error: 'Not allowed' }, 403);
+        if (['Cancelled', 'Refunded'].includes(o.orderStatus)) return json({ success: false, error: 'Order is cancelled' }, 400);
+        const { t, f } = await trackingUpdate(o);
+        if (Object.keys(f).length > 1) f.updatedAt = Date.now();
+        await patchOrderDoc(docId, f);
+        return json({ ...t, orderStatus: f.orderStatus || o.orderStatus });
+      }
+      // by Shiprocket ids (admin panel only)
+      if (!(await requestAuth(req)).admin) return json({ success: false, error: 'Not allowed' }, 403);
       const orderId = (url.searchParams.get('order') || '').replace(/\D/g, '');
       const shipmentId = (url.searchParams.get('shipment') || '').replace(/\D/g, '');
       if (!orderId && !shipmentId) return json({ success: false, error: 'Missing order' }, 400);
