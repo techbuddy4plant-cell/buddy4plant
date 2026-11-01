@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Plus, Tag, Trash2, Check, X, Calendar, Percent } from 'lucide-react';
 import { Coupon } from '../../types';
 import { saveCoupon, deleteCoupon } from '../../services/couponService';
+import { ModalClose } from './ModalClose';
 
 interface AdminCouponsProps {
   coupons: Coupon[];
@@ -131,6 +132,7 @@ export const AdminCoupons: React.FC<AdminCouponsProps> = ({ coupons, onRefresh }
       {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <ModalClose onClose={() => setIsModalOpen(false)} />
           <div className="fixed inset-0 bg-[#1A1A1A]/60 backdrop-blur-xs" onClick={() => setIsModalOpen(false)} />
           <div className="relative bg-white border border-[#E5E2D9] max-w-md w-full p-6 z-10">
             <h3 className="font-serif font-bold text-lg text-[#1A1A1A] mb-4">Create Promo Code</h3>
