@@ -14,6 +14,8 @@ import {
 import { db } from '../config/firebase';
 import { Order, OrderStatus, PaymentStatus } from '../types';
 import { deductProductStock } from './productService';
+import { isAdminSession } from '../utils/adminSession';
+import { newOrderKey, rememberOrderKey, orderKeyFor, postApi } from './apiAuth';
 
 const ORDERS_COLLECTION = 'orders';
 
@@ -43,10 +45,12 @@ export async function syncLocalOrdersToCloud(): Promise<number> {
     for (const o of local) {
       if (!o?.id || !o.orderNumber) continue;
       const ref = doc(db, ORDERS_COLLECTION, o.id);
-      const snap = await getDoc(ref);
-      if (!snap.exists()) {
+      try {
         await setDoc(ref, stripUndefined(o));
         uploaded++;
+      } catch (e: any) {
+        // already uploaded (the rules refuse to overwrite an existing order) - nothing more to do
+        if (!/permission|already/i.test(String(e?.code || e?.message || ''))) throw e;
       }
     }
     localStorage.removeItem('vb_local_orders');
@@ -69,10 +73,13 @@ export async function createOrder(
   const id = orderData.id || `ord-${timestamp}-${Math.floor(Math.random() * 1000)}`;
   const orderNumber = orderData.orderNumber || `B4P-${timestamp.toString().slice(-6)}`;
 
+  const viewKey = newOrderKey();
+  rememberOrderKey(orderNumber, id, viewKey);
   const newOrder: Order = {
     ...orderData,
     id,
     orderNumber,
+    viewKey,
     createdAt: timestamp,
     updatedAt: timestamp,
     deliveryCourier: orderData.deliveryCourier || '',
@@ -119,7 +126,30 @@ export async function createOrder(
   }
 }
 
+/**
+ * Customers (and guests) get their order through the server, which checks they are allowed to see it:
+ * signed in as the customer, the browser that placed it (private key), or the order number + phone / email.
+ * Returns undefined when the server could not be reached (then the older direct read is tried).
+ */
+async function lookupOrder(numberOrId: string, contact?: string): Promise<Order | null | undefined> {
+  const ident = numberOrId.trim();
+  if (!ident) return null;
+  const r = await postApi<{ success?: boolean; order?: Order }>('/api/orders/lookup', {
+    number: ident,
+    id: ident,
+    contact: contact || undefined,
+    key: orderKeyFor(ident),
+  });
+  if (r.ok && r.data?.order) return r.data.order;
+  if (r.status === 404 || r.status === 429 || r.status === 400) return null;
+  return undefined;
+}
+
 export async function getOrderById(id: string): Promise<Order | null> {
+  if (!isAdminSession()) {
+    const viaServer = await lookupOrder(id);
+    if (viaServer) return viaServer;
+  }
   try {
     const docRef = doc(db, ORDERS_COLLECTION, id);
     const snap = await getDoc(docRef);
@@ -145,6 +175,20 @@ export async function getOrderById(id: string): Promise<Order | null> {
 export async function getOrderByNumberOrPhone(orderIdentifier: string, phoneOrEmail?: string): Promise<Order | null> {
   const cleanIdent = orderIdentifier.trim().toUpperCase();
   const cleanContact = phoneOrEmail ? phoneOrEmail.trim().toLowerCase() : '';
+
+  if (!isAdminSession()) {
+    const viaServer = await lookupOrder(orderIdentifier, cleanContact);
+    if (viaServer) return viaServer;
+    if (viaServer === null) {
+      // not found / not allowed on the server - only this browser's own unsent copy can still match
+      try {
+        const localOrders: Order[] = JSON.parse(localStorage.getItem('vb_local_orders') || '[]');
+        return localOrders.find((o) => o.orderNumber.toUpperCase() === cleanIdent || o.id === orderIdentifier.trim()) || null;
+      } catch {
+        return null;
+      }
+    }
+  }
 
   try {
     // Check by exact orderNumber
@@ -325,6 +369,21 @@ export function subscribeToOrder(
   // Initial fetch
   getOrderByNumberOrPhone(cleanId).then((ord) => onUpdate(ord));
 
+  if (!isAdminSession()) {
+    const poll = window.setInterval(() => {
+      if (document.visibilityState === 'visible') getOrderByNumberOrPhone(cleanId).then((ord) => ord && onUpdate(ord));
+    }, 30000);
+    const onLocal = (e: Event) => {
+      const d = (e as CustomEvent<Order>).detail;
+      if (d && (d.id === cleanId || d.orderNumber?.toUpperCase() === cleanId.toUpperCase())) onUpdate(d);
+    };
+    window.addEventListener('vb_order_live_update', onLocal);
+    return () => {
+      window.clearInterval(poll);
+      window.removeEventListener('vb_order_live_update', onLocal);
+    };
+  }
+
   try {
     // Listen to collection query for this order number or doc ID
     const colRef = collection(db, ORDERS_COLLECTION);
@@ -478,6 +537,17 @@ export async function cancelOrder(orderId: string, reason: string): Promise<void
   const timestamp = Date.now();
   let updatedOrder: Order | null = null;
 
+  if (!isAdminSession()) {
+    const r = await postApi('/api/orders/cancel', { id: orderId, reason, key: orderKeyFor(orderId) });
+    if (r.ok) {
+      const fresh = await getOrderById(orderId);
+      if (fresh) notifyLocalOrderUpdate(fresh);
+      return;
+    }
+    if (r.status === 403 || r.status === 409) throw new Error((r.data as any)?.error || 'This order cannot be cancelled online.');
+    // server not reachable: fall through to the older direct update (works only while the old rules are in place)
+  }
+
   try {
     const docRef = doc(db, ORDERS_COLLECTION, orderId);
     const snap = await getDoc(docRef);
@@ -579,7 +649,15 @@ export function getAllowedNextStatuses(currentStatus: OrderStatus, cancelledByUs
 }
 
 export async function requestOrderReturn(orderId: string, reason: string, comments?: string): Promise<void> {
-  const timestamp = Date.now();
+  if (!isAdminSession()) {
+    const r = await postApi('/api/orders/return', { id: orderId, reason, comments, key: orderKeyFor(orderId) });
+    if (r.ok) {
+      const fresh = await getOrderById(orderId);
+      if (fresh) notifyLocalOrderUpdate(fresh);
+      return;
+    }
+    if (r.status === 403 || r.status === 409) throw new Error((r.data as any)?.error || 'Could not request a return.');
+  }
   const noteText = `Return/Replacement Requested. Reason: ${reason}${comments ? ` | Note: ${comments}` : ''}`;
   await updateOrderStatus(orderId, 'Processing', noteText);
 }
