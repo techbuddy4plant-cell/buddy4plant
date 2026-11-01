@@ -5,6 +5,7 @@ import { saveCategory, deleteCategory, deleteAllCategories, restoreInitialCatego
 import { RotateCcw } from 'lucide-react';
 import { PlantImage, PLANT_FALLBACK_IMAGES } from '../../utils/imageFallback';
 import { ImageUploadField } from './ImageUploadField';
+import { ModalClose } from './ModalClose';
 
 interface AdminCategoriesProps {
   categories: Category[];
@@ -179,6 +180,7 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({ categories, pr
       {/* Responsive Category Modal (Auto-fits screen height) */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 overflow-y-auto">
+          <ModalClose onClose={() => setIsModalOpen(false)} />
           {/* Backdrop */}
           <div
             className="fixed inset-0 bg-[#0F1710]/70 backdrop-blur-xs transition-opacity"
