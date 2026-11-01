@@ -31,6 +31,7 @@ import {
 import { Order, OrderStatus, PaymentStatus } from '../../types';
 import { updateOrderStatus, updateOrderTracking, isCancelledByUser, getAllowedNextStatuses } from '../../services/orderService';
 import { PlantImage } from '../../utils/imageFallback';
+import { ModalClose } from './ModalClose';
 
 interface AdminOrdersProps {
   orders: Order[];
@@ -438,7 +439,8 @@ export const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, onRefresh }) =
 
       {/* Live Courier & Tracking Editor Modal */}
       {trackingModalOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <ModalClose onClose={() => setTrackingModalOrder(null)} />
           <div
             className="fixed inset-0 bg-[#1A1A1A]/60 backdrop-blur-xs"
             onClick={() => setTrackingModalOrder(null)}
@@ -623,6 +625,7 @@ export const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, onRefresh }) =
       {/* Full Order Detail Modal */}
       {selectedOrder && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <ModalClose onClose={() => setSelectedOrder(null)} />
           <div
             className="fixed inset-0 bg-[#1A1A1A]/60 backdrop-blur-xs"
             onClick={() => setSelectedOrder(null)}
