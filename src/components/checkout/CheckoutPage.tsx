@@ -259,6 +259,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ navigate }) => {
       price: i.unitPrice ?? i.product.price,
       quantity: i.quantity,
       sku: i.product.sku,
+      category: i.product.category,
     }));
 
     const tempOrderNumber = `${settings.orderPrefix || 'B4P-'}${Date.now().toString().slice(-6)}`;
