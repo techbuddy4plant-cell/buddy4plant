@@ -21,6 +21,7 @@ import { PlantImage, PLANT_FALLBACK_IMAGES } from '../../utils/imageFallback';
 import { ProjectMediaManager, ProjectMediaValue } from './ProjectMediaManager';
 import { useStoreSettings } from '../../context/StoreSettingsContext';
 import { resolveGardenContent } from '../../data/gardenServicesContent';
+import { ModalClose } from './ModalClose';
 
 interface AdminProjectsProps {
   onRefresh?: () => void;
@@ -489,6 +490,7 @@ export const AdminProjects: React.FC<AdminProjectsProps> = ({ onRefresh }) => {
       {/* Responsive Edit/Create Modal (Fits on Screen with Sticky Header/Footer) */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 overflow-y-auto">
+          <ModalClose onClose={() => setIsModalOpen(false)} />
           {/* Backdrop */}
           <div
             className="fixed inset-0 bg-[#0F1710]/70 backdrop-blur-xs transition-opacity"
