@@ -1,7 +1,17 @@
 import React, { useState } from 'react';
-import { X, Mail, Lock, User, Phone, Sparkles, ShieldAlert, CheckCircle2, ArrowRight } from './Icons';
+import { X, Mail, Lock, User, Phone, ShieldAlert, CheckCircle2, Eye } from './Icons';
 import { useAuth } from '../../context/AuthContext';
 import { Buddy4PlantLogo } from './Buddy4PlantLogo';
+import {
+  checkEmailFormat,
+  validateNewEmail,
+  checkNewPassword,
+  lockedFor,
+  recordFailure,
+  clearFailures,
+  waitText,
+  friendlyAuthError,
+} from '../../utils/authSecurity';
 
 export const AuthModal: React.FC = () => {
   const {
@@ -13,7 +23,6 @@ export const AuthModal: React.FC = () => {
     register,
     loginWithGoogle,
     resetPassword,
-    loginAsDemoAdmin,
   } = useAuth();
 
   const [email, setEmail] = useState('');
@@ -23,30 +32,97 @@ export const AuthModal: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [showPw, setShowPw] = useState(false);
+  // a "Did you mean ...?" suggestion that the person chose to ignore (they re-submitted the same email)
+  const [acceptedEmail, setAcceptedEmail] = useState('');
+  const [suggestion, setSuggestion] = useState<string | null>(null);
 
   if (!isAuthModalOpen) return null;
 
+  const onEmailBlur = () => {
+    if (!email.trim()) return;
+    const f = checkEmailFormat(email);
+    if (!f.ok && !f.suggestion) setError(f.message || null);
+    else if (!f.ok && f.suggestion && email.trim().toLowerCase() !== acceptedEmail) {
+      setSuggestion(f.suggestion);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
     setError(null);
     setSuccessMsg(null);
-    setLoading(true);
+    setSuggestion(null);
 
+    const typed = email.trim().toLowerCase();
+    // 1. email must look right (a typo suggestion can be ignored by submitting again)
+    const f = checkEmailFormat(typed);
+    if (!f.ok) {
+      if (f.suggestion && acceptedEmail !== typed) {
+        setSuggestion(f.suggestion);
+        setAcceptedEmail(typed);
+        return;
+      }
+      if (!f.suggestion) {
+        setError(f.message || 'This is not a valid email address.');
+        return;
+      }
+    }
+
+    // 2. too many wrong tries from this browser?
+    const scope = authModalTab === 'register' ? 'register' : 'login';
+    const wait = lockedFor(scope, typed);
+    if (wait > 0 && authModalTab !== 'forgot') {
+      setError(`Too many attempts. For your safety, please wait ${waitText(wait)} and try again.`);
+      return;
+    }
+
+    setLoading(true);
     try {
       if (authModalTab === 'login') {
-        await login(email, password);
+        if (!password) throw Object.assign(new Error(''), { code: 'auth/invalid-credential' });
+        await login(typed, password);
+        clearFailures('login', typed);
       } else if (authModalTab === 'register') {
-        if (!name.trim()) throw new Error('Please enter your full name');
-        await register(email, password, name, phone);
+        if (!name.trim()) {
+          setError('Please enter your full name.');
+          return;
+        }
+        if (phone.trim() && !/^[6-9]\d{9}$/.test(phone.replace(/\D/g, '').slice(-10))) {
+          setError('Please enter a valid 10-digit Indian mobile number, or leave it empty.');
+          return;
+        }
+        const pwProblem = checkNewPassword(password);
+        if (pwProblem) {
+          setError(pwProblem);
+          return;
+        }
+        const full = await validateNewEmail(typed);
+        if (!full.ok) {
+          setError(full.message || 'This is not a valid email address.');
+          return;
+        }
+        await register(typed, password, name.trim().slice(0, 80), phone.trim());
+        clearFailures('register', typed);
       } else if (authModalTab === 'forgot') {
-        if (!email.trim()) throw new Error('Please enter your registered email address');
-        await resetPassword(email);
-        setSuccessMsg('Password reset instructions sent to your email.');
+        await resetPassword(typed);
+        setSuccessMsg("If an account exists for this email, we've sent a link to reset the password. Please check your inbox and spam folder.");
       }
     } catch (err: any) {
-      setError(err.message || 'Authentication failed');
+      if (authModalTab !== 'forgot') recordFailure(scope, typed);
+      setError(friendlyAuthError(err, authModalTab === 'register' ? 'register' : authModalTab === 'forgot' ? 'reset' : 'login'));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const onGoogle = async () => {
+    setError(null);
+    try {
+      await loginWithGoogle();
+    } catch (err) {
+      setError(friendlyAuthError(err, 'google'));
     }
   };
 
@@ -80,18 +156,16 @@ export const AuthModal: React.FC = () => {
             {authModalTab === 'login' && 'Welcome to buddy4plant'}
             {authModalTab === 'register' && 'Create Your Botanical Account'}
             {authModalTab === 'forgot' && 'Reset Password'}
-            {authModalTab === 'admin' && 'Admin Access'}
           </h3>
           <p className="text-xs text-stone-500 mt-1">
             {authModalTab === 'login' && 'Sign in to access your orders and saved wishlist'}
             {authModalTab === 'register' && 'Join the buddy4plant gardening community'}
             {authModalTab === 'forgot' && "Enter your email to receive recovery instructions"}
-            {authModalTab === 'admin' && 'Access the operations dashboard'}
           </p>
         </div>
 
         {/* Tab Switcher */}
-        {authModalTab !== 'forgot' && authModalTab !== 'admin' && (
+        {authModalTab !== 'forgot' && (
           <div className="flex border-b border-stone-200 mb-6 text-sm font-semibold">
             <button
               type="button"
@@ -139,6 +213,24 @@ export const AuthModal: React.FC = () => {
           </div>
         )}
 
+        {suggestion && (
+          <div className="mb-4 p-3 bg-amber-50 border border-amber-200 text-amber-900 rounded-xl text-xs">
+            Did you mean{' '}
+            <button
+              type="button"
+              className="font-bold underline"
+              onClick={() => {
+                setEmail(suggestion);
+                setSuggestion(null);
+                setError(null);
+              }}
+            >
+              {suggestion}
+            </button>
+            ? <span className="text-amber-700">(If your email is correct, just press the button again.)</span>
+          </div>
+        )}
+
         {/* Main Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           {authModalTab === 'register' && (
@@ -180,9 +272,17 @@ export const AuthModal: React.FC = () => {
               <input
                 type="email"
                 required
+                autoComplete="email"
+                inputMode="email"
+                maxLength={254}
                 placeholder="name@example.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setSuggestion(null);
+                  setError(null);
+                }}
+                onBlur={onEmailBlur}
                 className="w-full pl-9 pr-3 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-800 focus:bg-white"
               />
               <Mail className="w-4 h-4 text-stone-400 absolute left-3 top-3.5" />
@@ -205,15 +305,32 @@ export const AuthModal: React.FC = () => {
               </div>
               <div className="relative">
                 <input
-                  type="password"
+                  type={showPw ? 'text' : 'password'}
                   required
+                  minLength={authModalTab === 'register' ? 8 : undefined}
+                  maxLength={128}
+                  autoComplete={authModalTab === 'register' ? 'new-password' : 'current-password'}
                   placeholder="••••••••"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-800 focus:bg-white"
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setError(null);
+                  }}
+                  className="w-full pl-9 pr-10 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-800 focus:bg-white"
                 />
                 <Lock className="w-4 h-4 text-stone-400 absolute left-3 top-3.5" />
+                <button
+                  type="button"
+                  onClick={() => setShowPw((v) => !v)}
+                  className="absolute right-2 top-1.5 p-1.5 text-stone-400 hover:text-stone-700"
+                  aria-label={showPw ? 'Hide password' : 'Show password'}
+                >
+                  <Eye className="w-4 h-4" />
+                </button>
               </div>
+              {authModalTab === 'register' && (
+                <p className="mt-1 text-[11px] text-stone-500">At least 8 characters, with letters and a number.</p>
+              )}
             </div>
           )}
 
@@ -240,7 +357,7 @@ export const AuthModal: React.FC = () => {
 
             <button
               type="button"
-              onClick={loginWithGoogle}
+              onClick={onGoogle}
               className="w-full py-2.5 border border-stone-300 rounded-xl text-xs font-semibold text-stone-700 hover:bg-stone-50 transition-colors flex items-center justify-center gap-2"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24">
