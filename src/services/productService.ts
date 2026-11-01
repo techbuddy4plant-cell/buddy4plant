@@ -14,6 +14,7 @@ import {
 import { db, withTimeout } from '../config/firebase';
 import { Product } from '../types';
 import { INITIAL_PRODUCTS, LEGACY_DEMO_PRODUCT_IDS, STORE_CATALOGUE } from '../data/initialProducts';
+import { isAdminSession } from '../utils/adminSession';
 
 const PRODUCTS_COLLECTION = 'products';
 const LOCAL_STORAGE_KEY = 'b4p_products_db';
@@ -126,7 +127,7 @@ export async function seedProductsIfEmpty(): Promise<void> {
         });
       }
       // saved in the background - the page never waits for it
-      void batch.commit().catch((e) => console.warn('Background save to Firestore failed (kept in this browser):', e));
+      if (isAdminSession()) void batch.commit().catch((e) => console.warn('Background save to Firestore failed (kept in this browser):', e));
       if (typeof window !== 'undefined') {
         localStorage.setItem(SEEDED_FLAG_KEY, 'true');
       }
@@ -243,7 +244,7 @@ async function getAllProductsWithCatalogue(): Promise<Product[]> {
     for (const p of legacy) if (!catalogueIds.has(p.id)) batch.delete(doc(db, PRODUCTS_COLLECTION, p.id));
     for (const p of missing) batch.set(doc(db, PRODUCTS_COLLECTION, p.id), p);
     // saved in the background - the page never waits for it
-    void batch.commit().catch((e) => console.warn('Background save to Firestore failed (kept in this browser):', e));
+    if (isAdminSession()) void batch.commit().catch((e) => console.warn('Background save to Firestore failed (kept in this browser):', e));
   } catch (error) {
     console.warn('Could not update Firestore catalogue (changes kept locally):', error);
   }
@@ -272,7 +273,7 @@ export async function getAllProducts(): Promise<Product[]> {
     const batch = writeBatch(db);
     for (const p of changed) batch.set(doc(db, PRODUCTS_COLLECTION, p.id), { images: p.images }, { merge: true });
     // saved in the background - the page never waits for it
-    void batch.commit().catch((e) => console.warn('Background save to Firestore failed (kept in this browser):', e));
+    if (isAdminSession()) void batch.commit().catch((e) => console.warn('Background save to Firestore failed (kept in this browser):', e));
   } catch (error) {
     console.warn('Could not update product images in Firestore (kept locally):', error);
   }
