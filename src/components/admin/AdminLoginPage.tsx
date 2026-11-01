@@ -1,34 +1,79 @@
 import React, { useState } from 'react';
+import { signInWithEmailAndPassword, signOut, sendPasswordResetEmail } from 'firebase/auth';
+import { auth } from '../../config/firebase';
+import { checkIsAdmin } from '../../services/authService';
+import { checkEmailFormat, lockedFor, recordFailure, clearFailures, waitText, friendlyAuthError } from '../../utils/authSecurity';
 import { Buddy4PlantLogo } from '../common/Buddy4PlantLogo';
 
 interface AdminLoginPageProps {
   onLoginSuccess: () => void;
   navigate: (path: string) => void;
+  /** shown when someone is signed in with an account that is not an admin */
+  notAdminEmail?: string | null;
 }
 
-export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onLoginSuccess, navigate }) => {
+/**
+ * Admin sign-in with a real account (Firebase Authentication - the password is checked on Google's servers,
+ * never stored in this website's code). Only accounts listed in the database collection "admins" get in.
+ */
+export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onLoginSuccess, navigate, notAdminEmail }) => {
   const [adminId, setAdminId] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(
+    notAdminEmail ? `${notAdminEmail} does not have admin access. Sign in with an admin account.` : null
+  );
+  const [info, setInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
     setError(null);
+    setInfo(null);
+    const email = adminId.trim().toLowerCase();
+    const f = checkEmailFormat(email);
+    if (!f.ok && !f.suggestion) {
+      setError(f.message || 'Please enter the admin email address.');
+      return;
+    }
+    const wait = lockedFor('admin', email);
+    if (wait > 0) {
+      setError(`Too many attempts. Please wait ${waitText(wait)} and try again.`);
+      return;
+    }
     setLoading(true);
-
-    setTimeout(() => {
-      // Credentials verification: ID: b4padpl | Pass: Bddy4plnt$.2
-      if (adminId.trim() === 'b4padpl' && password === 'Bddy4plnt$.2') {
-        sessionStorage.setItem('b4p_admin_secured_session', 'authenticated_true');
-        setLoading(false);
-        onLoginSuccess();
-      } else {
-        setLoading(false);
-        setError('Invalid Administrator Credentials. Access Denied.');
+    try {
+      const res = await signInWithEmailAndPassword(auth, email, password);
+      if (!(await checkIsAdmin(res.user.uid))) {
+        await signOut(auth);
+        recordFailure('admin', email);
+        setError('This account does not have admin access.');
+        return;
       }
-    }, 400);
+      clearFailures('admin', email);
+      onLoginSuccess();
+    } catch (err) {
+      recordFailure('admin', email);
+      setError(friendlyAuthError(err, 'login'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const forgot = async () => {
+    setError(null);
+    const email = adminId.trim().toLowerCase();
+    if (!checkEmailFormat(email).ok) {
+      setError('Type the admin email address above first, then press "Forgot password".');
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(auth, email);
+    } catch {
+      /* same message either way */
+    }
+    setInfo("If this is an admin account, a password reset link has been sent to that email.");
   };
 
   return (
@@ -53,7 +98,7 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onLoginSuccess, 
             buddy4plant Control Console
           </h1>
           <p className="text-xs text-[#A3B899] mt-1.5 font-light">
-            Enter administrator verification credentials to access store operations.
+            Sign in with your admin account to manage the store.
           </p>
         </div>
 
@@ -65,17 +110,24 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onLoginSuccess, 
           </div>
         )}
 
+        {info && (
+          <div className="mb-6 p-3.5 bg-emerald-950/70 border border-emerald-700/60 text-emerald-100 text-xs rounded-xl">{info}</div>
+        )}
+
         {/* Credentials Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-[#A3B899] mb-1.5">
-              Admin Identifier (ID)
+              Admin Email
             </label>
             <div className="relative">
               <input
-                type="text"
+                type="email"
                 required
-                placeholder="Enter Admin ID"
+                autoComplete="username"
+                inputMode="email"
+                maxLength={254}
+                placeholder="admin@example.com"
                 value={adminId}
                 onChange={(e) => setAdminId(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 bg-[#111A12] border border-[#2D4A27] text-white rounded-xl text-sm placeholder:text-[#5A6E57] focus:outline-none focus:border-[#95D5B2] focus:ring-1 focus:ring-[#95D5B2] transition-all"
@@ -92,6 +144,8 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onLoginSuccess, 
               <input
                 type={showPassword ? 'text' : 'password'}
                 required
+                autoComplete="current-password"
+                maxLength={128}
                 placeholder="••••••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -127,6 +181,12 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onLoginSuccess, 
             )}
           </button>
         </form>
+
+        <div className="mt-4 text-center">
+          <button type="button" onClick={forgot} className="text-xs text-[#95D5B2] hover:text-white underline-offset-2 hover:underline">
+            Forgot password?
+          </button>
+        </div>
 
         {/* Back to Public Site */}
         <div className="mt-8 pt-5 border-t border-[#2D4A27]/40 text-center">
