@@ -18,6 +18,7 @@ import { BLOG_SECTIONS } from '../../data/pillarArticles';
 import { PlantImage } from '../../utils/imageFallback';
 import { ImageUploadField } from './ImageUploadField';
 import { UploadKeyError, uploadMedia } from '../../services/uploadService';
+import { ModalClose } from './ModalClose';
 
 interface AdminBlogProps {
   navigate: (path: string) => void;
@@ -306,6 +307,7 @@ export const AdminBlog: React.FC<AdminBlogProps> = ({ navigate }) => {
       {/* Add / Edit Article Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto">
+          <ModalClose onClose={() => setIsModalOpen(false)} />
           <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border border-[#E5E2D9] p-6 space-y-5 text-xs">
             <div className="flex items-center justify-between border-b pb-3">
               <h3 className="font-serif font-bold text-base text-[#1A1A1A]">
