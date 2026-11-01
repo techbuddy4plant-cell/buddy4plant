@@ -12,6 +12,7 @@ import {
 import { db, withTimeout } from '../config/firebase';
 import { Review } from '../types';
 import { INITIAL_REVIEWS } from '../data/initialSettings';
+import { isAdminSession } from '../utils/adminSession';
 
 const REVIEWS_COLLECTION = 'reviews';
 const REVIEWS_STORAGE_KEY = 'b4p_customer_reviews';
@@ -100,7 +101,7 @@ export async function seedReviewsIfEmpty(): Promise<void> {
         batch.set(docRef, rev);
       }
       // saved in the background - the page never waits for it
-      void batch.commit().catch((e) => console.warn('Background save to Firestore failed (kept in this browser):', e));
+      if (isAdminSession()) void batch.commit().catch((e) => console.warn('Background save to Firestore failed (kept in this browser):', e));
       if (typeof window !== 'undefined') {
         localStorage.setItem(SEEDED_FLAG_KEY, 'true');
       }
