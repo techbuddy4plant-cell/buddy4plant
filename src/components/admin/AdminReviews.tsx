@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Star, Plus, Edit2, Trash2, CheckCircle, X, Search, ShieldCheck } from 'lucide-react';
 import { Review } from '../../types';
 import { getAllReviews, addReview, updateReviewStatus, deleteReview } from '../../services/reviewService';
+import { ModalClose } from './ModalClose';
 
 export const AdminReviews: React.FC = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -221,6 +222,7 @@ export const AdminReviews: React.FC = () => {
       {/* Responsive Edit/Add Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 overflow-y-auto">
+          <ModalClose onClose={() => setIsModalOpen(false)} />
           <div
             className="fixed inset-0 bg-[#0F1710]/70 backdrop-blur-xs transition-opacity"
             onClick={() => setIsModalOpen(false)}
