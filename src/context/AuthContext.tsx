@@ -7,11 +7,13 @@ import {
   signOut as fbSignOut,
   signInWithPopup,
   sendPasswordResetEmail,
+  sendEmailVerification,
 } from 'firebase/auth';
 import { auth, googleProvider } from '../config/firebase';
 import { UserProfile, Address } from '../types';
 import { getUserProfile, saveUserProfile, checkIsAdmin, saveUserAddress, deleteUserAddress, setDefaultUserAddress } from '../services/authService';
 import { SignOutConfirmModal } from '../components/common/SignOutConfirmModal';
+import { setAdminSession } from '../utils/adminSession';
 
 interface AuthContextType {
   user: User | null;
@@ -31,7 +33,8 @@ interface AuthContextType {
   confirmSignOut: () => Promise<void>;
   cancelSignOut: () => void;
   resetPassword: (email: string) => Promise<void>;
-  loginAsDemoAdmin: () => Promise<void>;
+  /** sends the "verify your email" link again */
+  resendVerification: () => Promise<void>;
   saveAddress: (address: Address) => Promise<Address[]>;
   removeAddress: (addressIdOrIndex: string | number) => Promise<Address[]>;
   setDefaultAddress: (addressId: string) => Promise<Address[]>;
@@ -77,25 +80,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isSigningOut, setIsSigningOut] = useState<boolean>(false);
 
   useEffect(() => {
-    // Check demo admin session from localStorage first
-    const demoAdminSession = localStorage.getItem('vb_demo_admin');
-    if (demoAdminSession === 'true') {
-      setIsAdmin(true);
+    // the old "demo admin" switch from the template is gone - clear it from this browser
+    try {
+      localStorage.removeItem('vb_demo_admin');
+      sessionStorage.removeItem('b4p_admin_secured_session');
+    } catch {
+      /* storage blocked */
     }
 
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
-      setUser(fbUser);
       if (fbUser) {
-        let p = await getUserProfile(fbUser.uid);
-        const adminStatus = (await checkIsAdmin(fbUser.uid, fbUser.email)) || demoAdminSession === 'true';
+        // Admin = a Firestore document admins/{uid}. Only the database owner can create one.
+        // (checked before the user is shown as signed in, so the admin page never flashes "no access")
+        const adminStatus = await checkIsAdmin(fbUser.uid);
+        setUser(fbUser);
         setIsAdmin(adminStatus);
-
+        setAdminSession(adminStatus);
+        let p = await getUserProfile(fbUser.uid);
         if (!p) {
           p = {
             uid: fbUser.uid,
             email: fbUser.email || '',
             displayName: fbUser.displayName || 'Green Lover',
-            role: adminStatus ? 'admin' : 'customer',
+            role: 'customer',
             addresses: [],
             createdAt: Date.now(),
           };
@@ -103,10 +110,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
         setProfile(withLocalAddresses(p));
       } else {
+        setUser(null);
         setProfile(null);
-        if (demoAdminSession !== 'true') {
-          setIsAdmin(false);
-        }
+        setIsAdmin(false);
+        setAdminSession(false);
       }
       setLoading(false);
     });
@@ -123,20 +130,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsAuthModalOpen(false);
   };
 
+  // errors keep their Firebase "code" so the form can show a friendly message
   const login = async (email: string, pass: string) => {
-    try {
-      const res = await signInWithEmailAndPassword(auth, email, pass);
-      const admin = await checkIsAdmin(res.user.uid, res.user.email);
-      setIsAdmin(admin);
-      closeAuthModal();
-    } catch (err: any) {
-      throw new Error(err.message || 'Failed to sign in');
-    }
+    const res = await signInWithEmailAndPassword(auth, email.trim(), pass);
+    const admin = await checkIsAdmin(res.user.uid);
+    setIsAdmin(admin);
+    setAdminSession(admin);
+    closeAuthModal();
   };
 
   const register = async (email: string, pass: string, name: string, phone?: string) => {
-    try {
-      const res = await createUserWithEmailAndPassword(auth, email, pass);
+    {
+      const res = await createUserWithEmailAndPassword(auth, email.trim(), pass);
+      // "Verify your email" link - proves the person really owns this address
+      sendEmailVerification(res.user, { url: `${window.location.origin}/profile` }).catch(() => undefined);
       const newProfile: UserProfile = {
         uid: res.user.uid,
         email: res.user.email || email,
@@ -149,23 +156,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await saveUserProfile(newProfile);
       setProfile(newProfile);
       closeAuthModal();
-    } catch (err: any) {
-      throw new Error(err.message || 'Failed to create account');
     }
   };
 
   const loginWithGoogle = async () => {
-    try {
+    {
       const res = await signInWithPopup(auth, googleProvider);
-      const admin = await checkIsAdmin(res.user.uid, res.user.email);
+      const admin = await checkIsAdmin(res.user.uid);
       setIsAdmin(admin);
+      setAdminSession(admin);
       let p = await getUserProfile(res.user.uid);
       if (!p) {
         p = {
           uid: res.user.uid,
           email: res.user.email || '',
           displayName: res.user.displayName || 'Green Lover',
-          role: admin ? 'admin' : 'customer',
+          role: 'customer',
           addresses: [],
           createdAt: Date.now(),
         };
@@ -173,14 +179,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       setProfile(withLocalAddresses(p));
       closeAuthModal();
-    } catch (err: any) {
-      throw new Error(err.message || 'Google sign-in failed');
     }
   };
 
   const logout = async () => {
-    localStorage.removeItem('vb_demo_admin');
     setIsAdmin(false);
+    setAdminSession(false);
     await fbSignOut(auth);
     setUser(null);
     setProfile(null);
@@ -204,28 +208,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Always reports success (unless the email is malformed / offline), so nobody can use this form
+  // to find out which emails have an account.
   const resetPassword = async (email: string) => {
     try {
-      await sendPasswordResetEmail(auth, email);
+      await sendPasswordResetEmail(auth, email.trim());
     } catch (err: any) {
-      throw new Error(err.message || 'Failed to send password reset email');
+      const code = String(err?.code || '');
+      if (/invalid-email|network-request-failed|too-many-requests/.test(code)) throw err;
     }
   };
 
-  const loginAsDemoAdmin = async () => {
-    localStorage.setItem('vb_demo_admin', 'true');
-    setIsAdmin(true);
-    if (!profile) {
-      setProfile(withLocalAddresses({
-        uid: 'admin-super-01',
-        email: 'admin@vanabotanica.com',
-        displayName: 'Store Administrator',
-        role: 'admin',
-        addresses: [],
-        createdAt: Date.now(),
-      }));
+  const resendVerification = async () => {
+    if (auth.currentUser && !auth.currentUser.emailVerified) {
+      await sendEmailVerification(auth.currentUser, { url: `${window.location.origin}/profile` });
     }
-    closeAuthModal();
   };
 
   // Save the list on this device right away, show it, then try the online profile
@@ -351,7 +348,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         confirmSignOut,
         cancelSignOut,
         resetPassword,
-        loginAsDemoAdmin,
+        resendVerification,
         saveAddress,
         removeAddress,
         setDefaultAddress,
