@@ -1,4 +1,5 @@
 import { printInvoice } from '../../utils/invoice';
+import { ShiprocketSummary, ShiprocketOrderPanel } from './AdminShiprocketTools';
 import { useStoreSettings } from '../../context/StoreSettingsContext';
 import React, { useState, useEffect } from 'react';
 import { realShipping } from '../../utils/shipping';
@@ -198,6 +199,8 @@ export const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, onRefresh }) =
 
   return (
     <div className="space-y-6">
+      <ShiprocketSummary orders={orders} onChanged={onRefresh} />
+
       {/* Header with Live Engine Indicator */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -492,6 +495,11 @@ export const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, onRefresh }) =
               )}
             </div>
 
+            <ShiprocketOrderPanel
+              order={orders.find((o) => o.id === trackingModalOrder.id) || trackingModalOrder}
+              onChanged={onRefresh}
+            />
+
             <form onSubmit={handleSaveTracking} className="space-y-4 text-xs">
               {isCancelledByUser(trackingModalOrder) && (
                 <div className="p-3.5 bg-red-50 border border-red-200 rounded-lg text-red-800 text-xs flex items-start gap-2.5">
@@ -626,6 +634,9 @@ export const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, onRefresh }) =
                 <span className="text-[10px] uppercase tracking-widest text-[#7A7A7A]">Order Reference</span>
                 <div className="flex items-center gap-2">
                   <h3 className="font-serif font-bold text-2xl text-[#1A1A1A]">{selectedOrder.orderNumber}</h3>
+                  {selectedOrder.invoiceNumber && (
+                    <span className="text-[11px] font-mono text-[#5A5A5A] bg-[#F4F0E8] px-2 py-0.5 rounded">Invoice {selectedOrder.invoiceNumber}</span>
+                  )}
                   <span
                     className={`px-2.5 py-0.5 text-[10px] font-extrabold uppercase rounded ${
                       ['Cancelled', 'Refunded'].includes(selectedOrder.orderStatus)
