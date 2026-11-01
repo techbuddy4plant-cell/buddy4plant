@@ -20,6 +20,7 @@ import { saveProduct, deleteProduct, deleteAllProducts } from '../../services/pr
 import { PlantImage } from '../../utils/imageFallback';
 import { PlantImageUploader } from './PlantImageUploader';
 import { AdminToastNotification } from './AdminToastNotification';
+import { ModalClose } from './ModalClose';
 
 interface AdminProductsProps {
   products: Product[];
@@ -644,6 +645,7 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
       {/* Add / Edit Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <ModalClose onClose={() => setIsModalOpen(false)} />
           <div
             className="fixed inset-0 bg-[#1A1A1A]/60 backdrop-blur-xs"
             onClick={() => setIsModalOpen(false)}
