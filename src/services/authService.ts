@@ -40,15 +40,14 @@ export async function getUserProfile(uid: string): Promise<UserProfile | null> {
   return null;
 }
 
-export async function checkIsAdmin(uid: string, email?: string | null): Promise<boolean> {
-  if (email === 'admin@vanabotanica.com' || email === 'admin@buddy4plant.com') return true;
+/** An admin is someone with a document admins/{uid} in the database (created by the owner in the Firebase console). */
+export async function checkIsAdmin(uid: string): Promise<boolean> {
   try {
     const adminDoc = await getDoc(doc(db, ADMINS_COLLECTION, uid));
-    if (adminDoc.exists()) return true;
-  } catch (err) {
-    // ignore
+    return adminDoc.exists();
+  } catch {
+    return false;
   }
-  return false;
 }
 
 export async function saveUserProfile(profile: UserProfile): Promise<void> {
