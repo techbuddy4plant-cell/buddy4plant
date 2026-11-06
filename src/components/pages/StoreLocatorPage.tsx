@@ -3,6 +3,8 @@ import { Clock, MapPin, MessageCircle, Navigation, Phone, Truck, ArrowLeft } fro
 
 /** The nursery's pin on Google Maps */
 const STORE_MAPS_LINK = 'https://maps.app.goo.gl/kF5HbobUaLwzu3vu9';
+/** Exact position of that pin (from the link above) - the embedded map is centred here */
+const STORE_PIN = '26.9039826,80.9602056';
 import { useStoreSettings } from '../../context/StoreSettingsContext';
 import { setSeo } from '../../utils/seo';
 
@@ -12,9 +14,9 @@ export const StoreLocatorPage: React.FC<{ navigate: (path: string) => void }> = 
   const address = settings.storeAddress || 'Lucknow, Uttar Pradesh, India';
   const phone = settings.contactPhone || settings.whatsappSupportNumber || '';
   const waDigits = (settings.whatsappSupportNumber || phone).replace(/\D/g, '');
-  const mapsQuery = `Buddy4Plant, ${address}`;
   const directions = settings.storeMapsUrl || STORE_MAPS_LINK;
-  const embed = `https://www.google.com/maps?q=${encodeURIComponent(mapsQuery)}&output=embed`;
+  // Use the exact pin, not a text search (a search for "Buddy4Plant, Lucknow" only shows the city)
+  const embed = `https://www.google.com/maps?q=${STORE_PIN}&z=17&output=embed`;
 
   useEffect(() => {
     setSeo({
