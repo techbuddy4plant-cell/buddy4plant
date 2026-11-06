@@ -46,6 +46,27 @@ add('/garden-services', {
 }, '0.9');
 add('/projects', { title: 'Landscaping Projects | Buddy4Plant', description: 'Landscaping and AMC projects by Buddy4Plant for government offices, institutes, industrial units and commercial sites in Uttar Pradesh.' }, '0.7');
 add('/about', { title: 'About Buddy4Plant | Lucknow Nursery & Landscaping', description: 'Buddy4Plant is a Lucknow-based nursery and landscaping company growing plants and building gardens across Uttar Pradesh.' }, '0.5');
+// Visit / contact / help pages
+add('/store-locator', {
+  title: 'Locate Our Store - Buddy4Plant Nursery, Lucknow',
+  description: 'Visit the Buddy4Plant plant nursery in Vikas Nagar, Lucknow. Get directions on Google Maps or WhatsApp us for plants, pots and gardening services.',
+  jsonLd: [{
+    '@context': 'https://schema.org', '@type': 'GardenStore', '@id': `${SITE_URL}/#store`, name: 'Buddy4Plant',
+    url: `${SITE_URL}/store-locator`, image: absUrl('/plant-photos/areca-palm-plant.jpg'), telephone: '+91-8004881668',
+    address: { '@type': 'PostalAddress', addressLocality: 'Lucknow', addressRegion: 'Uttar Pradesh', addressCountry: 'IN' },
+    geo: { '@type': 'GeoCoordinates', latitude: 26.9039826, longitude: 80.9602056 },
+    hasMap: 'https://maps.app.goo.gl/kF5HbobUaLwzu3vu9', parentOrganization: { '@id': `${SITE_URL}/#organization` },
+  }],
+}, '0.7');
+add('/contact', { title: 'Contact Buddy4Plant | Plants & Landscaping, Lucknow', description: 'Contact Buddy4Plant on WhatsApp or email for plant orders, bulk and corporate orders, and landscaping or garden maintenance enquiries.' }, '0.5');
+add('/care-guide', { title: 'Plant Care Guide | Buddy4Plant', description: 'Simple care guide for your new plants from Buddy4Plant: light, watering, soil, feeding and common problems.' }, '0.5');
+add('/plant-doctor', { title: 'Plant Doctor - Fix Common Plant Problems | Buddy4Plant', description: 'Yellow leaves, brown tips, drooping stems or pests? Find the likely cause and the fix with the Buddy4Plant plant doctor.' }, '0.5');
+add('/reviews', { title: 'Customer Reviews | Buddy4Plant', description: 'Read what customers say about Buddy4Plant plants, pots, delivery and landscaping services.' }, '0.5');
+add('/collections', { title: 'Shop by Collection | Buddy4Plant', description: 'Browse Buddy4Plant plant and pot collections: indoor, air-purifying, low-maintenance, gifting and more.' }, '0.6');
+add('/shipping-policy', { title: 'Shipping Policy | Buddy4Plant', description: 'How Buddy4Plant packs and delivers plants and pots: delivery areas, timelines and charges.' }, '0.3');
+add('/refund-policy', { title: 'Refund & Cancellation Policy | Buddy4Plant', description: 'Buddy4Plant refund, return and cancellation policy for plants, pots and other orders.' }, '0.3');
+add('/privacy-policy', { title: 'Privacy Policy | Buddy4Plant', description: 'How Buddy4Plant collects, uses and protects your personal information.' }, '0.3');
+add('/terms-and-conditions', { title: 'Terms & Conditions | Buddy4Plant', description: 'Terms and conditions for using the Buddy4Plant website and placing orders.' }, '0.3');
 for (const [p, t] of [['/gifting', 'Plant Gifting'], ['/gifting/corporate', 'Corporate Plant Gifting'], ['/gifting/festive', 'Festive Plant Gifting'], ['/gifting/green', 'Green Gifting']] as const) {
   add(p, { title: `${t} | Buddy4Plant`, description: `${t} - plants, planters and hampers from Buddy4Plant, Lucknow.` }, '0.6');
 }
