@@ -9,7 +9,28 @@
     "binding": "ASSETS",
     // every page address serves the app (single-page app)
     "not_found_handling": "single-page-application",
-    "run_worker_first": ["/api/*"]
+    // the worker handles the API and page addresses (to add each page's SEO tags);
+    // images, scripts and other files are served directly
+    "run_worker_first": [
+      "/*",
+      "!/assets/*",
+      "!/plant-photos/*",
+      "!/product-photos/*",
+      "!/plant-cards/*",
+      "!/categories/*",
+      "!/editorial/*",
+      "!/landing-pages/*",
+      "!/projects/*",
+      "!/*.png",
+      "!/*.jpg",
+      "!/*.svg",
+      "!/*.mp4",
+      "!/*.xml",
+      "!/*.txt",
+      "!/*.json",
+      "!/*.ico",
+      "!/*.webp"
+    ]
   },
   // the website's own addresses - Cloudflare keeps the records and certificates for these
   "routes": [
