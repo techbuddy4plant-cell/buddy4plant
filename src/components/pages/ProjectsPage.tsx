@@ -5,6 +5,7 @@ import { LANDSCAPE_PROJECTS } from '../../data/landscapeProjects';
 import { useStoreSettings } from '../../context/StoreSettingsContext';
 import { getProjects } from '../../services/projectService';
 import { setSeo } from '../../utils/seo';
+import { PROJECTS_SEO } from '../../data/seoCopy';
 import { PhotoLightbox, ProjectMediaBadge, projectPhotos } from './ProjectMedia';
 
 const sortBySegment = (list: any[]) => [...list.filter((p) => p.segment !== 'private'), ...list.filter((p) => p.segment === 'private')];
@@ -19,7 +20,7 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({ navigate }) => {
   const [viewer, setViewer] = React.useState<{ photos: string[]; start: number; title: string } | null>(null);
 
   React.useEffect(() => {
-    setSeo({ title: 'Landscaping Projects in Uttar Pradesh & Delhi', description: 'Landscaping and AMC projects by Buddy4Plant for government offices, institutes, industrial units and commercial sites across Uttar Pradesh and Delhi.', path: '/projects', image: '/projects/giti-campuses.jpg' });
+    setSeo({ ...PROJECTS_SEO, path: '/projects', image: '/projects/giti-campuses.jpg' });
     getProjects().then((data) => {
       if (data && data.length > 0) {
         setProjects(sortBySegment(data.filter((p) => p.active !== false)));
