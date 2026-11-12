@@ -7,6 +7,7 @@ const STORE_MAPS_LINK = 'https://maps.app.goo.gl/kF5HbobUaLwzu3vu9';
 const STORE_PIN = '26.9039826,80.9602056';
 import { useStoreSettings } from '../../context/StoreSettingsContext';
 import { setSeo } from '../../utils/seo';
+import { STORE_SEO } from '../../data/seoCopy';
 
 /** "Locate Our Store" - address, map, directions and WhatsApp. Details come from Admin > Settings. */
 export const StoreLocatorPage: React.FC<{ navigate: (path: string) => void }> = ({ navigate }) => {
@@ -20,8 +21,7 @@ export const StoreLocatorPage: React.FC<{ navigate: (path: string) => void }> = 
 
   useEffect(() => {
     setSeo({
-      title: 'Locate Our Store - Buddy4Plant Nursery, Lucknow',
-      description: `Visit the Buddy4Plant nursery: ${address}. Get directions or WhatsApp us for plants, pots and gardening services across Uttar Pradesh and Delhi.`,
+      ...STORE_SEO,
       path: '/store-locator',
     });
   }, [address]);
