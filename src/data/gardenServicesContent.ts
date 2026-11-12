@@ -3,6 +3,7 @@
  * Edited in Admin > Gardening Services > Page Content and saved with the home page settings
  * (homepageCMS.gardenServicesContent). Anything not saved yet falls back to these defaults.
  */
+import { SERVICES_SEO } from './seoCopy';
 
 export const GARDEN_ICON_NAMES = [
   'Landmark',
@@ -120,9 +121,8 @@ export interface GardenServicesContent {
 
 export const DEFAULT_GARDEN_CONTENT: GardenServicesContent = {
   seo: {
-    title: 'Gardening & Landscaping Services in Lucknow',
-    description:
-      'Landscaping, garden design and Annual Maintenance Contracts (AMC) for homes, offices and government campuses across Uttar Pradesh and Delhi.',
+    title: SERVICES_SEO.title,
+    description: SERVICES_SEO.description,
   },
   hero: {
     badge: 'Gardening · Landscaping · AMC',
@@ -365,5 +365,7 @@ export function resolveGardenContent(saved: unknown, legacy?: Record<string, any
     if (legacy.privateProjectsSubtitle) c.privateSection.subtitle = legacy.privateProjectsSubtitle;
     if (legacy.privateProjectsEnabled === false) c.privateSection.enabled = false;
   }
+  // search title/description saved before the Nov 2026 SEO update -> use the new keyword wording
+  if (!c.seo?.title || c.seo.title === 'Gardening & Landscaping Services in Lucknow') c.seo = { ...SERVICES_SEO };
   return c;
 }
