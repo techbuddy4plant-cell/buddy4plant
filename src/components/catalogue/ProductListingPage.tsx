@@ -7,6 +7,7 @@ import { ProductCard } from '../common/ProductCard';
 import { FilterSidebar } from './FilterSidebar';
 import { SortDropdown } from './SortDropdown';
 import { setSeo, breadcrumbLd } from '../../utils/seo';
+import { ALL_PLANTS_SEO, COLLECTIONS_SEO, GIFTING_SEO, categorySeo } from '../../data/seoCopy';
 
 interface ProductListingPageProps {
   initialCategorySlug?: string;
@@ -272,9 +273,14 @@ export const ProductListingPage: React.FC<ProductListingPageProps> = ({
   useEffect(() => {
     const path = window.location.pathname;
     const name = currentCategory?.name || (filters.category === 'all' ? 'All Plants' : 'Shop');
+    const clean = path.replace(/\/+$/, '') || '/';
+    const words =
+      GIFTING_SEO[clean] ||
+      (clean === '/collections' ? COLLECTIONS_SEO : null) ||
+      (currentCategory ? categorySeo(currentCategory.slug, currentCategory.name, currentCategory.description) : ALL_PLANTS_SEO);
     setSeo({
-      title: `${name} - Buy Online in Lucknow & India`,
-      description: (currentCategory?.description || `Shop ${name.toLowerCase()} online from Buddy4Plant, a Lucknow nursery.`).slice(0, 160),
+      title: words.title,
+      description: words.description,
       path,
       jsonLd: [breadcrumbLd([{ name: 'Home', path: '/' }, { name, path }])],
     });
