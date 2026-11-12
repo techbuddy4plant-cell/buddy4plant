@@ -32,6 +32,7 @@ import { ReviewList } from './ReviewList';
 import { ProductCard } from '../common/ProductCard';
 import { StickyBuyBar } from './StickyBuyBar';
 import { setSeo, productLd, breadcrumbLd } from '../../utils/seo';
+import { productSeo } from '../../data/seoCopy';
 import { recordProductView } from '../../services/notifyService';
 
 interface ProductDetailPageProps {
@@ -98,8 +99,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
     if (!product) return;
     const path = `/product/${product.slug}`;
     setSeo({
-      title: `${product.name} - Buy Online`,
-      description: `${product.shortDescription || ''} Price ₹${product.price}. Buy ${product.name} online from Buddy4Plant, Lucknow.`.trim().slice(0, 160),
+      ...productSeo(product),
       path,
       image: product.images?.[0],
       type: 'product',
