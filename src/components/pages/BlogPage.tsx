@@ -5,6 +5,7 @@ import { BlogPost, getBlogPosts, INITIAL_BLOG_POSTS } from '../../services/blogS
 import { BLOG_SECTIONS } from '../../data/pillarArticles';
 import { MarkdownBlock, extractHeadings } from '../blog/MarkdownBlock';
 import { articleLd, blogPath, breadcrumbLd, faqLd, itemListLd, setSeo, ORG_ID, SITE_URL } from '../../utils/seo';
+import { BLOG_SEO } from '../../data/seoCopy';
 
 const sectionOf = (p: BlogPost) =>
   p.section || Object.keys(BLOG_SECTIONS).find((k) => BLOG_SECTIONS[k] === p.category) || '';
@@ -336,10 +337,10 @@ export const BlogPage: React.FC<{ navigate: (path: string) => void }> = ({ navig
     const path = section === 'all' ? '/blog' : `/blog/${section}`;
     const name = section === 'all' ? 'Gardening Guides & Blog' : `${BLOG_SECTIONS[section]} Guides`;
     setSeo({
-      title: section === 'all' ? 'Gardening Guides, Plant Care & Landscaping Blog' : `${BLOG_SECTIONS[section]} - Guides & Tips`,
+      title: section === 'all' ? BLOG_SEO.title : `${BLOG_SECTIONS[section]} - Guides & Tips`,
       description:
         section === 'all'
-          ? 'Practical Indian gardening guides from a Lucknow nursery and landscaping team: plant care, kitchen gardens, soil and compost, landscaping costs, Miyawaki and real projects.'
+          ? BLOG_SEO.description
           : `Buddy4Plant guides on ${BLOG_SECTIONS[section].toLowerCase()} for Indian homes, gardens and campuses.`,
       path,
       jsonLd: [
