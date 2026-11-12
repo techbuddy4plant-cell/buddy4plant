@@ -7,12 +7,12 @@
  */
 import type { BlogPost } from '../services/blogService';
 import type { Product } from '../types';
+import { HOME_SEO } from '../data/seoCopy';
 
 export const SITE_URL = 'https://buddy4plant.in';
 export const SITE_NAME = 'Buddy4Plant';
-export const DEFAULT_TITLE = 'Buddy4Plant - Plants, Pots, Gardening & Landscaping in Lucknow';
-export const DEFAULT_DESCRIPTION =
-  'Buddy4Plant is a Lucknow nursery and landscaping company: indoor and outdoor plants, pots, soil, compost and plant food, plus gardening services and AMC across Uttar Pradesh.';
+export const DEFAULT_TITLE = HOME_SEO.title;
+export const DEFAULT_DESCRIPTION = HOME_SEO.description;
 export const DEFAULT_IMAGE = '/plant-photos/areca-palm-plant.jpg';
 
 export const absUrl = (path: string) => (/^https?:\/\//.test(path) ? path : `${SITE_URL}${path.startsWith('/') ? '' : '/'}${path}`);
